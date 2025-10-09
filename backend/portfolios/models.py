@@ -58,6 +58,7 @@ class Portfolio(models.Model):
 class Page(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, related_name="pages")
     title = models.CharField(max_length=140, blank=True)
+    description = models.CharField(max_length=140, blank=True)
     layout = models.CharField(max_length=50, blank=True)
     order = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)

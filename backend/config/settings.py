@@ -46,11 +46,32 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     "corsheaders", 
     "rest_framework",
-    "accounts", #Added this for the users models
-    "portfolios", #Added this for the portfolio models
+    "api",
+    "accounts", #Added this for the Users models
+    "portfolios", #Added this for the Portfolio models
+    "tags", #Added this for the Hashtags models
+    'themes', #Added this for the Themes models
+    "notifications", #Added this for the Notifications models
+    
 ]
 
 AUTH_USER_MODEL = "accounts.User" #Added this for the users models
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "rest_framework.authentication.SessionAuthentication",  # keep for /admin/ + browsable API
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.AllowAny",
+    ],
+}
+
+from datetime import timedelta
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=1),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+}
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
