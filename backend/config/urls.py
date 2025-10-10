@@ -21,6 +21,7 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
     TokenVerifyView,
 )
+from accounts.views import CookieTokenObtainPairView, RegisterView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -29,4 +30,7 @@ urlpatterns = [
     path("api/auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/auth/token/verify/", TokenVerifyView.as_view(), name="token_verify"),
     path("api/notifications/", include("notifications.urls")),
+    path("api/auth/", include("accounts.urls")),
+    path("login/", CookieTokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("register/", RegisterView.as_view(), name="register"),
 ]

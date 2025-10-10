@@ -1,53 +1,72 @@
 "use client";
 
 import { useState } from "react";
-import { API_URL } from "@/lib/api";
+import { useRouter, useSearchParams } from "next/navigation";
+import AuthCard from "@/components/auth/AuthCard";
+import TextField from "@/components/auth/TextField";
+import SubmitButton from "@/components/auth/SubmitButton";
+import FormError from "@/components/auth/FormError";
+import { AuthAPI, storeAuth } from "src/lib/auth/client";
+
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
+  const router = useRouter();
+  const params = useSearchParams();
+  const [email, setEmail] = useState(params.get("email") ?? "");
   const [password, setPassword] = useState("");
-  const [err, setErr] = useState("");
+  const [error, setError] = useState<string | undefined>();
+  const [loading, setLoading] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setErr("");
+    setError(undefined);
+    setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/auth/token/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      if (!res.ok) throw new Error("Invalid login");
-      const data: { access: string; refresh: string } = await res.json();
-      localStorage.setItem("access", data.access);
-      localStorage.setItem("refresh", data.refresh);
-      window.location.href = "/dashboard";
-    } catch {
-      setErr("Login failed. Check email/password.");
+      const res = await AuthAPI.login({ email, password });
+      router.push("/"); // success → home (change if you want)
+    } catch (err: any) {
+      setError(err?.message || "Login failed");
+    } finally {
+      setLoading(false);
     }
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-6">
-      <form onSubmit={onSubmit} className="w-full max-w-sm space-y-4 border rounded-2xl p-6">
-        <h1 className="text-2xl font-semibold">Sign in</h1>
-        <input
-          className="w-full border rounded p-2"
-          placeholder="Email"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-        />
-        <input
-          className="w-full border rounded p-2"
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-        />
-        {err && <p className="text-red-600 text-sm">{err}</p>}
-        <button className="w-full rounded-xl p-2 border hover:bg-gray-50">Sign in</button>
-        <p className="text-xs text-gray-500">Use your Django superuser for now.</p>
-      </form>
-    </main>
+    <div className="py-14">
+      <AuthCard title="Login">
+        <form onSubmit={onSubmit} className="space-y-4">
+          <FormError message={error} />
+          <TextField
+            label="Email"
+            type="email"
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <TextField
+            label="Password"
+            type="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <SubmitButton loading={loading}>Login</SubmitButton>
+        </form>
+
+        <div className="mt-4 flex items-center justify-between text-sm">
+          <a className="text-neutral-600 hover:text-neutral-900" href="/signup">
+            Create account
+          </a>
+          <a
+            className="text-neutral-600 hover:text-neutral-900"
+            href="/forgot-password"
+          >
+            Forgot password?
+          </a>
+        </div>
+      </AuthCard>
+    </div>
   );
 }
