@@ -56,12 +56,12 @@ INSTALLED_APPS = [
 AUTH_USER_MODEL = "accounts.User" #Added this for the users models
 
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "accounts.auth.CookieJWTAuthentication",   # <- our cookie reader
-    ),
-    "DEFAULT_PERMISSION_CLASSES": (
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "accounts.auth.CookieJWTAuthentication",   # <— our cookie reader
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.AllowAny",
-    ),
+    ],
 }
 
 from datetime import timedelta
@@ -75,6 +75,7 @@ SIMPLE_JWT = {
     "AUTH_COOKIE_SECURE": True,
     "AUTH_COOKIE_HTTP_ONLY": True,
     "AUTH_COOKIE_SAMESITE": "Lax",
+    "UPDATE_LAST_LOGIN": True,   # <- make SimpleJWT write User.last_login on login
 }
 
 MIDDLEWARE = [

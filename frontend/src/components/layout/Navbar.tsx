@@ -1,78 +1,91 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import Container from "./Container";
 import Logo from "@/components/layout/Logo";
-import NavLink from "../primitives/NavLink";
 import AvatarButton from "../menus/AvatarButton";
 import SearchInput from "@/components/search/SearchInput";
 import { useAuth } from "@/hooks/useAuth";
 
-
 export default function Navbar() {
-// --- 1. State & refs ---
-    const { user, loading } = useAuth();
-    const [menuOpen, setMenuOpen] = useState(false); 
-    const menuRef = useRef<HTMLDivElement | null>(null);
-    const pathname = usePathname();
-    const searchParams = useSearchParams();
-    
+  // --- 1. State & refs ---
+  const { user, loading, logout } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
-// --- 2. Effects ---
-    // outside click + Esc
-    useEffect(() => {
-        function onDocMouseDown(e: MouseEvent) {
-            if (!menuRef.current) return;
-            if (!menuRef.current.contains(e.target as Node)) setMenuOpen(false);
-        }
-        function onKey(e: KeyboardEvent) {
-            if (e.key === "Escape") setMenuOpen(false);
-        }
-        document.addEventListener("mousedown", onDocMouseDown);
-        document.addEventListener("keydown", onKey);
-        return () => {
-            document.removeEventListener("mousedown", onDocMouseDown);
-            document.removeEventListener("keydown", onKey);
-        };
-    }, []);
-        // focus first element when opened
-    useEffect(() => {
-            if (!menuOpen || !menuRef.current) return;
-            // Focus first focusable in the menu
-            const first = menuRef.current.querySelector<HTMLElement>(
-                'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
-            );
-            first?.focus();
-    }, [menuOpen]);
+  // --- 2. Effects ---
+  // outside click + Esc
+  useEffect(() => {
+    function onDocMouseDown(e: MouseEvent) {
+      if (!menuRef.current) return;
+      if (!menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setMenuOpen(false);
+    }
+    document.addEventListener("mousedown", onDocMouseDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDocMouseDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, []);
 
-    useEffect(() => {
-        // Any route or querystring change should close the menu
-        setMenuOpen(false);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [pathname, searchParams?.toString()]);
+  // focus first element when opened
+  useEffect(() => {
+    if (!menuOpen || !menuRef.current) return;
+    const first = menuRef.current.querySelector<HTMLElement>(
+      'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    );
+    first?.focus();
+  }, [menuOpen]);
 
-    useEffect(() => {
-        function handleScroll() {
-            // close only if menu is open
-            if (menuOpen) setMenuOpen(false);
-        }
+  // close menu on route / query change
+  useEffect(() => {
+    setMenuOpen(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname, searchParams?.toString()]);
 
-        window.addEventListener("scroll", handleScroll);
-        return () => window.removeEventListener("scroll", handleScroll);
-    }, [menuOpen]);
+  // close on scroll if open
+  useEffect(() => {
+    function handleScroll() {
+      if (menuOpen) setMenuOpen(false);
+    }
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [menuOpen]);
 
-// --- 3. Return JSX ---
-return (
-  <header className="sticky top-0 z-10 bg-gray-50 border-b border-gray-200">
-    <div className="mx-auto max-w-5xl px-4 h-14 flex items-center justify-between">
-      <Logo className="h-5 w-auto" />
+  // --- 3. Handlers ---
+  async function handleLogout() {
+    try {
+      await logout();          // clear cookies/state
+      setMenuOpen(false);
+      router.push("/login");   // send user to login
+      router.refresh();        // ensure navbar re-renders w/ logged-out view
+    } catch {
+      // no-op; you could toast here if you want
+    }
+  }
 
-      {/* Right side */}
-      {!loading && (
-        user ? (
-          // --- signed-in view ---
+  // --- 4. Return JSX ---
+  return (
+    <header className="sticky top-0 z-10 bg-gray-50 border-b border-gray-200">
+      <div className="mx-auto max-w-5xl px-4 h-14 flex items-center justify-between">
+        {/* Left: Logo */}
+        <Link href="/" aria-label="Home">
+          <Logo className="h-5 w-auto" />
+        </Link>
+
+        {/* Right side */}
+        {loading ? (
+          // While auth state is loading, show a tiny skeleton to avoid flicker
+          <div className="w-28 h-8 rounded bg-gray-100 animate-pulse" />
+        ) : user ? (
+          // --- Signed-in view ---
           <div className="flex items-center gap-3">
             <SearchInput
               variant="nav"
@@ -104,37 +117,38 @@ return (
                     const first = focusables[0];
                     const last = focusables[focusables.length - 1];
                     if (e.shiftKey && document.activeElement === first) {
-                      e.preventDefault(); last.focus();
+                      e.preventDefault();
+                      last.focus();
                     } else if (!e.shiftKey && document.activeElement === last) {
-                      e.preventDefault(); first.focus();
+                      e.preventDefault();
+                      first.focus();
                     }
                   }}
                 >
                   <ul className="py-1 text-sm text-gray-700">
                     <li>
-                      <a
+                      <Link
                         href="/profile"
                         className="block px-3 py-2 hover:bg-gray-50"
                         role="menuitem"
+                        onClick={() => setMenuOpen(false)}
                       >
                         View Profile
-                      </a>
+                      </Link>
                     </li>
                     <li>
-                      <a
+                      <Link
                         href="/settings"
                         className="block px-3 py-2 hover:bg-gray-50"
                         role="menuitem"
+                        onClick={() => setMenuOpen(false)}
                       >
                         Settings
-                      </a>
+                      </Link>
                     </li>
                     <li>
                       <button
-                        onClick={() => {
-                          setMenuOpen(false);
-                          window.location.href = "/login"; // TODO: replace with real logout
-                        }}
+                        onClick={handleLogout}
                         className="block w-full text-left px-3 py-2 hover:bg-gray-50"
                         role="menuitem"
                       >
@@ -147,23 +161,23 @@ return (
             </div>
           </div>
         ) : (
-          // --- logged-out view ---
+          // --- Logged-out view ---
           <nav className="flex items-center gap-4 text-sm">
-            <a
+            <Link
               href="/login"
-              className="px-3 py-1.5 rounded-lg bg-black text-white hover:opacity-60"
+              className="px-3 py-1.5 rounded-lg bg-black text-white hover:opacity-80"
             >
               Login
-            </a>
-            <a
+            </Link>
+            <Link
               href="/signup"
-              className="px-3 py-1.5 rounded-lg bg-black text-white hover:opacity-60"
+              className="px-3 py-1.5 rounded-lg bg-black text-white hover:opacity-80"
             >
               Sign Up
-            </a>
+            </Link>
           </nav>
-        )
-      )}
-    </div>
-  </header>
-)};
+        )}
+      </div>
+    </header>
+  );
+}

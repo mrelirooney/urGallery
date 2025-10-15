@@ -57,6 +57,8 @@ export const AuthAPI = {
       "/me/",
     ),
 
+  logout:  () => postJSON("/logout/", {}), 
+
   refresh: () => postJSON("/refresh/", {}),
 
   // If/when you add it

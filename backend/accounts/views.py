@@ -4,31 +4,46 @@ from rest_framework import status, permissions, generics
 from rest_framework import generics
 from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
 from rest_framework.permissions import IsAuthenticated
+
 
 User = get_user_model()
 
 class CookieTokenObtainPairView(TokenObtainPairView):
+    """
+    Custom login endpoint that stores tokens in HttpOnly cookies
+    instead of returning them in the JSON body.
+    """
+    permission_classes = [AllowAny]
+
     def post(self, request, *args, **kwargs):
-        # Get the normal SimpleJWT response (contains {"access": "...", "refresh": "..."})
-        response = super().post(request, *args, **kwargs)
-        data = response.data
+        # 1️ Use the regular SimpleJWT serializer to validate user credentials
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
 
-        # DEV: cookies must be secure=False on http://localhost
-        secure_flag = False    # PROD: True on HTTPS
+        # 2️ Build the response object
+        response = Response({"message": "Login successful"}, status=status.HTTP_200_OK)
 
-        # Set httpOnly cookies
+        # 3️ Set HttpOnly cookies (these are the lines you asked about)
         response.set_cookie(
-            "access", data["access"],
-            httponly=True, samesite="Lax", secure=secure_flag, path="/"
+            key="access",
+            value=data["access"],
+            httponly=True,
+            secure=False,      # True only in production (HTTPS)
+            samesite="Lax",
+            path="/"
         )
         response.set_cookie(
-            "refresh", data["refresh"],
-            httponly=True, samesite="Lax", secure=secure_flag, path="/"
+            key="refresh",
+            value=data["refresh"],
+            httponly=True,
+            secure=False,
+            samesite="Lax",
+            path="/"
         )
 
-        # (Optional) remove tokens from the JSON body
-        response.data = {"detail": "ok"}
         return response
 
 
@@ -79,3 +94,13 @@ class MeView(APIView):
             "first_name": getattr(u, "first_name", ""),
             "last_name": getattr(u, "last_name", ""),
         })
+    
+class LogoutView(APIView):
+    def post(self, request):
+        resp = Response({"detail": "Logged out"}, status=status.HTTP_200_OK)
+        # clear both cookies (works across browsers)
+        for name in ("access", "refresh"):
+            resp.delete_cookie(name, path="/")
+            resp.set_cookie(name, "", expires=0, path="/", samesite="Lax")
+        return resp
+
