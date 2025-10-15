@@ -1,6 +1,14 @@
 from django.urls import path
-from .views import CookieTokenObtainPairView
+from .views import (
+    CookieTokenObtainPairView,
+    CookieTokenRefreshView,
+    MeView,
+    RegisterView,
+)
 
 urlpatterns = [
-    path("login/", CookieTokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("login/",    CookieTokenObtainPairView.as_view(),   name="login"),
+    path("refresh/",  CookieTokenRefreshView.as_view(),      name="refresh"),
+    path("me/",       MeView.as_view(),                      name="me"),
+    path("register/", RegisterView.as_view(),                name="register"),
 ]

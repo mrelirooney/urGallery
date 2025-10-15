@@ -1,43 +1,81 @@
-from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, permissions, generics
 from rest_framework import generics
 from django.contrib.auth import get_user_model
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 
 User = get_user_model()
 
-class RegisterView(generics.CreateAPIView):
-    def post(self, request):
-        data = request.data
-        if User.objects.filter(email=data["email"]).exists():
-            return Response({"error": "Email already in use"}, status=status.HTTP_400_BAD_REQUEST)
-        user = User.objects.create_user(
-            email=data["email"],
-            password=data["password"],
-        )
-        return Response({"detail": "Account created successfully"}, status=status.HTTP_201_CREATED)
-
 class CookieTokenObtainPairView(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
+        # Get the normal SimpleJWT response (contains {"access": "...", "refresh": "..."})
         response = super().post(request, *args, **kwargs)
         data = response.data
 
-        # Set secure cookies for JWT
+        # DEV: cookies must be secure=False on http://localhost
+        secure_flag = False    # PROD: True on HTTPS
+
+        # Set httpOnly cookies
         response.set_cookie(
-            "access",
-            data["access"],
-            httponly=True,
-            secure=True,  # True for production; False for local testing
-            samesite="Lax",
-            path="/",
+            "access", data["access"],
+            httponly=True, samesite="Lax", secure=secure_flag, path="/"
         )
         response.set_cookie(
-            "refresh",
-            data["refresh"],
-            httponly=True,
-            secure=True,
-            samesite="Lax",
-            path="/",
+            "refresh", data["refresh"],
+            httponly=True, samesite="Lax", secure=secure_flag, path="/"
         )
 
-        return Response({"detail": "Login successful"}, status=status.HTTP_200_OK)
+        # (Optional) remove tokens from the JSON body
+        response.data = {"detail": "ok"}
+        return response
+
+
+class CookieTokenRefreshView(TokenRefreshView):
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+        data = response.data
+        secure_flag = False    # PROD: True on HTTPS
+
+        if "access" in data:
+            response.set_cookie(
+                "access", data["access"],
+                httponly=True, samesite="Lax", secure=secure_flag, path="/"
+            )
+        # If you also return refresh on rotation, set that too:
+        if "refresh" in data:
+            response.set_cookie(
+                "refresh", data["refresh"],
+                httponly=True, samesite="Lax", secure=secure_flag, path="/"
+            )
+        return response
+    
+class RegisterView(generics.CreateAPIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        data = request.data
+        email = data.get("email")
+        password = data.get("password")
+
+        if not email or not password:
+            return Response({"error": "email and password are required"}, status=400)
+
+        if User.objects.filter(email=email).exists():
+            return Response({"error": "Email already in use"}, status=400)
+
+        User.objects.create_user(email=email, password=password)
+        return Response({"detail": "Account created successfully"}, status=status.HTTP_201_CREATED)
+    
+class MeView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        u = request.user
+        return Response({
+            "id": str(u.id),
+            "email": getattr(u, "email", ""),
+            "first_name": getattr(u, "first_name", ""),
+            "last_name": getattr(u, "last_name", ""),
+        })

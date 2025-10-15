@@ -1,6 +1,9 @@
+// Client Side Auth API Wrapper
+
 import type { AuthResponse } from "./types";
 
 const API_BASE = (process.env.NEXT_PUBLIC_API_BASE ?? "").replace(/\/$/, "");
+
 
 function jsonHeaders() {
   return { "Content-Type": "application/json" };
@@ -19,6 +22,16 @@ async function postJSON<T>(path: string, body: unknown) {
   if (!res.ok) throw new Error((data as any)?.detail || (data as any)?.error || "Request failed");
   return data;
 }
+
+async function getJSON<T>(path: string) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    credentials: "include",
+    cache: "no-store",
+  });
+  const data = (await res.json().catch(() => ({}))) as T;
+  if (!res.ok) throw new Error((data as any)?.detail || "Request failed");
+  return data;
+}
 /**
  * Adjust the endpoint paths to match your Django routes.
  * Common patterns:
@@ -31,19 +44,25 @@ export const AuthAPI = {
   // SimpleJWT uses the user model's USERNAME_FIELD. If yours is email, send { email, password }.
   // If it errors, switch to { username: email, password }.
   login: ({ email, password }: { email: string; password: string }) =>
-    postJSON("/api/auth/login/", { email, password }),
+    postJSON("/login/", { email, password }
+    ),
 
   // Your RegisterView at /api/auth/register/
   signup: (payload: { email: string; password: string; first_name?: string; last_name?: string }) =>
-    postJSON("/api/auth/register/", payload),
+    postJSON("/register/", payload
+    ),
+
+  me: () =>
+    getJSON<{ id: number | string; email: string; first_name?: string; last_name?: string }>(
+      "/me/",
+    ),
+
+  refresh: () => postJSON("/refresh/", {}),
 
   // If/when you add it
   requestPasswordReset: (email: string) =>
-    postJSON("/api/auth/password/reset/", { email }),
+    postJSON("/password/reset/", { email }),
 };
-
-
-
 
 /** Store token(s) if your backend returns them (JWT flow). */
 export function storeAuth(res: AuthResponse) {
