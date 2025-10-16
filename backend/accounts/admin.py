@@ -8,7 +8,7 @@ class ProfileInline(admin.StackedInline):
     fk_name = "user"
     extra = 0
     fields = (
-        "display_name", "title", "location", "bio",
+        "display_name", "title", "location", "bio", "slug",
         "default_avatar", "avatar_s3_key",
         "website_url","instagram_url","twitter_url","behance_url","dribbble_url","youtube_url","tiktok_url",
         "theme_id_hint",
