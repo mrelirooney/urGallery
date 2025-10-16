@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from accounts.models import Profile
 from .models import Portfolio, Page
+from django.conf import settings
+
 
 # --- Page ----
 class PageCoverSerializer(serializers.Serializer):
@@ -41,16 +43,43 @@ class PortfolioSerializer(serializers.ModelSerializer):
         return PageSerializer(page).data if page else None
 
 # --- Profile (header) ----
-class ProfileSerializer(serializers.ModelSerializer):
+  
+class ArtistProfileSerializer(serializers.ModelSerializer):
+    avatar_url = serializers.SerializerMethodField()
     class Meta:
         model = Profile
         fields = (
             "display_name", "title", "location", "bio",
-            "avatar_s3_key", "website_url", "instagram_url", "twitter_url",
+            "avatar_s3_key", "avatar_url", "website_url", "instagram_url", "twitter_url",
             "behance_url", "dribbble_url", "youtube_url", "tiktok_url",
         )
 
+    def get_avatar_url(self, obj):
+        # 1) Explicit S3 key on profile (your future flow)
+        if obj.avatar_s3_key:
+            # if you’re storing a full https URL, just return it
+            if obj.avatar_s3_key.startswith("http"):
+                return obj.avatar_s3_key
+            # else treat it like a media key in dev
+            return f"{settings.MEDIA_URL}{obj.avatar_s3_key}"
+
+        # 2) Image uploaded on the related user (what you just did in Admin)
+        user = getattr(obj, "user", None)
+        if user and getattr(user, "avatar", None):
+            try:
+                return user.avatar.url  # Django builds /media/... path
+            except Exception:
+                pass
+
+        # 3) Optional default avatar stored as an S3 key/path
+        if obj.default_avatar and obj.default_avatar.s3_key:
+            if obj.default_avatar.s3_key.startswith("http"):
+                return obj.default_avatar.s3_key
+            return f"{settings.MEDIA_URL}{obj.default_avatar.s3_key}"
+
+        return None
+
 # --- Top-level payload ----
 class ArtistLandingSerializer(serializers.Serializer):
-    profile = ProfileSerializer()
+    profile = ArtistProfileSerializer()
     portfolios = PortfolioSerializer(many=True)

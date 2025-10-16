@@ -63,3 +63,5 @@ class PageSerializer(serializers.ModelSerializer):
         if portfolio.user_id != req_user.id:
             raise serializers.ValidationError("Not your portfolio.")
         return portfolio
+    
+    

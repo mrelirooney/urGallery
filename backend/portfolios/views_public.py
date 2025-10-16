@@ -3,19 +3,21 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from accounts.models import Profile
-from .serializers import ArtistLandingSerializer, ProfileSerializer, PortfolioSerializer
+from .serializers import ArtistLandingSerializer, ArtistProfileSerializer, PortfolioSerializer
+from django.conf import settings
+
 
 class ArtistLandingView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, slug):
-        # 1) Fetch profile (with user)
+        # 1. Fetch profile (with user)
         profile = get_object_or_404(
             Profile.objects.select_related("user"),
             slug=slug
         )
 
-        # 2) Public/link-only portfolios, ordered + prefetched
+        # 2. Public/link-only portfolios
         portfolios_qs = (
             profile.user.portfolios
             .filter(privacy__in=["public", "link_only"])
@@ -23,8 +25,15 @@ class ArtistLandingView(APIView):
             .prefetch_related("pages__page_media__media")
         )
 
-        # 3) Return nested payload directly (no wrapper serializer)
-        return Response({
-            "profile": ProfileSerializer(profile).data,
-            "portfolios": PortfolioSerializer(portfolios_qs, many=True).data,
-        })
+        # 3. Serialize both profile + portfolios
+        data = {
+            "profile": ArtistProfileSerializer(profile, context={"request": request}).data,
+            "portfolios": PortfolioSerializer(portfolios_qs, many=True, context={"request": request}).data,
+        }
+
+        # 4. Return JSON response
+        return Response(data)
+    
+   
+    
+    
