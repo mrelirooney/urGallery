@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.utils.text import slugify
 
 class Privacy(models.TextChoices):
     DRAFT = "draft", "Draft"
@@ -7,40 +8,21 @@ class Privacy(models.TextChoices):
     PUBLIC = "public", "Public"
 
 class Portfolio(models.Model):
-    # UUID PK
     id = models.BigAutoField(primary_key=True)
-
-    # FK to User (kept as int FK since User PK is int for now)
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="portfolios"
-    )
-
-    # required title
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="portfolios")
     title = models.CharField(max_length=140)
+    slug = models.SlugField(unique=True, max_length=140, blank=True)
 
-    # privacy enum
     privacy = models.CharField(
         max_length=20,
         choices=Privacy.choices,
         default=Privacy.DRAFT
     )
 
-    # sidebar ordering
     order_index = models.IntegerField(default=0)
-
-    # cached counter
     pages_count = models.PositiveIntegerField(default=1)
-
-    # optional cover page (nullable FK to Page)
-    # defined as a string because Page is declared below
     cover_page = models.ForeignKey(
-        "Page",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="cover_for_portfolios"
+        "Page", on_delete=models.SET_NULL, null=True, blank=True, related_name="cover_for_portfolios"
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -48,12 +30,18 @@ class Portfolio(models.Model):
 
     class Meta:
         ordering = ["order_index", "title"]
-        indexes = [
-            models.Index(fields=["user", "order_index"]),
-        ]
 
-    def __str__(self):
-        return f"{self.title}"
+    def save(self, *args, **kwargs):
+        if (not self.slug) and self.title:
+            base = slugify(self.title) or "portfolio"
+            slug = base
+            n = 1
+            while Portfolio.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                n += 1
+                slug = f"{base}-{n}"
+            self.slug = slug
+        super().save(*args, **kwargs)
+    
 
 class Page(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, related_name="pages")
@@ -82,13 +70,16 @@ class Media(models.Model):
         return self.title or f"Media {self.id}"
 
 class PageMedia(models.Model):
-    page = models.ForeignKey(Page, on_delete=models.CASCADE, related_name="page_media")
+    page  = models.ForeignKey(Page,  on_delete=models.CASCADE, related_name="page_media")
     media = models.ForeignKey(Media, on_delete=models.CASCADE, related_name="page_media")
     order = models.PositiveIntegerField(default=0)
 
     class Meta:
-        unique_together = ("page", "media")
         ordering = ["order", "id"]
+        constraints = [
+            models.UniqueConstraint(fields=["page", "media"], name="uniq_page_media"),
+            models.UniqueConstraint(fields=["page", "order"], name="uniq_page_order"),
+        ]
 
     def __str__(self):
         return f"{self.page_id} ↔ {self.media_id}"
