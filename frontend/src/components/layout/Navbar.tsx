@@ -73,7 +73,7 @@ export default function Navbar() {
 
   // --- 4. Return JSX ---
   return (
-    <header className="sticky top-0 z-10 bg-gray-50 border-b border-gray-200">
+    <header id="site-navbar" className="sticky top-0 z-10 bg-gray-50 border-b border-gray-200">
       <div className="mx-auto max-w-5xl px-4 h-14 flex items-center justify-between">
         {/* Left: Logo */}
         <Link href="/" aria-label="Home">

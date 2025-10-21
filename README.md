@@ -123,8 +123,8 @@ A creator can sign up, log in, build a profile, upload work, and share a clean p
 | Role | Who | Focus |
 |------|-----|-------|
 | **Eli** | Frontend + partial backend | Design, flow, & usability |
-| **GodBrother** | Backend + AWS setup | Infrastructure & API logic |
-| **Art Friend** | Design & themes | Color systems + layouts |
+| **MAP** | Backend + AWS setup | Infrastructure & API logic |
+| **EH** | Design & themes | Color systems + layouts |
 
 ---
 
