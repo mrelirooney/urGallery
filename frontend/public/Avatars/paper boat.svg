@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 649 649">
+  <!-- Generator: Adobe Illustrator 29.8.2, SVG Export Plug-In . SVG Version: 2.1.1 Build 3)  -->
+  <defs>
+    <style>
+      .st0 {
+        fill: #404140;
+      }
+
+      .st1 {
+        fill: #939392;
+      }
+
+      .st2 {
+        fill: #fff;
+      }
+    </style>
+  </defs>
+  <g id="Background">
+    <rect class="st2" width="648" height="648"/>
+  </g>
+  <g id="paper_boat">
+    <path class="st0" d="M217.54,284.92l70.46-140.92h144l54,144h108s-144,126-162,144h-189l-171-144h144l1.54-3.08"/>
+    <polyline class="st1" points="216 287.99 217.5 284.99 484.88 285 486 288 215.14 287.99"/>
+    <polygon class="st1" points="429.38 287.5 287.29 145.41 288 144 290.12 144 431.5 285.38 429.38 287.5"/>
+    <polygon class="st1" points="361.06 217.06 358.94 214.94 429.86 144 432 144 432.53 145.4 361.06 217.06"/>
+    <polygon class="st1" points="244.76 432 243 432 241.85 431.04 359.9 285.99 362.22 287.89 244.76 432"/>
+  </g>
+</svg>

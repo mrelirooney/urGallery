@@ -1,34 +1,67 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { searchApi, IS_MOCK_SEARCH } from "@/lib/search";
+import { useCallback, useRef, useState } from "react";
 import type { SearchResult } from "@/lib/search/types";
 
-export function useSearch(limit = 10) {
-  const [loading, setLoading] = useState(false);
-  const [results, setResults] = useState<SearchResult[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const controllerRef = useRef<AbortController | null>(null);
+type State = {
+  loading: boolean;
+  error: string | null;
+  results: SearchResult[];
+};
 
-  const run = async (q: string) => {
-    if (controllerRef.current) controllerRef.current.abort();
-    const controller = new AbortController();
-    controllerRef.current = controller;
+export function useSearch() {
+  const [state, setState] = useState<State>({
+    loading: false,
+    error: null,
+    results: [],
+  });
+  const abortRef = useRef<AbortController | null>(null);
 
-    setLoading(true);
-    setError(null);
+  const clear = useCallback(() => {
+    if (abortRef.current) abortRef.current.abort();
+    setState((s) => ({ ...s, results: [], error: null }));
+  }, []);
+
+  const run = useCallback(async (q: string) => {
+    if (abortRef.current) abortRef.current.abort();
+    const ac = new AbortController();
+    abortRef.current = ac;
+
+    setState((s) => ({ ...s, loading: true, error: null }));
 
     try {
-      const data = await searchApi.search({ q, limit }, controller.signal);
-      setResults(data);
-    } catch (e: any) {
-      if (e?.name !== "AbortError") setError("Search failed");
-    } finally {
-      setLoading(false);
+      // Call your Next proxy, which calls Django
+      const r = await fetch(`/api/search?q=${encodeURIComponent(q)}`, {
+        signal: ac.signal,
+        cache: "no-store",
+      });
+
+      if (!r.ok) throw new Error(`Search failed: ${r.status}`);
+      const data = await r.json();
+
+      // 🔑 Map Django response -> SearchResult[]
+      // Django returns: { results: [{ slug, display_name, username, avatar_url }] }
+      const mapped: SearchResult[] = (data.results ?? []).map((a: any) => ({
+        id: a.slug ?? a.username ?? a.display_name,      // unique key
+        name: a.display_name ?? a.username ?? a.slug,    // main label
+        blurb: a.username ? `@${a.username}` : "",
+        slug: a.slug,
+        username: a.username,
+        avatar_url: a.avatar_url,
+      }));
+
+      setState({ loading: false, error: null, results: mapped });
+    } catch (err: any) {
+      if (err?.name === "AbortError") return;
+      setState((s) => ({ ...s, loading: false, error: err.message || "Search error" }));
     }
+  }, []);
+
+  return {
+    run,            // (q: string) => Promise<void>
+    loading: state.loading,
+    results: state.results,
+    error: state.error,
+    clear,
   };
-
-  const clear = () => setResults([]);
-
-  return { run, loading, results, clear, error, isMock: IS_MOCK_SEARCH };
 }

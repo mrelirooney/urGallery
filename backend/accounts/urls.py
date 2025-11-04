@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from .views import (
     CookieTokenObtainPairView,
     CookieTokenRefreshView,
@@ -13,4 +13,5 @@ urlpatterns = [
     path("me/",      MeView.as_view(),                      name="me"),
     path("register/",RegisterView.as_view(),                name="register"),
     path("logout/",  LogoutView.as_view(),                  name="logout"), 
+    path("api/", include("apps.accounts.urls")),
 ]
