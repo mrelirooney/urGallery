@@ -6,6 +6,7 @@ from .views import (
     RegisterView,
     LogoutView,
 )
+from accounts.api import search_users
 
 urlpatterns = [
     path("login/",   CookieTokenObtainPairView.as_view(),   name="login"),
@@ -14,4 +15,5 @@ urlpatterns = [
     path("register/",RegisterView.as_view(),                name="register"),
     path("logout/",  LogoutView.as_view(),                  name="logout"), 
     path("api/", include("apps.accounts.urls")),
+    path("artists/search/", search_users, name="search-artists"),
 ]

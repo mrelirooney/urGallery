@@ -21,14 +21,13 @@ from django.conf import settings
 from django.conf.urls.static import static
 from pathlib import Path
 import sys
-from apps.artists.api import search_artists
+from artists.api import search_artists, artist_detail
 
 
 urlpatterns = [
-    path("api/auth/", include("accounts.urls")),  # mount everything under /api/auth/\
-    path("api/", include("portfolios.urls")),
     path("admin/", admin.site.urls),
-    path("api/artists/search/", search_artists, name="artist-search"),
+    path("api/artists/search/", search_artists, name="search-artists"),
+    path("api/artists/<slug:slug>/", artist_detail, name="artist-detail"), 
 ]
 
 if settings.DEBUG:

@@ -3,23 +3,17 @@ import Container from "@/components/layout/Container";
 import type { ArtistLanding } from "@/lib/types";
 import ArtistHeader from "@/components/artist/ArtistHeader";
 import ArtistLandingMotion from "@/components/artist/ArtistLandingMotion";
+import { notFound } from "next/navigation";
 
 type RouteParams = { slug: string };
 
 // --- helpers ---
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8000/api";
+const base = process.env.DJANGO_BASE_URL || "http://127.0.0.1:8000";
 
-async function getArtistLanding(slug: string): Promise<ArtistLanding> {
-  const res = await fetch(`${API_BASE}/public/artists/${slug}/landing/`, {
-    cache: "no-store",
-    headers: { Accept: "application/json" },
-  });
-
-  if (!res.ok) {
-    if (res.status === 404) throw new Error("NOT_FOUND");
-    throw new Error(`Failed to load artist: ${res.status}`);
-  }
-
+async function getArtistLanding(slug: string) {
+  const res = await fetch(`${base}/api/artists/${slug}/`, { cache: "no-store" });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`Failed to load artist: ${res.status}`);
   return res.json();
 }
 
@@ -29,10 +23,15 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const { slug } = await params;
   const data = await getArtistLanding(slug);
+  const profile = data?.profile ?? data;
+  if (!data) return { title: "Artist not found – urGallery" };
+
+  const portfolios = Array.isArray(data.portfolios) ? data.portfolios : [];
+  const firstPortfolio = portfolios[0] ?? null;
 
   return {
-    title: `${data.profile.display_name} — urGallery`,
-    description: data.profile.bio || `${data.profile.display_name} on urGallery`,
+    title: `${data.display_name} – urGallery`,
+    description: data.bio || `${data.display_name} on urGallery`,
   };
 }
 
@@ -55,7 +54,7 @@ export default async function ArtistPage({ params }: { params: Promise<RoutePara
 
   return (
     <main className="flex flex-col">
-      <ArtistLandingMotion />
+      <ArtistLandingMotion profile={profile} portfolios={portfolios} />
       {/* Artist Header Section */}
       <section className="bg-gray-50 border-b border-neutral-200">
         <Container>
@@ -74,12 +73,16 @@ export default async function ArtistPage({ params }: { params: Promise<RoutePara
           <div className="flex items-center gap-3">
             <div className="h-9 w-9 rounded-full overflow-hidden border border-neutral-300">
               <img
-                src={(process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8000").replace(/\/+$/,"").replace(/\/api$/,"") + (profile.avatar_url ?? "")}
-                alt={`${profile.display_name} avatar`}
+                src={`${(process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8000")
+                  .replace(/\/+$/, "")
+                  .replace(/\/api$/, "")}${profile?.avatar_url ?? "/default-avatar.png"}`}
+                alt={`${profile?.display_name ?? "Artist"} avatar`}
                 className="h-full w-full object-cover"
               />
             </div>
-            <span className="font-semibold text-neutral-900">{profile.display_name}</span>
+            <span className="font-semibold text-neutral-900">
+              {profile?.display_name ?? "Loading..."}
+            </span>
           </div>
           {/* Right: quick contacts (placeholder icons for now) */}
           <div className="flex items-center gap-3 text-neutral-700">

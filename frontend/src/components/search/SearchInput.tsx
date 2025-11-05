@@ -136,7 +136,11 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
                   <div className="text-xs text-neutral-500">@{(r as any).username}</div>
                 )}
               </div>
-              <div className="text-xs text-neutral-400">/artist/{(r as any).slug ?? r.id}</div>
+              <div className="text-sm text-neutral-500">
+                {r.title || "—"}
+                {r.title && r.location ? " • " : ""}
+                {r.location || ""}
+              </div>
             </li>
           ))}
         </ul>

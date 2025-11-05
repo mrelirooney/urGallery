@@ -38,3 +38,11 @@ export interface ArtistLanding {
   profile: ArtistProfile;
   portfolios: PortfolioSummary[];
 }
+
+export type ArtistSearchItem = {
+  slug: string;
+  display_name: string;
+  avatar_url?: string | null;
+  title?: string | null;
+  location?: string | null;
+};

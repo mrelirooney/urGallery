@@ -7,6 +7,8 @@ export type SearchResult = {
   slug?: string;
   username?: string;
   avatar_url?: string;
+  title?: string | null;
+  location?: string | null;
 };
 
 

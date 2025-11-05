@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "api",
     "accounts", #Added this for the Users models
+    "artists", #Added this for the Artists models
     "portfolios", #Added this for the Portfolio models
     "tags", #Added this for the Hashtags models
     'themes', #Added this for the Themes models
