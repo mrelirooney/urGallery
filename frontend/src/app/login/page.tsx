@@ -41,7 +41,7 @@ export default function LoginPage() {
 
   return (
     <div className="py-14">
-      <AuthCard title="Login">
+      <AuthCard title="Login" >
         <form onSubmit={handleSubmit} className="space-y-4">
           <FormError message={error} />
           <TextField

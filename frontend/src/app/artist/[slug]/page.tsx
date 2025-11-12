@@ -54,7 +54,7 @@ export default async function ArtistPage({ params }: { params: Promise<RoutePara
 
   return (
     <main className="flex flex-col">
-      <ArtistLandingMotion profile={profile} portfolios={portfolios} />
+      <ArtistLandingMotion pagesCount={firstPortfolio?.pages_count ?? 1} />
       {/* Artist Header Section */}
       <section className="bg-gray-50 border-b border-neutral-200">
         <Container>

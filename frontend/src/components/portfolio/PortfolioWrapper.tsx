@@ -1,0 +1,26 @@
+"use client";
+
+import React from "react";
+import PortfolioTitle from "./PortfolioTitle";
+import MediaLeft_TextRight from "./layouts/MediaLeft_TextRight";
+import Pagination from "./Pagination";
+
+// Props type — you can extend this later with actual data
+type PortfolioWrapperProps = {
+  children?: React.ReactNode;
+};
+
+export default function PortfolioWrapper({ children }: PortfolioWrapperProps) {
+  return (
+    <section className="mx-auto max-w-7xl flex-col justify-between text-neutral-100">
+      {/* 🧱 Portfolio Wrapper Layout */}
+      <div className="w-full max-w-7xl py-8 flex flex-col gap-6 justify-between">
+
+        {/* Portfolio Title, PageInfo, PageMedia, Pagination, etc. will go here */}
+        <PortfolioTitle/>
+        <MediaLeft_TextRight/>
+        <Pagination/>
+      </div>
+    </section>
+  );
+}

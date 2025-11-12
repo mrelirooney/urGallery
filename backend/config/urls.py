@@ -28,6 +28,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/artists/search/", search_artists, name="search-artists"),
     path("api/artists/<slug:slug>/", artist_detail, name="artist-detail"), 
+    path("api/", include("api.urls")),
 ]
 
 if settings.DEBUG:

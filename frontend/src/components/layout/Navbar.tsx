@@ -7,6 +7,7 @@ import Logo from "@/components/layout/Logo";
 import AvatarButton from "../menus/AvatarButton";
 import SearchInput from "@/components/search/SearchInput";
 import { useAuth } from "@/hooks/useAuth";
+import { Menu, X } from "lucide-react";
 
 export default function Navbar() {
   // --- 1. State & refs ---
@@ -16,6 +17,7 @@ export default function Navbar() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
+  const [open, setOpen] = useState(false);
 
   // --- 2. Effects ---
   // outside click + Esc
@@ -74,12 +76,20 @@ export default function Navbar() {
   // --- 4. Return JSX ---
   return (
     <header id="site-navbar" className="sticky top-0 z-10 bg-gray-50 border-b border-gray-200">
-      <div className="mx-auto max-w-5xl px-4 h-14 flex items-center justify-between">
+      <div className="mx-auto max-w-7xl px-1 h-14 flex items-center justify-between">
         {/* Left: Logo */}
-        <Link href="/" aria-label="Home">
-          <Logo className="h-5 w-auto" />
-        </Link>
+        <div className="flex">
+           <button
+            onClick={() => setOpen(!open)}
+            className="rounded-md text-neutral-800 transition"
+          >
+            {open ? <X size={28} /> : <Menu size={28} />}
+          </button>
 
+          <Link href="/" aria-label="Home" className="ml-3">
+            <Logo className="h-5 w-auto" />
+          </Link>
+        </div>
         {/* Right side */}
         {loading ? (
           // While auth state is loading, show a tiny skeleton to avoid flicker

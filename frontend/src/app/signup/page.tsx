@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AuthAPI } from "@/lib/auth/client";
+import AuthCard from "@/components/auth/AuthCard";
 
 export default function SignupPage() {
   const r = useRouter();
@@ -22,18 +23,21 @@ export default function SignupPage() {
   }
 
   return (
+    
     <main className="mx-auto max-w-md py-16">
-      <h1 className="text-2xl font-semibold mb-4">Create account</h1>
-      {err && <p className="mb-3 text-red-600">{err}</p>}
-      <form onSubmit={onSubmit} className="grid gap-3">
-        <input className="border rounded px-3 py-2" placeholder="Email"
-               value={email} onChange={e => setEmail(e.target.value)} />
-        <input className="border rounded px-3 py-2" type="password" placeholder="Password"
-               value={password} onChange={e => setPassword(e.target.value)} />
-        <button className="px-3 py-2 bg-black text-white rounded disabled:opacity-60">
-          Sign Up
-        </button>
-      </form>
+      <div className="mx-auto w-full max-w-md rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+        <h1 className="mb-6 text-center text-2xl font-bold text text-gray-900">Create Account</h1>
+        {err && <p className="mb-3 text-red-600">{err}</p>}
+        <form onSubmit={onSubmit} className="grid gap-3">
+          <input className="bg-gray-100 border rounded px-3 py-2 border-neutral-300" placeholder="Email"
+                value={email} onChange={e => setEmail(e.target.value)} />
+          <input className="bg-gray-100 border rounded px-3 py-2 border-neutral-300" type="password" placeholder="Password"
+                value={password} onChange={e => setPassword(e.target.value)} />
+          <button className="px-3 py-2 bg-black text-white rounded disabled:opacity-60">
+            Sign Up
+          </button>
+        </form>
+      </div>
     </main>
   );
 }
