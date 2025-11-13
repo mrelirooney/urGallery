@@ -1,8 +1,6 @@
 import React from 'react'
-import PortfolioTitle from "../PortfolioTitle";
-import PageMedia from "../PageMedia";
-import Pagination from '../Pagination';
 import PageInfo from '../PageInfo';
+import MediaSlot from '../primitives/MediaSlot';
 
 
 export default function MediaLeft_TextRight() {
@@ -12,8 +10,8 @@ export default function MediaLeft_TextRight() {
       <div className='flex md:grid md:grid-cols-2 '>
         {/* Media On Left */}
         <div className="flex flex-col justify-center md:text-left">
-          <div className="h-120 w-120 overflow-hidden justify-center">
-            <PageMedia />
+          <div className="flex justify-center md:justify-start">
+            <MediaSlot src="/media/example.jpg" alt="MediaGoesHere" shape="1:1" align="left" />
           </div>
         </div>
         {/* Text On Right */}

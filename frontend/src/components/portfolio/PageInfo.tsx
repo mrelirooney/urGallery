@@ -1,15 +1,17 @@
 import React from 'react'
-import PortfolioTitle from "./PortfolioTitle";
-import PageDescription from './PageDescription';
+import PageTitle from "./primitives/PageTitle";
+import PageDescription from './primitives/PageDescription';
 
 export default function PageInfo() {
   return (
     <div>
-        <h1 className="text-4xl lg:text-5xl font-extrabold tracking-tight text-neutral-200 pb-4">
-        <PortfolioTitle/>
-        </h1>
+        <div className="pb-4">
+          <PageTitle text="Portfolio Title" align="left" size="lg" color="text-neutral-200" />
+        </div>
         <hr></hr>
-        <PageDescription/>
+        <div className="pt-4">
+          <PageDescription text="Lorem Ipsum" align="left" size="sm" color="text-neutral-200" />
+        </div>
     </div>
   )
 }

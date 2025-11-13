@@ -1,9 +1,9 @@
 "use client";
 
 import React from "react";
-import PortfolioTitle from "./PortfolioTitle";
+import PortfolioTitle from "./primitives/PortfolioTitle";
 import MediaLeft_TextRight from "./layouts/MediaLeft_TextRight";
-import Pagination from "./Pagination";
+import Pagination from "./primitives/Pagination";
 
 // Props type — you can extend this later with actual data
 type PortfolioWrapperProps = {
@@ -17,7 +17,7 @@ export default function PortfolioWrapper({ children }: PortfolioWrapperProps) {
       <div className="w-full max-w-7xl py-8 flex flex-col gap-6 justify-between">
 
         {/* Portfolio Title, PageInfo, PageMedia, Pagination, etc. will go here */}
-        <PortfolioTitle/>
+        <PortfolioTitle text="Portfolio Title" align="left" size="xs" color="text-neutral-200" />
         <MediaLeft_TextRight/>
         <Pagination/>
       </div>
