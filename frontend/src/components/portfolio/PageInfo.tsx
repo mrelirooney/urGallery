@@ -3,12 +3,14 @@ import PageTitle from "./primitives/PageTitle";
 import PageDescription from './primitives/PageDescription';
 
 type MediaSlotProps = {
+  title: string;
+  description: string;
   shape?: "1:1" | "4:5" | "9:16" | "5:4" | "16:9";
   align?: "left" | "center" | "right";
   yPlacement?: "center" | "top" | "bottom";
 };
 
-export default function PageInfo({shape = "1:1", align = "left", yPlacement="center"}: MediaSlotProps){
+export default function PageInfo({ title, description, shape = "1:1", align = "left", yPlacement="center"}: MediaSlotProps){
   const widthClass =
     shape === "1:1"  ? "w-full" :  "w-[w-full]";
 
@@ -26,11 +28,11 @@ export default function PageInfo({shape = "1:1", align = "left", yPlacement="cen
     <div className={`h-full ${widthClass}`}>
       <div className={`${yTextPlacementClass} ${alignClass} h-full`}>
         <div className={`pb-4 ${alignClass}`}>
-          <PageTitle text="Portfolio Title" size="lg" color="text-neutral-200" />
+          <PageTitle text={title} size="lg" color="text-neutral-200" />
         </div>
         <hr className="border-neutral-500 my-2" />
         <div className="pt-4">
-          <PageDescription text="Lorem Ipsum" size="sm" color="text-neutral-200" />
+          <PageDescription text={description} size="sm" color="text-neutral-200" />
         </div>
       </div>
     </div>

@@ -3,7 +3,14 @@ import BaseTwoColumns , { BaseTwoRows } from "../primitives/BaseTwoBoxes";
 import MediaSlotC , { MediaSlotR } from "../primitives/MediaSlot";
 import PageInfo from "../PageInfo";
 
-export default function MediaLeft_TextRight() {
+type PortfolioPageProps = {
+  title: string;
+  description: string;
+  mediaSrc?: string;
+  mediaShape?: "1:1" | "9:16" | "16:9" | "4:5" | "5:4";
+}
+
+export default function MediaTop_TextBottom({ title, description, mediaSrc, mediaShape }: PortfolioPageProps) {
   return (
     // a is the TOP box, b is the BOTTOM box
     <BaseTwoRows variant="topHeavy"
@@ -16,7 +23,7 @@ export default function MediaLeft_TextRight() {
       }
       b={ // Bottom box = Page Title and Description
         <div className="flex items-center">
-          <PageInfo align="left" shape='1:1' yPlacement='center' />
+          <PageInfo title={title} description={description} align="left" yPlacement='center' />
         </div>
       }
     />

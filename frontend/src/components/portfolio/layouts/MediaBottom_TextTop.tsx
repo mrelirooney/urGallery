@@ -1,20 +1,29 @@
 import React from "react";
-import BaseTwoBoxes from "../primitives/BaseTwoBoxes";
-import MediaSlot from "../primitives/MediaSlot";
+import BaseTwoColumns , { BaseTwoRows } from "../primitives/BaseTwoBoxes";
+import MediaSlotC , { MediaSlotR } from "../primitives/MediaSlot";
 import PageInfo from "../PageInfo";
 
-export default function MediaLeft_TextRight() {
+type PortfolioPageProps = {
+  title: string;
+  description: string;
+  mediaSrc?: string;
+  mediaShape?: "1:1" | "9:16" | "16:9" | "4:5" | "5:4";
+}
+
+export default function MediaBottom_TextTop({ title, description, mediaSrc, mediaShape }: PortfolioPageProps) {
   return (
     // a is the TOP box, b is the BOTTOM box
-    <BaseTwoBoxes
+    <BaseTwoRows variant="bottomHeavy"
       a={ // Top box = Page Title and Description
-        <div className="flex justify-center md:justify-start">
-          <MediaSlot src="/media/example.jpg" alt="Media" shape="1:1" align="left"/>
+        <div className="flex items-center">
+          <PageInfo title={title} description={description} align="left" yPlacement='center'/>
         </div>
       }
       b={ // Bottom box = Media
-        <div className="flex justify-center md:justify-start">
-          <PageInfo align="left" shape='1:1' yPlacement='center' />
+        <div className="flex justify-center items-center">
+          <div className="w-full max-w-[100vw] flex justify-center items-center">
+            <MediaSlotR src="/media/example.jpg" alt="Media" shape="1:1" align="left"/>
+          </div>
         </div>
       }
     />

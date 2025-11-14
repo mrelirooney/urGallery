@@ -1,20 +1,20 @@
 import React from "react";
-import BaseTwoBoxes from "../primitives/BaseTwoBoxes";
+import BaseOneBox from "../primitives/BaseOneBox";
 import MediaSlot from "../primitives/MediaSlot";
 import PageInfo from "../PageInfo";
 
-export default function NoMedia_AllText() {
+type PortfolioPageProps = {
+  title: string;
+  description: string;
+}
+
+export default function AllMedia_NoText({ title, description }: PortfolioPageProps) {
   return (
     // a is the TOP box, b is the BOTTOM box
-    <BaseTwoBoxes variant="empty"
+    <BaseOneBox
       a={ // Top box = Media
-        <div className="flex justify-center md:justify-start">
-          <MediaSlot src="/media/example.jpg" alt="Media" shape="1:1" align="left"/>
-        </div>
-      }
-      b={ // Bottom box = Page Title and Description
-        <div className="flex justify-center md:justify-start">
-          <PageInfo align="left" shape='1:1' yPlacement='center' />
+        <div className="flex justify-center md:justify-center">
+          <PageInfo title={title} description={description} align="left" yPlacement='center' />
         </div>
       }
     />

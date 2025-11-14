@@ -3,6 +3,7 @@ import Container from "@/components/layout/Container";
 import type { ArtistLanding } from "@/lib/types";
 import ArtistHeader from "@/components/artist/ArtistHeader";
 import ArtistLandingMotion from "@/components/artist/ArtistLandingMotion";
+import PortfolioWrapper from "@/components/portfolio/PortfolioWrapper";
 import { notFound } from "next/navigation";
 
 type RouteParams = { slug: string };
