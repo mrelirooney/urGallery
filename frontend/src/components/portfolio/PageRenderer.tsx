@@ -6,13 +6,23 @@ import MediaBottom_TextTop from "./layouts/MediaBottom_TextTop";
 import AllMedia_NoText from "./layouts/AllMedia_NoText";
 import NoMedia_AllText from "./layouts/NoMedia_AllText";
 
+export type LayoutType = 
+  | "MediaLeft_TextRight"
+  | "MediaRight_TextLeft"
+  | "MediaTop_TextBottom"
+  | "MediaBottom_TextTop"
+  | "AllMedia_NoText"
+  | "NoMedia_AllText";
+
+export type MediaShapeType = "1:1" | "9:16" | "16:9" | "4:5" | "5:4";
+
 // Define what data a page needs
 export type PortfolioPageData = {
-  layoutType: string;
+  layoutType: LayoutType;
   title: string;
   description: string;
   mediaSrc?: string;
-  mediaShape?: "1:1" | "9:16" | "16:9" | "4:5" | "5:4";
+  mediaShape?: MediaShapeType;
 };
 
 type PageRendererProps = {

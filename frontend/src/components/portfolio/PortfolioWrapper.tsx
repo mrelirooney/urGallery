@@ -1,9 +1,8 @@
 "use client";
-import React from "react";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import PortfolioTitle from "./primitives/PortfolioTitle";
 import Pagination from "./primitives/Pagination";
-import PageRenderer, { PortfolioPageData } from "./PageRenderer";
+import PageRenderer, { PortfolioPageData, LayoutType, MediaShapeType } from "./PageRenderer";
 
 // Props type — you can extend this later with actual data
 type PortfolioWrapperProps = {
@@ -15,12 +14,16 @@ type ApiPage = {
   title: string;
   description: string;
   order: number;
-  layout?: string;
+  layout?: LayoutType | null;
+  media_image: string | null;
+  media_shape: MediaShapeType | null;
   // later we can add media fields here when the API exposes them
 };
 
 type ApiPortfolio = {
+  id: number;
   title: string;
+  slug: string;
   pages: ApiPage[];
 };
 
@@ -37,12 +40,14 @@ export default function PortfolioWrapper({ slug }: PortfolioWrapperProps) {
         setLoading(true);
         setError(null);
 
-        const base = process.env.NEXT_PUBLIC_API_URL;
-        const res = await fetch(`${base}/portfolios/${slug}/`);
+        const base = process.env.NEXT_PUBLIC_API_BASE ?? "";
+        console.log("Fetching portfolio from:", `${base}/api/portfolios/${slug}/`);
+        const res = await fetch(`${base}/api/portfolios/${slug}/`);
 
-        if (!res.ok) {
-          throw new Error(`HTTP ${res.status}`);
-        }
+        if (!base) {
+          console.error("Missing NEXT_PUBLIC_API_BASE in .env.local");
+          throw new Error("API base URL is not configured");
+        }      
 
         const data: ApiPortfolio = await res.json();
 
@@ -50,14 +55,19 @@ export default function PortfolioWrapper({ slug }: PortfolioWrapperProps) {
         setPortfolioTitle(data.title ?? "");
 
         // 🔁 Map backend pages → frontend PageRenderer shape
-        const mappedPages: PortfolioPageData[] = data.pages.map((page) => ({
-          layoutType: page.layout || "MediaLeft_TextRight",
-          title: page.title,
-          description: page.description,
-          // temp placeholders until we wire real media
-          mediaSrc: "/placeholder.jpg",
-          mediaShape: "1:1",
-        }));
+        const mappedPages: PortfolioPageData[] = data.pages
+          .slice()
+          .sort((a, b) => a.order - b.order)
+          .map((page) => ({
+            layoutType: page.layout ?? "MediaLeft_TextRight",
+            title: page.title,
+            description: page.description,
+            mediaSrc: page.media_image 
+            ? `${base}${page.media_image}` 
+            : "/media/example.jpg",        // fallback
+            // use media_shape from backend, fallback to 1:1
+            mediaShape: page.media_shape ?? "1:1",
+          }));
 
         setPages(mappedPages);
         setCurrentPageIndex(0);
@@ -89,15 +99,43 @@ export default function PortfolioWrapper({ slug }: PortfolioWrapperProps) {
   }
 
   const currentPage = pages[currentPageIndex];
+
   return (
     <section className="mx-auto max-w-7xl flex-col justify-between text-neutral-100">
       {/* 🧱 Portfolio Wrapper Layout */}
       <div className="w-full max-w-7xl py-8 flex flex-col gap-6 justify-between">
+        {/* Loading / error / empty states */}
+        {loading && (
+          <div className="flex-1 flex items-center justify-center">
+            <p className="text-neutral-400">Loading portfolio…</p>
+          </div>
+        )}
+        {error && !loading && (
+          <div className="flex-1 flex items-center justify-center">
+            <p className="text-red-400 text-sm">Error: {error}</p>
+          </div>
+        )}
 
+        {!loading && !error && pages.length === 0 && (
+          <div className="flex-1 flex items-center justify-center">
+            <p className="text-neutral-400 text-sm">
+              No pages in this portfolio yet.
+            </p>
+          </div>
+        )}
         {/* Portfolio Title, PageInfo, PageMedia, Pagination, etc. will go here */}
         <PortfolioTitle text="Portfolio Title" align="left" size="xs" color="text-neutral-200" />
-        <PageRenderer page={currentPage} />
-        <Pagination/>
+        {!loading && !error && pages.length > 0 && (
+          <>
+            <PageRenderer page={currentPage} />
+            <Pagination
+              totalPages={pages.length}
+              currentPage={currentPageIndex + 1}
+              onChangePage={(newIndex) => setCurrentPageIndex(newIndex)}
+            />
+          </>
+          
+        )}
       </div>
     </section>
   );

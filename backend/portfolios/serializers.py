@@ -4,7 +4,16 @@ from .models import Portfolio, Page
 class PageSummarySerializer(serializers.ModelSerializer):
     class Meta:
         model = Page
-        fields = ["id", "title", "description", "order", "created_at"]
+        fields = [
+            "id", 
+            "title", 
+            "description", 
+            "order", 
+            "layout",
+            "media_image",
+            "media_shape",
+            "created_at"
+            ]
 
 class PortfolioSummarySerializer(serializers.ModelSerializer):
     pages_count = serializers.IntegerField(read_only=True)

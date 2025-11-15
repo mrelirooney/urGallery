@@ -62,28 +62,66 @@ class Portfolio(models.Model):
             self.slug = slug
         super().save(*args, **kwargs)
 
+class PortfolioPageLayout(models.TextChoices):
+    MEDIA_LEFT_TEXT_RIGHT = "MediaLeft_TextRight", "Media Left • Text Right"
+    MEDIA_RIGHT_TEXT_LEFT = "MediaRight_TextLeft", "Media Right • Text Left"
+    MEDIA_TOP_TEXT_BOTTOM = "MediaTop_TextBottom", "Media Top • Text Bottom"
+    MEDIA_BOTTOM_TEXT_TOP = "MediaBottom_TextTop", "Media Bottom • Text Top"
+    TEXT_ONLY = "TextOnly", "Text Only"
 
+MEDIA_SHAPE_CHOICES = [
+    ("1:1", "Square (1:1)"),
+    ("9:16", "Vertical (9:16)"),
+    ("16:9", "Wide (16:9)"),
+    ("4:5", "Vertical (4:5)"),
+    ("5:4", "Wide (5:4)"),
+]
 class Page(models.Model):
     portfolio = models.ForeignKey(
-        Portfolio, on_delete=models.CASCADE, related_name="pages"
+        Portfolio,
+        related_name="pages",
+        on_delete=models.CASCADE,
     )
-    title = models.CharField(max_length=140, blank=True)
-    description = models.CharField(max_length=140, blank=True)
-    layout = models.CharField(max_length=50, blank=True)  # e.g. "media_left_50_50"
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
     order = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
+    layout = models.CharField(
+        max_length=50,
+        choices=PortfolioPageLayout.choices,
+        default=PortfolioPageLayout.MEDIA_LEFT_TEXT_RIGHT,
+    )
+    media_image = models.ImageField(
+        upload_to="portfolio_pages/",
+        blank=True,
+        null=True,
+    )
 
-    class Meta:
-        ordering = ["order", "id"]
-        constraints = [
-            # Each portfolio can use a given 'order' only once
-            models.UniqueConstraint(
-                fields=["portfolio", "order"], name="uniq_page_order_per_portfolio"
-            )
-        ]
+    media_shape = models.CharField(
+        max_length=4,
+        choices=MEDIA_SHAPE_CHOICES,
+        default="1:1",
+    )
 
-    def __str__(self) -> str:
-        return self.title or f"Page {self.id}"
+    MEDIA_SHAPE_CHOICES = [
+        ("1:1", "Square (1:1)"),
+        ("9:16", "Vertical (9:16)"),
+        ("16:9", "Wide (16:9)"),
+        ("4:5", "Vertical (4:5)"),
+        ("5:4", "Wide (5:4)"),
+    ]
+
+class Meta:
+    ordering = ["order", "id"]
+    constraints = [
+        # Each portfolio can use a given 'order' only once
+        models.UniqueConstraint(
+            fields=["portfolio", "order"], name="uniq_page_order_per_portfolio"
+        )
+    ]
+
+    def __str__(self):
+        return f"{self.portfolio.title} – {self.title}"
 
 
 class Media(models.Model):
