@@ -15,7 +15,7 @@ export default function Footer() {
 
   return (
     <footer className="border-t border-neutral-200 bg-white">
-      <Container className="h-14 flex items-center justify-between text-xs text-neutral-600 max-w-7xl max-sm:flex-wrap max-sm:justify-center max-sm:gap-y-1">
+      <Container className="h-14 flex items-center justify-between text-xs text-neutral-600 max-w-6xl max-sm:flex-wrap max-sm:justify-center max-sm:gap-y-1">
         {/* Left: copyright */}
         <div className="whitespace-nowrap">
             <span>&copy; urGallery {year}</span>

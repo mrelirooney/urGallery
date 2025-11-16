@@ -68,6 +68,7 @@ class PortfolioPageLayout(models.TextChoices):
     MEDIA_TOP_TEXT_BOTTOM = "MediaTop_TextBottom", "Media Top • Text Bottom"
     MEDIA_BOTTOM_TEXT_TOP = "MediaBottom_TextTop", "Media Bottom • Text Top"
     TEXT_ONLY = "TextOnly", "Text Only"
+    MEDIA_ONLY = "MediaOnly", "MediaOnly"
 
 MEDIA_SHAPE_CHOICES = [
     ("1:1", "Square (1:1)"),

@@ -102,8 +102,6 @@ export default function PortfolioWrapper({ slug }: PortfolioWrapperProps) {
 
   return (
     <section className="mx-auto max-w-7xl flex-col justify-between text-neutral-100">
-      {/* 🧱 Portfolio Wrapper Layout */}
-      <div className="w-full max-w-7xl py-8 flex flex-col gap-6 justify-between">
         {/* Loading / error / empty states */}
         {loading && (
           <div className="flex-1 flex items-center justify-center">
@@ -123,19 +121,18 @@ export default function PortfolioWrapper({ slug }: PortfolioWrapperProps) {
             </p>
           </div>
         )}
+             {/* 🧱 Portfolio Wrapper Layout */}  
+      <div className="min-h-[85vh] w-full max-w-7xl py-8 flex flex-col justify-between gap-6">
         {/* Portfolio Title, PageInfo, PageMedia, Pagination, etc. will go here */}
-        <PortfolioTitle text="Portfolio Title" align="left" size="xs" color="text-neutral-200" />
-        {!loading && !error && pages.length > 0 && (
-          <>
-            <PageRenderer page={currentPage} />
-            <Pagination
-              totalPages={pages.length}
-              currentPage={currentPageIndex + 1}
-              onChangePage={(newIndex) => setCurrentPageIndex(newIndex)}
-            />
-          </>
-          
-        )}
+        <PortfolioTitle text={portfolioTitle} align="left" size="xs" color="text-neutral-200" />
+        <div className="max-h-[60vh] flex flex-col justify-center gap-6">
+          {!loading && !error && pages.length > 0 && (
+          <PageRenderer pages={pages} currentPageIndex={currentPageIndex} />)}
+        </div>
+          <Pagination totalPages={pages.length} 
+            currentPage={currentPageIndex + 1}
+            onChangePage={(newIndex) => setCurrentPageIndex(newIndex)}
+          />        
       </div>
     </section>
   );

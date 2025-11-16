@@ -76,7 +76,7 @@ export default function Navbar() {
   // --- 4. Return JSX ---
   return (
     <header id="site-navbar" className="sticky top-0 z-10 bg-gray-50 border-b border-gray-200">
-      <div className="mx-auto max-w-7xl px-1 h-14 flex items-center justify-between">
+      <div className="mx-auto max-w-6xl px-8 h-14 flex items-center justify-between">
         {/* Left: Logo */}
         <div className="flex">
            <button

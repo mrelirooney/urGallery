@@ -59,7 +59,7 @@ export default async function ArtistPage({ params } : { params: RouteParams}) {
       {/* Artist Header Section */}
       <section className="bg-gray-50 border-b border-neutral-200">
         <Container>
-          <div className="mx-auto max-w-6xl py-14 lg:py-20">
+          <div className="mx-auto max-w-6xl py-10 lg:py-10">
             <ArtistHeader profile={profile} />
           </div>
         </Container>
@@ -69,7 +69,7 @@ export default async function ArtistPage({ params } : { params: RouteParams}) {
         id="artist-profile-compact"
         className="sticky top-0 z-20 hidden bg-white/90 backdrop-blur border-b border-neutral-200"
       >
-        <div className="mx-auto max-w-5xl h-16 px-4 flex items-center justify-between">
+        <div className="mx-auto max-w-6xl h-16 px-8 flex items-center justify-between">
           {/* Left: avatar + name */}
           <div className="flex items-center gap-3">
             <div className="h-9 w-9 rounded-full overflow-hidden border border-neutral-300">

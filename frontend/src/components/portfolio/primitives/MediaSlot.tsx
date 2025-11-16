@@ -4,7 +4,7 @@ import React from "react";
 type MediaSlotProps = {
   src: string;
   alt: string;
-  shape: "1:1" | "4:5" | "9:16" | "5:4" | "16:9";
+  shape?: "1:1" | "4:5" | "9:16" | "5:4" | "16:9";
   border?: boolean;
   shadow?: boolean;
   align?: "left" | "center" | "right";

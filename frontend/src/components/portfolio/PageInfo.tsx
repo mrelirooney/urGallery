@@ -1,8 +1,8 @@
-import React from 'react'
+import React from "react";
 import PageTitle from "./primitives/PageTitle";
-import PageDescription from './primitives/PageDescription';
+import PageDescription from "./primitives/PageDescription";
 
-type MediaSlotProps = {
+type PageInfoProps = {
   title: string;
   description: string;
   shape?: "1:1" | "4:5" | "9:16" | "5:4" | "16:9";
@@ -10,32 +10,52 @@ type MediaSlotProps = {
   yPlacement?: "center" | "top" | "bottom";
 };
 
-export default function PageInfo({ title, description, shape = "1:1", align = "left", yPlacement="center"}: MediaSlotProps){
-  const widthClass =
-    shape === "1:1"  ? "w-full" :  "w-[w-full]";
+export default function PageInfo({
+  title,
+  description,
+  shape = "1:1",
+  align = "left",
+  yPlacement = "center",
+}: PageInfoProps) {
+  // Width based on shape (you can tweak this later)
+  const widthClass = "w-full";
 
-    const yTextPlacementClass =
-    yPlacement === "top"     ?  "flex flex-col justify-start" :
-    yPlacement === "center"  ?  "flex flex-col justify-center" :
-                                "flex flex-col justify-end" ;
-    
-    const alignClass =
-    align === "center" ? "text-center" :
-    align === "right"  ? "text-right" :
-                         "text-left";
+  // Vertical placement of the text block
+  const yTextPlacementClass =
+    yPlacement === "top"
+      ? "flex flex-col justify-start"
+      : yPlacement === "center"
+      ? "flex flex-col justify-center"
+      : "flex flex-col justify-end";
+
+  // Horizontal text alignment
+  const alignClass =
+    align === "center"
+      ? "text-center items-center"
+      : align === "right"
+      ? "text-right items-end"
+      : "text-left items-start";
 
   return (
     <div className={`h-full ${widthClass}`}>
       <div className={`${yTextPlacementClass} ${alignClass} h-full`}>
-        <div className={`pb-4 ${alignClass}`}>
+        {/* Title */}
+        <div className="w-full">
           <PageTitle text={title} size="lg" color="text-neutral-200" />
         </div>
-        <hr className="border-neutral-500 my-2" />
-        <div className="pt-4">
-          <PageDescription text={description} size="sm" color="text-neutral-200" />
+
+        {/* Separator line */}
+        <div className="h-px w-full bg-neutral-700" />
+
+        {/* Description */}
+        <div className="w-full max-w-xl">
+          <PageDescription
+            text={description}
+            size="sm"
+            color="text-neutral-200"
+          />
         </div>
       </div>
     </div>
-    
-  )
+  );
 }
