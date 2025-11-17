@@ -1,156 +1,171 @@
-# 🎨 urGallery – Version 0 (MVP)
+🎨 urGallery – Version 0 (MVP)
 
-**urGallery** is a portfolio builder made for artists and creators who want to look professional — without touching code.  
-Built with simplicity, control, and community in mind.
+urGallery is a portfolio-builder made for artists and creators who want to show their work beautifully — without touching code.
+This version focuses on rock-solid artist profiles and flexible portfolio pages with dynamic layouts.
 
----
+🧩 Tech Stack
+Layer	Tool	Purpose
+Frontend	Next.js (React + TypeScript)	UI, routing, and rendering
+Styling	Tailwind CSS	Utility-first, responsive styling
+Animations	Framer Motion	Smooth artist-page interactions
+Backend	Django + DRF (Django REST Framework)	API, models, serialization
+Database	PostgreSQL	Persistent storage
+Auth	JWT (SimpleJWT)	Secure access + refresh tokens
+Storage	Django Media Files (Pillow)	Portfolio images & avatars
+CORS	django-cors-headers	Frontend ↔ Backend communication
+Version Control	GitHub	Repo + project history
+⚙️ Backend Progress
 
-## 🧩 Tech Stack
+✅ Django project structured cleanly
+✅ accounts, artists, and portfolios apps connected
+✅ Slugs enabled for artists & portfolios
+✅ JWT authentication functional
+✅ CORS configured + working with Next.js
+✅ Media upload system working in Django Admin
+✅ Models migrated (User, Profile, Portfolio, Page, PageMedia)
+✅ REST API endpoints serving correct JSON
+✅ Portfolio → Page → Media relationships complete
 
-| Layer | Tool | Purpose |
-|-------|------|----------|
-| Frontend | **Next.js (React + TypeScript)** | UI + routing |
-| Styling | **Tailwind CSS** | Fast, responsive design |
-| Backend | **Django + DRF (Django REST Framework)** | API + data models |
-| Database | **PostgreSQL** | Persistent storage |
-| Auth | **JWT (DRF SimpleJWT)** | Login / Signup / Token auth |
-| CORS | **django-cors-headers** | Frontend ↔ Backend communication |
-| Storage | **AWS S3 + django-storages + Pillow** | Media uploads |
-| Email | **SendGrid** | Password reset + verification |
-| Hosting | **Vercel (frontend)** / **Render or EC2 (backend)** | Deployment |
-| Version Control | **GitHub** | Repo + version history |
+Big Wins:
 
----
+Portfolio JSON dynamically delivers page layouts & media
 
-## ⚙️ Backend Progress
+Frontend successfully loads media from backend
 
-✅ Virtual environment + PostgreSQL set up  
-✅ `accounts`, `portfolios`, `themes`, `notifications` apps connected  
-✅ JWT authentication fully working  
-✅ CORS tested and configured  
-✅ Pillow + media model support added  
-✅ Models migrated (User, Profile, Portfolio, Page, Theme, DefaultAvatar, etc.)  
-✅ Django Admin customized + functional  
-✅ REST API routes live under `/api/`  
+Page ordering + media shape support included
 
-**Extra Wins:**  
-- User → Profile → Portfolio relationships solid  
-- Slug fields active for both Profiles and Portfolios  
-- Media handling (avatars + static images) now functional locally  
-- Constraints added for page order + media uniqueness  
+🧱 Backend Models Overview
+Model	Purpose
+User	Email-based authentication
+Profile	Display name, title, bio, location, avatar
+Portfolio	Linked to a user; title, slug, ordering
+Page	Linked to portfolio; layout, order, title, description
+PageMedia	Image or asset for a page; tracks media shape
+🖥️ Frontend Progress
 
----
+✅ Next.js + Tailwind fully configured
+✅ Artist Landing Page implemented
 
-## 🧱 Backend Models Overview
+Header animation on scroll
 
-| Model | Description |
-|--------|--------------|
-| **User** | Custom user w/ email login (no usernames) |
-| **Profile** | FK→User; display name, title, bio, location, avatar, socials |
-| **Portfolio** | FK→User; title, privacy, order, cover_page |
-| **Page** | FK→Portfolio; title, layout, order |
-| **Media / PageMedia** | Linked assets w/ order index |
-| **Theme** | User-selectable profile aesthetic options |
-| **DefaultAvatar** | Pre-made profile avatars |
-| **Notification** | (Future) app messages & alerts |
+Avatar + display name + title + bio + location
 
----
+Portfolio section integrated
+✅ Dynamic routing:
 
-## 🖥️ Frontend Progress
+/artist/[slug]
 
-✅ Next.js + Tailwind initialized  
-✅ API connection verified through CORS  
-✅ Login + Signup flow fully functional  
-✅ Auth refresh updates Navbar instantly (no reloads)  
-✅ Artist Landing Page live — fully connected to backend  
-✅ Dynamic slugs for user pages (`/artist/[slug]`)  
-✅ Profile section pulling name, title, location, bio, and avatar  
-✅ Avatars served locally via `/media/avatars/`  
+/artist/[slug]/portfolio/[portfolioSlug]
+✅ PageRenderer system built
 
-| ⚙️ **Portfolio slugs added (partial)** 
-| Slug field created and migrated; auto-generation and public endpoint pending |
+Generates layouts dynamically
 
-**Component highlights:**
-- **ArtistHeader** – reusable profile display  
-- **Container** – responsive layout wrapper  
-- **Navbar** – dynamic auth display  
-- **Auth components** – LoginCard, TextField, FormError, etc.  
+Reads data directly from API
 
----
+Media + text primitives in place
 
-## 🔒 Security & Auth
+Page numbers + arrow navigation working
+✅ MediaSlot supports aspect ratios:
+1:1, 4:5, 5:4, 9:16, 16:9
+✅ Pagination fixed to bottom of wrapper
 
-- JWT-based token system (access + refresh)  
-- Secure `.env` handling for secrets  
-- CORS locked to trusted origins  
-- Django ORM protection + auth middleware  
-- Planned: Email verification + password reset  
+Component Highlights:
 
----
+PortfolioWrapper – handles API fetching + pagination
 
-## 🗂️ Component Architecture (Current)
+PageRenderer – core dynamic layout engine
 
-| Component | Purpose |
-|------------|----------|
-| **Button** | Reusable styled actions |
-| **Input / Field** | Shared UI for forms |
-| **Modal / AlertModal** | Universal pop-ups |
-| **AvatarDisplay** | Profile & nav avatar logic |
-| **Page / Portfolio** | Core artist content areas |
-| **ArtistHeader** | Profile section on artist pages |
+PageInfo / PageTitle / PageDescription – text primitives
 
----
+MediaSlot – responsive image system
 
-## 📈 Next Backend Steps
+Pagination – page navigation UI
 
-1. Finalize media upload flow (S3 or local for testing)  
-2. Build Profile + Portfolio API endpoints for editing  
-3. Add hashtags + filtering system  
-4. Integrate email verification and password reset  
-5. Test artist portfolio CRUD end-to-end  
+🔒 Security & Auth
 
----
+JWT access + refresh token flow
 
-## 🚀 V0 Goal
+CORS locked down to dev origins
 
-The goal for **Version 0** is simple:  
-A creator can sign up, log in, build a profile, upload work, and share a clean public link — all without touching a line of code.
+Django ORM & permission-safe architecture
 
----
+Planned: email verification + password reset
 
-## 👥 Team Breakdown
+🗂️ Component Architecture (Current)
+components/
+ ├── artist/
+ │   └── ArtistHeader.tsx
+ ├── portfolio/
+ │   ├── PortfolioWrapper.tsx
+ │   ├── PageRenderer.tsx
+ │   ├── MediaSlot.tsx
+ │   ├── PageInfo.tsx
+ │   ├── Pagination.tsx
+ │   └── primitives/
+ │       ├── PageTitle.tsx
+ │       ├── PageDescription.tsx
+ │       └── PortfolioTitle.tsx
+ └── layout/
+     └── BaseTwoBoxes.tsx
 
-| Role | Who | Focus |
-|------|-----|-------|
-| **Eli** | Frontend + partial backend | Design, flow, & usability |
-| **MAP** | Backend + AWS setup | Infrastructure & API logic |
-| **EH** | Design & themes | Color systems + layouts |
+📈 Next Steps (Backend)
 
----
+Add editing endpoints for:
 
-## 🌟 Recent Milestone Log
+Create Portfolio
 
-| Date | Milestone |
-|------|------------|
-| ✅ **Login flow fixed** | Navbar now updates instantly after login |
-| ✅ **Signup fully functional** | Clean API connection to Django |
-| ✅ **Slug system added** | Artist pages accessible via `/artist/[slug]` |
-| ✅ **Avatar rendering** | Local `/media/avatars/` setup working |
-| ✅ **Artist Landing Page** | Pulls profile data (name, title, location, bio) |
-| ✅ **Portfolio + Page constraints** | Unique order + foreign key structure done |
-| ✅ **Git milestone** | Frontend + backend both push cleanly to GitHub |
+Add pages
 
----
+Upload media via API
 
-## 💬 Future Vision (V1+)
+Add permissions + privacy controls
 
-- User dashboards + analytics  
-- Recruiter mode (find & contact artists)  
-- Follower system + DMs  
-- Paid tiers w/ premium layouts  
-- AI auto-fill for portfolios  
-- Template marketplace  
+Add URL validation for social links
 
----
+Add theme system for artists
 
-**urGallery V0 — built with love, patience, and too many console logs.**
+📈 Next Steps (Frontend)
+
+Build Portfolio Editor (big next feature)
+
+Add:
+
+Add Page
+
+Edit Page
+
+Upload Media
+
+Reorder Pages
+
+Add layout selection UI
+
+Work on mobile responsiveness
+
+Clean up animation transitions
+
+🚀 V0 Goal
+
+A creator can:
+
+Visit an artist page
+
+View their portfolio
+
+Flip through pages
+
+See media + text arranged cleanly
+
+Share their public link
+
+V0 is about presentation, stability, and the foundation for editing tools.
+
+🌟 Milestone Log
+Status	Milestone
+✅	Artist profile fetch + display
+✅	Portfolio JSON fetch working
+✅	PageRenderer hooked to backend
+✅	Media displayed from Django
+✅	Pagination fully functional
+⚙️	Layout editor (coming next)
+⚙️	Portfolio CRUD UI (coming next)
