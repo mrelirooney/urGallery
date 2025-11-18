@@ -15,6 +15,14 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const pathname = usePathname();
+  const hideNavbar =
+  pathname?.startsWith("/portfolio-test") ||      // dev editor route
+  pathname?.includes("/editor");                  // future real editor routes
+
+  if (hideNavbar) {
+    return null;
+  }
+  
   const searchParams = useSearchParams();
   const router = useRouter();
   const [open, setOpen] = useState(false);

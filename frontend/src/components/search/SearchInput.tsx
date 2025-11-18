@@ -50,7 +50,7 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
       (r as any).username ??
       r.id ??
       r.name.toLowerCase().replace(/[\W_]+/g, "");
-    router.push(`/artist/${slug}`);
+    router.push(`/${slug}`);
   }
 
   function handleSelect(r: SearchResult) {

@@ -21,9 +21,12 @@ export type PortfolioPageData = {
   mediaShape?: MediaShapeType | null;
 };
 
-type PageRendererProps = {
+export type PageRendererProps = {
   pages: PortfolioPageData[];
   currentPageIndex: number;
+  isEditor?: boolean;
+  onChangeTitle?: (pageIndex: number, newTitle: string) => void;
+  onChangeDescription?: (pageIndex: number, newDescription: string) => void;
 };
 
 function TextColumn({ title, description }: { title: string; description: string }) {
