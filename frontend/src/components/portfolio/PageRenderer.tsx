@@ -8,12 +8,15 @@ export type LayoutType =
   | "MediaRight_TextLeft"
   | "MediaTop_TextBottom"
   | "MediaBottom_TextTop"
-  | "MediaOnly"
-  | "TextOnly";
+  | "TextOnly"
+  | "MediaOnly";
 
 export type MediaShapeType = "1:1" | "9:16" | "16:9" | "4:5" | "5:4";
 
+/** Normalized shape the frontend uses for a page */
 export type PortfolioPageData = {
+  id?: number;
+  pageNumber: number;
   layoutType: LayoutType;
   title: string;
   description: string;
@@ -21,80 +24,121 @@ export type PortfolioPageData = {
   mediaShape?: MediaShapeType | null;
 };
 
-export type PageRendererProps = {
+type PageRendererProps = {
   pages: PortfolioPageData[];
   currentPageIndex: number;
+
+  // editor-only props (optional in view mode)
   isEditor?: boolean;
   onChangeTitle?: (pageIndex: number, newTitle: string) => void;
-  onChangeDescription?: (pageIndex: number, newDescription: string) => void;
+  onChangeDescription?: (pageIndex: number, newDesc: string) => void;
 };
 
-function TextColumn({ title, description }: { title: string; description: string }) {
+type TextColumnProps = {
+  title: string;
+  description: string;
+  pageIndex: number;
+  isEditor?: boolean;
+  onChangeTitle?: (pageIndex: number, newTitle: string) => void;
+  onChangeDescription?: (pageIndex: number, newDesc: string) => void;
+};
+
+function TextColumn({
+  title,
+  description,
+  pageIndex,
+  isEditor,
+  onChangeTitle,
+  onChangeDescription,
+}: TextColumnProps) {
+  if (isEditor) {
+    // EDITOR MODE – input + textarea
+    return (
+      <div className="flex flex-col gap-6">
+        <input
+          className="w-full text-5xl font-bold leading-tight text-neutral-50 bg-transparent border border-neutral-500/60 rounded-md px-4 py-3 outline-none focus:border-neutral-200"
+          value={title}
+          onChange={(e) => onChangeTitle?.(pageIndex, e.target.value)}
+        />
+        <textarea
+          className="w-full text-lg text-neutral-100 bg-transparent border border-neutral-500/60 rounded-md px-4 py-3 outline-none focus:border-neutral-200"
+          value={description}
+          onChange={(e) => onChangeDescription?.(pageIndex, e.target.value)}
+        />
+      </div>
+    );
+  }
+
+  // VIEW MODE – plain text
   return (
     <div className="flex flex-col gap-6">
       <h2 className="text-5xl font-bold leading-tight text-neutral-50">
         {title}
       </h2>
-      <p className="text-lg text-neutral-300 max-w-xl whitespace-pre-line">
+      <p className="max-w-xl whitespace-pre-line text-lg text-neutral-300">
         {description}
       </p>
     </div>
   );
 }
 
-export default function PageRenderer({ pages, currentPageIndex }: PageRendererProps) {
+export default function PageRenderer({
+  pages,
+  currentPageIndex,
+  isEditor,
+  onChangeTitle,
+  onChangeDescription,
+}: PageRendererProps) {
   const page = pages[currentPageIndex];
   if (!page) return null;
 
   const { layoutType, title, description, mediaSrc, mediaShape } = page;
 
-  // Default to square if shape missing
+  // Default to square if missing
   const shape: MediaShapeType = mediaShape ?? "1:1";
 
-  const text = <TextColumn title={title} description={description} />;
+  const text = (
+    <TextColumn
+      title={title}
+      description={description}
+      pageIndex={currentPageIndex}
+      isEditor={isEditor}
+      onChangeTitle={onChangeTitle}
+      onChangeDescription={onChangeDescription}
+    />
+  );
 
-  // ------------------------------
-  // Shape-aware media sizing
-  // ------------------------------
-  // Tailwind can't handle dynamic "col-span-${x}", so we map manually
+  // ----- shape-aware column widths -----
   let mediaCols = "col-span-6";
   let textCols = "col-span-6";
 
-  // Portrait / vertical → media narrower
-  if (shape === "9:16" ) {
+  if (shape === "9:16") {
+    // tall, vertical – narrower media
     mediaCols = "col-span-4";
     textCols = "col-span-8";
-  }
-
-  else if (shape === "4:5") {
+  } else if (shape === "4:5") {
     mediaCols = "col-span-5";
     textCols = "col-span-7";
-  }
-
-  // Ultra wide → media a bit wider
-  else if (shape === "16:9") {
+  } else if (shape === "16:9") {
+    // wide – give media more room
     mediaCols = "col-span-7";
     textCols = "col-span-5";
   }
-  // "1:1" and "5:4" fall back to 6 / 6
+  // "1:1" and "5:4" stay 6/6
 
-  // Media block (or placeholder if no src yet)
   const media = mediaSrc ? (
     <MediaSlot src={mediaSrc} alt="Media" shape={shape} />
   ) : (
-    <div className="w-full h-full flex items-center justify-center bg-neutral-800/60 text-neutral-500 text-sm">
-      {/* Empty media placeholder */}
+    <div className="flex h-full w-full items-center justify-center bg-neutral-800/60 text-sm text-neutral-500">
       No media selected
     </div>
   );
 
-  // ------------------------------
-  // Layout switch
-  // ------------------------------
+  // ----- layout switch -----
   switch (layoutType) {
     case "MediaLeft_TextRight":
       return (
-        <div className="grid grid-cols-12 gap-10 items-center">
+        <div className="grid items-center gap-10 md:grid-cols-12">
           <div className={mediaCols}>{media}</div>
           <div className={textCols}>{text}</div>
         </div>
@@ -102,7 +146,7 @@ export default function PageRenderer({ pages, currentPageIndex }: PageRendererPr
 
     case "MediaRight_TextLeft":
       return (
-        <div className="grid grid-cols-12 gap-10 items-center">
+        <div className="grid items-center gap-10 md:grid-cols-12">
           <div className={textCols}>{text}</div>
           <div className={mediaCols}>{media}</div>
         </div>
@@ -110,40 +154,32 @@ export default function PageRenderer({ pages, currentPageIndex }: PageRendererPr
 
     case "MediaTop_TextBottom":
       return (
-        <div className="flex flex-col gap-10 items-stretch">
-          <div className="w-full">{media}</div>
-          <div className="w-full">{text}</div>
+        <div className="flex flex-col gap-10">
+          {media}
+          {text}
         </div>
       );
 
     case "MediaBottom_TextTop":
       return (
-        <div className="flex flex-col gap-10 items-stretch">
-          <div className="w-full">{text}</div>
-          <div className="w-full">{media}</div>
+        <div className="flex flex-col gap-10">
+          {text}
+          {media}
         </div>
       );
 
     case "MediaOnly":
-      return (
-        <div className="w-full h-full flex items-center justify-center">
-          <div className="max-w-6xl w-full">{media}</div>
-        </div>
-      );
+      return <div className="w-full">{media}</div>;
 
     case "TextOnly":
-      return (
-        <div className="w-full h-full flex items-center justify-center">
-          <div className="max-w-6xl w-full text-align">{text}</div>
-        </div>
-      );
+      return <div className="w-full">{text}</div>;
 
     default:
-      // Safety fallback if a new layout gets added in Django but not here
+      // Fallback so unknown layout still shows *something*
       return (
-        <div className="w-full h-full flex items-center justify-center text-red-400">
-          Unknown layout:
-          <span className="ml-2 font-mono">{String(layoutType)}</span>
+        <div className="flex flex-col gap-8">
+          {media}
+          {text}
         </div>
       );
   }

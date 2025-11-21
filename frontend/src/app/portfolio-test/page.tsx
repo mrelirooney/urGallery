@@ -1,78 +1,94 @@
 // frontend/src/app/portfolio-test/page.tsx
 
 import Container from "@/components/layout/Container";
-import {
-  type PortfolioPageData,
-  type LayoutType,
-  type MediaShapeType,
-} from "@/components/portfolio/PageRenderer";
-import { PortfolioEditorShell } from "@/components/portfolio/editor/PortfolioEditorShell";
+import PortfolioEditorShell from "@/components/portfolio/editor/PortfolioEditorShell";
+import type { PortfolioPageData } from "@/components/portfolio/editor/PageRenderer";
 
-// Normalized API base
-const API_HOST = (
-  process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000"
-).replace(/\/+$/, "");
+export const dynamic = "force-dynamic";
 
-// TEMP: known-good slug from your Django DB
+const DJANGO_BASE_URL =
+  process.env.NEXT_PUBLIC_DJANGO_BASE_URL ?? "http://127.0.0.1:8000";
+
+// Hard-coded test slug for now
 const TEST_PORTFOLIO_SLUG = "my-first-portfolio-for-test";
 
-function buildEditorUrl() {
-  return `${API_HOST}/api/portfolios/${TEST_PORTFOLIO_SLUG}/editor/`;
-}
-
-type ApiPage = {
+type EditorPageApi = {
   id: number;
   title: string;
   description: string;
   order: number;
-  layout: LayoutType | string;
-  media_image?: string | null;
-  media_shape?: MediaShapeType | null;
+  layout: string;
+  media_image: string | null;
+  media_shape: string | null;
 };
 
-type EditorPortfolioResponse = {
+type EditorPortfolioApi = {
+  id: number;
   title: string;
-  pages: ApiPage[];
+  slug: string;
+  privacy: string;
+  pages_count: number;
+  cover_page: number | null;
+  pages: EditorPageApi[];
 };
 
-async function getEditorPortfolio(): Promise<EditorPortfolioResponse> {
-  const url = buildEditorUrl();
-  console.log("🔎 Fetching editor URL:", url);
+async function fetchEditorPortfolio(): Promise<EditorPortfolioApi | null> {
+  try {
+    const res = await fetch(
+      `${DJANGO_BASE_URL}/api/portfolios/${TEST_PORTFOLIO_SLUG}/editor/`,
+      {
+        cache: "no-store",
+      }
+    );
 
-  const res = await fetch(url, {
-    cache: "no-store",
-  });
+    if (!res.ok) {
+      console.error("Failed to fetch editor portfolio", res.status);
+      return null;
+    }
 
-  if (!res.ok) {
-    console.error("❌ Failed to load editor portfolio", res.status, url);
-    throw new Error(`Failed to load editor portfolio: ${res.status}`);
+    const data = (await res.json()) as EditorPortfolioApi;
+    return data;
+  } catch (err) {
+    console.error("Error fetching editor portfolio", err);
+    return null;
   }
-
-  return res.json();
 }
 
 export default async function PortfolioTestPage() {
-  const data = await getEditorPortfolio();
+  const apiPortfolio = await fetchEditorPortfolio();
 
-  const pages: PortfolioPageData[] =
-    (data?.pages ?? [])
-      .slice()
-      .sort((a: ApiPage, b: ApiPage) => a.order - b.order)
-      .map((page: ApiPage) => ({
-        layoutType: (page.layout || "MediaLeft_TextRight") as LayoutType,
-        title: page.title ?? "",
-        description: page.description ?? "",
-        mediaSrc: page.media_image
-          ? `${API_HOST}${page.media_image}`
-          : undefined,
-        mediaShape: (page.media_shape ?? "1:1") as MediaShapeType,
-      })) || [];
+  if (!apiPortfolio) {
+    return (
+      <main className="py-16">
+        <Container>
+          <p className="text-red-500">
+            Could not load the test portfolio editor. Check the Django server.
+          </p>
+        </Container>
+      </main>
+    );
+  }
+
+  // Map API pages into the shape PageRenderer / PortfolioEditorShell expect
+  const pages: PortfolioPageData[] = apiPortfolio.pages
+    .slice()
+    .sort((a, b) => a.order - b.order)
+    .map((page) => ({
+      id: page.id,
+      layoutType: page.layout as PortfolioPageData["layoutType"],
+      title: page.title,
+      description: page.description,
+      mediaSrc: page.media_image,
+      mediaShape: (page.media_shape ?? "1:1") as PortfolioPageData["mediaShape"],
+    }));
 
   return (
-    <main className="min-h-screen bg-neutral-900 text-white">
-      {/* Keep aligned with the rest of the app layout */}
-      <Container className="px-0">
-        <PortfolioEditorShell initialTitle={data?.title ?? ""} pages={pages} />
+    <main className="py-8">
+      <Container>
+        <PortfolioEditorShell
+          initialTitle={apiPortfolio.title}
+          initialPages={pages}
+        />
       </Container>
     </main>
   );

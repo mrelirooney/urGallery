@@ -2,8 +2,8 @@
 import React from "react";
 
 type MediaSlotProps = {
-  src: string;
-  alt: string;
+  src?: string | null;
+  alt?: string;
   shape?: "1:1" | "4:5" | "9:16" | "5:4" | "16:9";
   border?: boolean;
   shadow?: boolean;
@@ -44,7 +44,17 @@ export default function MediaSlotC({src, alt, shape = "1:1", border = true, shad
   return (
     <div className={`justify-self-center md:justify-self-start overflow-hidden`}>
       <div className={`max-h-[63vh] ${widthClass} ${heightClass} ${alignClass} flex items-center justify-center bg-neutral-200 ${borderClass} ${shadowClass}`}>
-        <img src={src} alt={alt} className="h-full w-auto object-contain" />
+        {src ? (
+          <img
+            src={src}
+            alt={alt}
+            className="h-full w-auto object-contain"
+          />
+        ) : (
+          <div className="text-neutral-500 text-sm">
+            No image
+          </div>
+        )}
       </div>
   </div>
   );
@@ -84,7 +94,17 @@ export function MediaSlotR({src, alt, shape = "1:1", border = true, shadow = tru
   return (
     <div className={`justify-self-center md:justify-self-start overflow-hidden`}>
       <div className={`max-h-[63vh] ${widthClass} ${heightClass} ${alignClass} flex items-center justify-center bg-neutral-200 ${borderClass} ${shadowClass}`}>
-        <img src={src} alt={alt} className="h-full w-auto object-contain" />
+        {src ? (
+          <img
+            src={src}
+            alt={alt}
+            className="h-full w-auto object-contain"
+          />
+        ) : (
+          <div className="text-neutral-500 text-sm">
+            No image
+          </div>
+        )}
       </div>
   </div>
   );
