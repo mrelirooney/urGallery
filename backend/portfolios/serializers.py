@@ -1,8 +1,121 @@
 from rest_framework import serializers
-from .models import Portfolio, Page
+from .models import (
+    Portfolio,
+    Page,
+    DraftPortfolio,
+    DraftPage,
+)
+
+
+# -------------------------------------------------------------------
+# Draft-side serializers used by the editor
+# -------------------------------------------------------------------
 
 
 class PageSummarySerializer(serializers.ModelSerializer):
+    """
+    Used inside the editor portfolio payload to show a list of draft pages.
+    """
+
+    class Meta:
+        model = DraftPage
+        fields = [
+            "id",
+            "title",
+            "description",
+            "order",
+            "layout",
+            "media_image",
+            "media_shape",
+            "created_at",
+            "updated_at",
+        ]
+
+
+class PortfolioDetailSerializer(serializers.ModelSerializer):
+    """
+    Editor view of a DraftPortfolio + its DraftPages.
+    """
+    pages = PageSummarySerializer(many=True, read_only=True)
+
+    class Meta:
+        model = DraftPortfolio
+        fields = [
+            "id",
+            "title",
+            "slug",
+            "description",
+            "privacy",
+            "has_unpublished_changes",
+            "created_at",
+            "updated_at",
+            "pages",
+        ]
+
+
+class PortfolioUpdateSerializer(serializers.ModelSerializer):
+    """
+    Used by the editor to update basic draft-level fields.
+    """
+
+    class Meta:
+        model = DraftPortfolio
+        fields = [
+            "title",
+            "description",
+            "privacy",
+        ]
+
+
+class PageEditorSerializer(serializers.ModelSerializer):
+    """
+    Serializer used by the editor when working on a single draft page.
+    """
+
+    class Meta:
+        model = DraftPage
+        fields = [
+            "id",
+            "title",
+            "description",
+            "order",
+            "layout",
+            "media_shape",
+            "media_image",
+            "created_at",
+            "updated_at",
+        ]
+        extra_kwargs = {
+            "media_image": {"required": False, "allow_null": True},
+        }
+
+
+class PageReorderSerializer(serializers.Serializer):
+    """
+    Used by the editor to validate a page reorder payload.
+
+    Expected shape:
+    {
+        "order": [3, 1, 5, 2]
+    }
+    where each value is a DraftPage.id in the new order.
+    """
+    order = serializers.ListField(
+        child=serializers.IntegerField(min_value=1),
+        allow_empty=False,
+    )
+
+
+# -------------------------------------------------------------------
+# Public-facing serializers (live site)
+# -------------------------------------------------------------------
+
+
+class PublicPageSummarySerializer(serializers.ModelSerializer):
+    """
+    Lightweight serializer for LIVE Page rows, used on the public site.
+    """
+
     class Meta:
         model = Page
         fields = [
@@ -13,12 +126,15 @@ class PageSummarySerializer(serializers.ModelSerializer):
             "layout",
             "media_image",
             "media_shape",
-            "created_at",  
+            "created_at",
         ]
 
 
-class PortfolioDetailSerializer(serializers.ModelSerializer):
-    pages = PageSummarySerializer(many=True, read_only=True)
+class PortfolioSerializer(serializers.ModelSerializer):
+    """
+    Serializer for LIVE Portfolio objects (public landing etc.).
+    """
+    pages = PublicPageSummarySerializer(many=True, read_only=True)
 
     class Meta:
         model = Portfolio
@@ -30,64 +146,19 @@ class PortfolioDetailSerializer(serializers.ModelSerializer):
             "order_index",
             "pages_count",
             "cover_page",
-            "pages",
             "created_at",
             "updated_at",
+            "pages",
         ]
-
-
-class PortfolioSerializer(PortfolioDetailSerializer):
-    """Backwards-compat alias used by public landing views."""
-    pass
-
-
-class PortfolioUpdateSerializer(serializers.ModelSerializer):
-    """Used by the editor to update basic portfolio-level fields."""
-
-    class Meta:
-        model = Portfolio
-        fields = [
-            "title",
-            "privacy",
-            "order_index",
-            "cover_page",
-        ]
-
-
-class PageEditorSerializer(serializers.ModelSerializer):
-    """Serializer used by the editor when updating a single page."""
-
-    class Meta:
-        model = Page
-        fields = [
-            "title",
-            "description",
-            "layout",
-            "media_shape",
-            "media_image",
-        ]
-        extra_kwargs = {
-            "media_image": {"required": False, "allow_null": True},
-        }
 
 
 class ArtistLandingSerializer(serializers.Serializer):
     """Placeholder for potential future artist landing-specific data."""
-    # Extend later if you want extra non-model data here.
     pass
 
 
 class ArtistProfileSerializer(serializers.Serializer):
     """
     Placeholder serializer for profile data on the artist landing page.
-
-    We keep this as a simple non-model serializer for now to avoid
-    tight coupling to accounts.Profile fields. You can replace this with
-    a ModelSerializer later when that contract is stable.
     """
-    # Example fields you might add later:
-    # display_name = serializers.CharField()
-    # title = serializers.CharField()
-    # location = serializers.CharField()
-    # avatar = serializers.ImageField()
     pass

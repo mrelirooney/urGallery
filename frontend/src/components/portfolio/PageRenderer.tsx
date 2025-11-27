@@ -11,7 +11,7 @@ export type LayoutType =
   | "TextOnly"
   | "MediaOnly";
 
-export type MediaShapeType = "1:1" | "9:16" | "16:9" | "4:5" | "5:4";
+export type MediaShapeType = "1:1" | "9:16" | "16:9" | "4:5" | "5:4" | "21:9";
 
 /** Normalized shape the frontend uses for a page */
 export type PortfolioPageData = {
@@ -21,7 +21,7 @@ export type PortfolioPageData = {
   title: string;
   description: string;
   mediaSrc?: string | null;
-  mediaShape?: MediaShapeType | null;
+  mediaShape?: MediaShapeType;
 };
 
 type PageRendererProps = {

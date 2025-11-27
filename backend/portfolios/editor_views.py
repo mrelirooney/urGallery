@@ -1,219 +1,266 @@
-from typing import Optional
-
-from django.db import models
-from django.shortcuts import get_object_or_404
 from django.db import transaction
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from django.shortcuts import get_object_or_404
+
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import AllowAny
 
-
-from .models import Portfolio, Page
+from .models import Portfolio, Page, DraftPortfolio, DraftPage
 from .serializers import (
     PortfolioDetailSerializer,
     PortfolioUpdateSerializer,
     PageEditorSerializer,
-    PageSummarySerializer,
+    PageReorderSerializer,
 )
 
 
-def _get_portfolio_for_editor(slug: str) -> Portfolio:
-    """Helper to fetch a portfolio for the editor.
+# -------------------------------------------------------------------
+# Helpers
+# -------------------------------------------------------------------
 
-    DEV MODE: we ignore the request.user and just fetch by slug.
-    Later you can lock this down to the owner.
+
+def _get_or_create_draft(slug: str) -> DraftPortfolio:
     """
-    qs = Portfolio.objects.select_related("user").prefetch_related("pages")
-    return get_object_or_404(qs, slug=slug)
+    Given a portfolio slug, return the DraftPortfolio.
+
+    If it doesn't exist yet, clone the live Portfolio + its Pages
+    into a new DraftPortfolio and DraftPages.
+
+    NOTE: For now this is NOT user-scoped. It just uses the
+    Portfolio with the matching slug.
+    """
+    live = get_object_or_404(Portfolio, slug=slug)
+
+    draft, created = DraftPortfolio.objects.get_or_create(
+        user=live.user,
+        slug=live.slug,
+        defaults={
+            "title": live.title,
+            # live has no description field, so just start empty
+            "description": "",
+            "privacy": live.privacy,
+        },
+    )
+
+    if created and not draft.pages.exists():
+        for page in live.pages.all().order_by("order", "id"):
+            DraftPage.objects.create(
+                draft_portfolio=draft,
+                title=page.title,
+                description=page.description,
+                order=page.order,
+                layout=page.layout,
+                media_shape=page.media_shape,
+                media_image=page.media_image,
+            )
+
+    return draft
 
 
-def _get_page_by_number(portfolio: Portfolio, page_number: int) -> Optional[Page]:
-    pages_qs = portfolio.pages.order_by("order")
-    try:
-        return pages_qs[page_number - 1]
-    except IndexError:
-        return None
+def _normalize_draft_page_order(draft: DraftPortfolio) -> None:
+    """
+    Ensure draft.pages have sequential order values starting at 0.
+    """
+    pages = draft.pages.all().order_by("order", "id")
+    for idx, p in enumerate(pages):
+        if p.order != idx:
+            p.order = idx
+            p.save(update_fields=["order"])
 
 
-def _normalize_page_order(portfolio: Portfolio) -> None:
-    """Ensure page.order values are contiguous after deletions."""
-    for idx, page in enumerate(portfolio.pages.order_by("order")):
-        if page.order != idx:
-            page.order = idx
-            page.save(update_fields=["order"])
+# -------------------------------------------------------------------
+# Editor portfolio detail (GET = load draft, PATCH = save draft)
+# -------------------------------------------------------------------
 
 
-@api_view(["GET", "PATCH", "DELETE"])
+@api_view(["GET", "PATCH"])
+@authentication_classes([])
 @permission_classes([AllowAny])
-def portfolio_editor_detail(request, slug):
-    """Editor: retrieve, update, or delete portfolio details."""
-    portfolio = _get_portfolio_for_editor(slug)
+def editor_portfolio_detail(request, slug):
+    draft = _get_or_create_draft(slug)
 
     if request.method == "GET":
-        serializer = PortfolioDetailSerializer(
-            portfolio, context={"request": request}
-        )
+        serializer = PortfolioDetailSerializer(draft)
         return Response(serializer.data)
 
-    if request.method == "PATCH":
-        # 1. Handle title updates using the existing serializer logic
-        serializer = PortfolioUpdateSerializer(
-            portfolio, data=request.data, partial=True
-        )
-        if serializer.is_valid():
-            portfolio = serializer.save()
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    # PATCH: update draft-level fields and optional pages array
+    data = request.data.copy()
+    pages_data = data.pop("pages", None)
 
-        # 2. Handle the 'action' field for Draft/Publish/Privacy status
-        action = request.data.get("action")
-        
-        # NOTE: We assume your Portfolio model has a 'privacy' field
-        # that uses string choices like "DRAFT", "PUBLIC", "LINK_ONLY"
-        
-        if action == "draft":
-            portfolio.privacy = "DRAFT"
-            portfolio.save(update_fields=["privacy"])
-            
-        elif action == "publish":
-            portfolio.privacy = "PUBLIC"
-            portfolio.save(update_fields=["privacy"])
-            
-        elif action == "privacy":
-            # For 'Privacy', we will toggle between 'PUBLIC' and 'LINK_ONLY' for public-facing portfolios
-            # If the current state is DRAFT, we assume they want to make it public, but link-only.
-            if portfolio.privacy == "PUBLIC":
-                portfolio.privacy = "LINK_ONLY"
-            elif portfolio.privacy == "LINK_ONLY":
-                portfolio.privacy = "PUBLIC"
-            else: # If DRAFT, set to LINK_ONLY as a safe default
-                portfolio.privacy = "LINK_ONLY"
-            
-            portfolio.save(update_fields=["privacy"])
+    serializer = PortfolioUpdateSerializer(draft, data=data, partial=True)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        # 3. Return the updated portfolio data
-        out = PortfolioDetailSerializer(portfolio, context={"request": request})
-        return Response(out.data)
+    with transaction.atomic():
+        serializer.save()
+        draft.has_unpublished_changes = True
+        draft.save(update_fields=["has_unpublished_changes"])
 
-    if request.method == "DELETE":
-        # Delete portfolio logic (optional, but good practice)
-        portfolio.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-    
-    # Fallback for unhandled methods (though @api_view handles it)
-    return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        if pages_data is not None:
+            if not isinstance(pages_data, list):
+                return Response(
+                    {"pages": ["Must be a list of page objects."]},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # Update only existing pages by id
+            for page_payload in pages_data:
+                page_id = page_payload.get("id")
+                if not page_id:
+                    continue
+
+                try:
+                    dpage = draft.pages.get(id=page_id)
+                except DraftPage.DoesNotExist:
+                    continue
+
+                changed = False
+
+                for field in ["title", "description", "layout", "media_shape", "order"]:
+                    if field in page_payload:
+                        setattr(dpage, field, page_payload[field])
+                        changed = True
+
+                if changed:
+                    dpage.save()
+
+    draft.refresh_from_db()
+    out = PortfolioDetailSerializer(draft)
+    return Response(out.data)
+
+
+# -------------------------------------------------------------------
+# Editor page create / detail (draft pages)
+# -------------------------------------------------------------------
 
 
 @api_view(["POST"])
+@authentication_classes([])
 @permission_classes([AllowAny])
-def portfolio_editor_page_create(request, slug):
-    """Editor: create a new page in the portfolio."""
-    portfolio = _get_portfolio_for_editor(slug)
-    
-    # Find the highest order value and add 1
-    max_order = portfolio.pages.aggregate(models.Max("order"))["order__max"]
-    next_order = (max_order + 1) if max_order is not None else 0
-    
-    # Create the new page with defaults
-    page = Page.objects.create(
-        portfolio=portfolio,
-        title=f"Page {next_order + 1}",
-        description="",
+def editor_create_page(request, slug):
+    draft = _get_or_create_draft(slug)
+
+    last_page = draft.pages.all().order_by("-order", "-id").first()
+    next_order = (last_page.order + 1) if last_page else 0
+
+    dpage = DraftPage.objects.create(
+        draft_portfolio=draft,
         order=next_order,
-        layout="MediaLeft_TextRight",  # default layout
-        media_shape="1:1",  # default shape
     )
-    
-    # Return the newly created page
-    serializer = PageSummarySerializer(page, context={"request": request})
+
+    draft.has_unpublished_changes = True
+    draft.save(update_fields=["has_unpublished_changes"])
+
+    serializer = PageEditorSerializer(dpage)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 @api_view(["GET", "PATCH", "DELETE"])
+@authentication_classes([])
 @permission_classes([AllowAny])
-def portfolio_editor_page_detail(request, slug, page_number: int):
-    """Editor: view / update / delete a single page by its number."""
-    portfolio = _get_portfolio_for_editor(slug)
-    page = _get_page_by_number(portfolio, page_number)
-    if page is None:
-        return Response(
-            {"detail": "Page not found."},
-            status=status.HTTP_404_NOT_FOUND,
-        )
+def editor_update_page(request, slug, page_id):
+    draft = _get_or_create_draft(slug)
+    dpage = get_object_or_404(DraftPage, id=page_id, draft_portfolio=draft)
 
     if request.method == "GET":
-        serializer = PageEditorSerializer(page, context={"request": request})
+        serializer = PageEditorSerializer(dpage)
         return Response(serializer.data)
 
     if request.method == "PATCH":
-        serializer = PageEditorSerializer(
-            page, data=request.data, partial=True
-        )
-        if serializer.is_valid():
-            page = serializer.save()
-            out = PageEditorSerializer(page, context={"request": request})
-            return Response(out.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer = PageEditorSerializer(dpage, data=request.data, partial=True)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer.save()
+        draft.has_unpublished_changes = True
+        draft.save(update_fields=["has_unpublished_changes"])
+
+        return Response(serializer.data)
 
     # DELETE
-    page.delete()
-    _normalize_page_order(portfolio)
+    dpage.delete()
+    _normalize_draft_page_order(draft)
+    draft.has_unpublished_changes = True
+    draft.save(update_fields=["has_unpublished_changes"])
+
     return Response(status=status.HTTP_204_NO_CONTENT)
 
-@api_view(["PATCH"]) # We only allow PATCH requests for reordering
+
+# -------------------------------------------------------------------
+# Editor reorder pages
+# -------------------------------------------------------------------
+
+
+@api_view(["POST"])
+@authentication_classes([])
 @permission_classes([AllowAny])
-def portfolio_editor_reorder_pages(request, slug):
-    """Editor: update the order of pages in the portfolio."""
-    if request.method != "PATCH":
-        # Should not happen if we only allow PATCH, but good practice
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+def editor_reorder_pages(request, slug):
+    draft = _get_or_create_draft(slug)
 
-    # The frontend sends a list of page IDs in the new, desired order:
-    # {"page_ids": [id1, id2, id3, ...]}
-    page_ids = request.data.get("page_ids")
+    serializer = PageReorderSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    if not isinstance(page_ids, list):
-        return Response(
-            {"detail": "Expected 'page_ids' as a list."},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
+    order_list = serializer.validated_data["order"]
 
-    portfolio = _get_portfolio_for_editor(slug)
-    
-    # Use a transaction to ensure all order updates happen together
     with transaction.atomic():
-        
-        # We need to map the incoming IDs to actual Page objects to ensure they belong to this portfolio
-        page_map = {
-            page.id: page
-            for page in portfolio.pages.all()
-        }
+        for idx, page_id in enumerate(order_list):
+            try:
+                dpage = draft.pages.get(id=page_id)
+            except DraftPage.DoesNotExist:
+                continue
+            if dpage.order != idx:
+                dpage.order = idx
+                dpage.save(update_fields=["order"])
 
-        # List to hold pages we will update
-        pages_to_update = []
-        
-        # Iterate through the submitted order, assigning a new order index (starting at 0)
-        for index, page_id in enumerate(page_ids):
-            page = page_map.get(page_id)
-            
-            if page is None:
-                # If an ID is submitted that doesn't belong to this portfolio, raise an error
-                raise ValueError(f"Page ID {page_id} not found in portfolio.")
+        _normalize_draft_page_order(draft)
+        draft.has_unpublished_changes = True
+        draft.save(update_fields=["has_unpublished_changes"])
 
-            # Assign the new order based on its index in the submitted list
-            if page.order != index:
-                page.order = index
-                pages_to_update.append(page)
+    draft.refresh_from_db()
+    out = PortfolioDetailSerializer(draft)
+    return Response(out.data)
 
-        # Bulk update the order field for all changed pages
-        Page.objects.bulk_update(pages_to_update, ["order"])
-        
-        # Note: If you ever implement pagination or slicing on the frontend, 
-        # you might need to call _normalize_page_order here, but for simple reordering,
-        # bulk_update is more efficient.
+
+# -------------------------------------------------------------------
+# Publish draft -> live
+# -------------------------------------------------------------------
+
+
+@api_view(["POST"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def publish_portfolio(request, slug):
+    live = get_object_or_404(Portfolio, slug=slug)
+    draft = _get_or_create_draft(slug)
+
+    with transaction.atomic():
+        # 1) Copy basic fields from draft to live
+        live.title = draft.title
+        live.privacy = draft.privacy
+        live.save(update_fields=["title", "privacy"])
+
+        # 2) Delete existing live pages
+        live.pages.all().delete()
+
+        # 3) Recreate live pages from draft pages
+        for dpage in draft.pages.all().order_by("order", "id"):
+            Page.objects.create(
+                portfolio=live,
+                title=dpage.title,
+                description=dpage.description,
+                order=dpage.order,
+                layout=dpage.layout,
+                media_shape=dpage.media_shape,
+                media_image=dpage.media_image,
+            )
+
+        # 4) Mark draft as clean
+        draft.has_unpublished_changes = False
+        draft.save(update_fields=["has_unpublished_changes"])
 
     return Response(
-        {"detail": "Page order updated successfully."},
+        {"detail": "Portfolio published successfully."},
         status=status.HTTP_200_OK,
     )

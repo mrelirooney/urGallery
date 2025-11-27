@@ -25,12 +25,13 @@ export default function LayoutPickerModal({
   onClose,
   onSelectLayout,
 }: LayoutPickerModalProps) {
-  if (!isOpen) return null;
 
   const handleSelect = (layout: LayoutType) => {
     onSelectLayout(layout);
     onClose();
   };
+
+  if (!isOpen) return null;
 
   return (
     <div

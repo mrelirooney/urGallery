@@ -2,43 +2,44 @@
 
 import Container from "@/components/layout/Container";
 import PortfolioEditorShell from "@/components/portfolio/editor/PortfolioEditorShell";
-import type { PortfolioPageData } from "@/components/portfolio/editor/PageRenderer";
+import type {
+  PortfolioPageData,
+  MediaShapeType,
+  LayoutType,
+} from "@/components/portfolio/editor/PageRenderer";
 
 export const dynamic = "force-dynamic";
 
-const DJANGO_BASE_URL =
-  process.env.NEXT_PUBLIC_DJANGO_BASE_URL ?? "http://127.0.0.1:8000";
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 // Hard-coded test slug for now
 const TEST_PORTFOLIO_SLUG = "my-first-portfolio-for-test";
 
-type EditorPageApi = {
-  id: number;
-  title: string;
-  description: string;
-  order: number;
-  layout: string;
-  media_image: string | null;
-  media_shape: string | null;
-};
-
+// Shape of what the editor endpoint returns
 type EditorPortfolioApi = {
   id: number;
   title: string;
   slug: string;
-  privacy: string;
-  pages_count: number;
-  cover_page: number | null;
-  pages: EditorPageApi[];
+  privacy: "public" | "draft" | "link_only";
+  pages: {
+    id: number;
+    title: string;
+    description: string;
+    order: number;
+    layout: LayoutType;
+    media_image: string | null;
+    media_shape: MediaShapeType | null;
+  }[];
 };
 
 async function fetchEditorPortfolio(): Promise<EditorPortfolioApi | null> {
   try {
     const res = await fetch(
-      `${DJANGO_BASE_URL}/api/portfolios/${TEST_PORTFOLIO_SLUG}/editor/`,
+      `${API_BASE}/api/portfolios/${TEST_PORTFOLIO_SLUG}/editor/`,
       {
         cache: "no-store",
-      }
+      },
     );
 
     if (!res.ok) {
@@ -75,19 +76,28 @@ export default async function PortfolioTestPage() {
     .sort((a, b) => a.order - b.order)
     .map((page) => ({
       id: page.id,
-      layoutType: page.layout as PortfolioPageData["layoutType"],
+      layoutType: page.layout,
       title: page.title,
       description: page.description,
-      mediaSrc: page.media_image,
-      mediaShape: (page.media_shape ?? "1:1") as PortfolioPageData["mediaShape"],
+      // Build full URL so images load from localhost:8000, not 3000
+      mediaSrc: page.media_image ? `${API_BASE}${page.media_image}` : null,
+      // Use whatever your PortfolioPageData calls this field
+      mediaShape2: (page.media_shape || "1:1") as MediaShapeType,
     }));
+
+  // Map backend privacy ("public" | "draft" | "link_only") to FE privacy ("public" | "private")
+  const initialPrivacy: "public" | "private" =
+    apiPortfolio.privacy === "public" ? "public" : "private";
 
   return (
     <main className="py-8">
       <Container>
         <PortfolioEditorShell
-          initialTitle={apiPortfolio.title}
+          portfolioTitle={apiPortfolio.title}
           initialPages={pages}
+          initialPageIndex={0}
+          initialPrivacy={initialPrivacy}
+          portfolioSlug={apiPortfolio.slug}
         />
       </Container>
     </main>

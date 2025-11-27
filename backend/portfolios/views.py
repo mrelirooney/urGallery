@@ -3,7 +3,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from .models import Portfolio, Page
-from .serializers import PortfolioDetailSerializer, PageSummarySerializer
+from .serializers import PortfolioSerializer, PublicPageSummarySerializer
 
 
 @api_view(["GET"])
@@ -13,7 +13,7 @@ def portfolio_detail(request, slug):
         Portfolio.objects.select_related("user").prefetch_related("pages"),
         slug=slug,
     )
-    serializer = PortfolioDetailSerializer(portfolio, context={"request": request})
+    serializer = PortfolioSerializer(portfolio, context={"request": request})
     return Response(serializer.data)
 
 
@@ -28,5 +28,5 @@ def portfolio_page_detail(request, slug, page_number: int):
     except IndexError:
         return Response({"detail": "Page not found."}, status=404)
 
-    serializer = PageSummarySerializer(page, context={"request": request})
+    serializer = PublicPageSummarySerializer(page, context={"request": request})
     return Response(serializer.data)

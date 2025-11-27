@@ -4,7 +4,7 @@ import React from "react";
 type MediaSlotProps = {
   src?: string | null;
   alt?: string;
-  shape?: "1:1" | "4:5" | "9:16" | "5:4" | "16:9";
+  shape?: "1:1" | "4:5" | "9:16" | "5:4" | "16:9" | "21:9";
   border?: boolean;
   shadow?: boolean;
   align?: "left" | "center" | "right";
@@ -16,6 +16,7 @@ export default function MediaSlotC({src, alt, shape = "1:1", border = true, shad
     shape === "4:5" ? "aspect-[4/5]" :
     shape === "9:16" ? "aspect-[9/16]" :
     shape === "5:4" ? "aspect-[5/4]" :
+    shape === "21:9" ? "aspect-[21/9]" :
     "aspect-[16/9]";
 
   const widthClass =
@@ -24,6 +25,7 @@ export default function MediaSlotC({src, alt, shape = "1:1", border = true, shad
     shape === "9:16" ? "w-[340px]" :
     shape === "5:4"  ? "w-[560px]" :
     shape === "16:9" ? "w-[600px]" :
+    shape === "21:9" ? "w-[700px]" :
                        "w-[480px]" ;
 
   const heightClass =

@@ -2,22 +2,17 @@ import PortfolioWrapper from "@/components/portfolio/PortfolioWrapper";
 import ArtistHeader from "@/components/artist/ArtistHeader";
 
 type ArtistPortfolioPageProps = {
-    params: {
-        slug: string;          // artist slug
-        portfolioSlug: string; // portfolio slug from URL
-    };
+  params: {
+    slug: string; // The artist slug
+    portfolioslug: string; // The portfolio slug from the URL
+  };
 };
 
-export default function ArtistPortfolioPage({ params }: ArtistPortfolioPageProps) {
-  const { slug, portfolioSlug } = params;
-
+export default async function ArtistPortfolioPage({ params }: ArtistPortfolioPageProps) {
   return (
     <main className="min-h-screen">
-      {/* Optional: if you want the header here too, you’ll fetch the profile
-          the same way you do on the main artist page and pass it in */}
-      {/* <ArtistHeader profile={profile} /> */}
-
-      <PortfolioWrapper slug={portfolioSlug} />
+      {/* ... */}
+      <PortfolioWrapper slug={params.portfolioslug} /> // Pass directly from params
     </main>
   );
 }

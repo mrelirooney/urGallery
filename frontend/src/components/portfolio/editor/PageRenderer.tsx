@@ -3,8 +3,6 @@
 import React, { useRef } from "react";
 import MediaSlot from "../primitives/MediaSlot";
 
-
-/** All supported layouts – must match Django choices */
 export type LayoutType =
   | "MediaLeft_TextRight"
   | "MediaRight_TextLeft"
@@ -13,17 +11,21 @@ export type LayoutType =
   | "TextOnly"
   | "MediaOnly";
 
-/** Normalized media shape for a page */
-export type MediaShapeType = "1:1" | "9:16" | "16:9" | "4:5" | "5:4";
+export type MediaShapeType =
+  | "1:1"
+  | "4:5"
+  | "9:16"
+  | "16:9"
+  | "5:4"
+  | "21:9";
 
-/** Normalized page data used by the editor */
 export interface PortfolioPageData {
-  id: number;
+  id: number | string;
   layoutType: LayoutType;
   title: string;
   description: string;
-  mediaSrc?: string | null;
-  mediaShape?: MediaShapeType | null;
+  mediaSrc: string | null;
+  mediaShape2?: MediaShapeType;
 }
 
 export interface PageRendererProps {
@@ -32,7 +34,11 @@ export interface PageRendererProps {
   isEditor?: boolean;
   onChangeTitle?: (pageIndex: number, newTitle: string) => void;
   onChangeDescription?: (pageIndex: number, newDesc: string) => void;
-  onChangeImage?: (pageIndex: number, file: File) => void;
+  onChangeImage?: (pageIndex: number, file: File | null) => void;
+  // These are here so PortfolioEditorShell can pass them,
+  // even though layout & shape are controlled by the modals.
+  onChangeLayout?: (pageIndex: number, layout: LayoutType) => void;
+  onChangeMediaShape?: (pageIndex: number, shape: MediaShapeType) => void;
 }
 
 type TextColumnProps = {
@@ -53,7 +59,6 @@ function TextColumn({
   onChangeDescription,
 }: TextColumnProps) {
   if (isEditor) {
-    // EDITOR MODE – input + textarea
     return (
       <div className="flex flex-col gap-6">
         <input
@@ -62,14 +67,16 @@ function TextColumn({
           onChange={(e) => onChangeTitle?.(pageIndex, e.target.value)}
         />
         <textarea
-          className="w-full text-lg text-neutral-100 bg-transparent border border-neutral-500/60 rounded-md px-4 py-3 outline-none focus:border-neutral-200"
+          className="w-full text-lg text-neutral-100 bg-transparent border border-neutral-500/60 rounded-md px-4 py-3 outline-none focus:border-neutral-200 min-h-[200px]"
           value={description}
-          onChange={(e) => onChangeDescription?.(pageIndex, e.target.value)}
+          onChange={(e) =>
+            onChangeDescription?.(pageIndex, e.target.value)
+          }
         />
       </div>
     );
   }
-  // VIEW MODE – plain text
+
   return (
     <div className="flex flex-col gap-6">
       <h2 className="text-5xl font-bold leading-tight text-neutral-50">
@@ -81,6 +88,7 @@ function TextColumn({
     </div>
   );
 }
+
 export default function PageRenderer({
   pages,
   currentPageIndex,
@@ -89,56 +97,52 @@ export default function PageRenderer({
   onChangeDescription,
   onChangeImage,
 }: PageRendererProps) {
-  // Use Math.min to prevent index errors if currentPageIndex is out of bounds
+  if (!pages || pages.length === 0) {
+    return (
+      <div className="flex h-64 items-center justify-center text-neutral-400">
+        No pages yet.
+      </div>
+    );
+  }
+
   const safeIndex = Math.min(
-    currentPageIndex,
-    pages.length > 0 ? pages.length - 1 : 0
+    Math.max(currentPageIndex, 0),
+    pages.length - 1,
   );
   const page = pages[safeIndex];
 
-  // **FIX 1: Critical Null/Undefined Check**
-  // This prevents runtime errors when accessing properties of a missing page
   if (!page) {
-    return (
-      <p className="text-neutral-400 text-center py-10">
-        The current page data is missing or could not be loaded.
-      </p>
-    );
+    return null;
   }
-  // **End Fix 1**
 
-  const { id, layoutType, title, description, mediaSrc, mediaShape } = page;
+  const { layoutType, mediaShape2, mediaSrc } = page;
 
-  // ... (rest of media click and shape logic, unchanged)
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleMediaClick = () => {
-    if (isEditor) {
-      fileInputRef.current?.click();
-    }
+    if (!isEditor || !onChangeImage) return;
+    fileInputRef.current?.click();
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0] && onChangeImage) {
-      onChangeImage(safeIndex, e.target.files[0]);
-    }
+  const handleFileChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    if (!onChangeImage) return;
+    const file = event.target.files?.[0] ?? null;
+    onChangeImage(safeIndex, file);
   };
 
-  // 1. Determine base content
   const isTwoColumn =
-    layoutType === "MediaLeft_TextRight" || layoutType === "MediaRight_TextLeft";
+    layoutType === "MediaLeft_TextRight" ||
+    layoutType === "MediaRight_TextLeft";
   const isTextOnly = layoutType === "TextOnly";
   const isMediaOnly = layoutType === "MediaOnly";
 
-  const fullWidthClass =
-    isTextOnly || isMediaOnly ? "max-w-4xl w-full" : "max-w-5xl w-full";
-
-  // Shared content components
   const textContent = (
     <TextColumn
-      pageIndex={safeIndex}
       title={page.title}
       description={page.description}
+      pageIndex={safeIndex}
       isEditor={isEditor}
       onChangeTitle={onChangeTitle}
       onChangeDescription={onChangeDescription}
@@ -152,14 +156,12 @@ export default function PageRenderer({
         className={isEditor ? "cursor-pointer" : ""}
       >
         <MediaSlot
-          src={page.mediaSrc || ""}
-          alt="Media Goes Here"
-          shape={page.mediaShape || "16:9"}
+          src={page.mediaSrc}
+          alt="Portfolio media"
+          shape={mediaShape2 || "1:1"}
         />
       </div>
-
-      {/* Hidden file input */}
-      {isEditor && (
+      {isEditor && onChangeImage && (
         <input
           ref={fileInputRef}
           type="file"
@@ -171,96 +173,75 @@ export default function PageRenderer({
     </>
   );
 
-  return (
-    <div key={id} className="w-full">
-      {(() => {
-        // Default classes for 50/50 split
-        let mediaColClass = "w-full md:w-1/2";
-        let textColClass = "w-full md:w-1/2";
-        let mediaOrderClass = "";
-        let textOrderClass = "";
+  // Layout rendering
+  if (isTextOnly) {
+    return (
+      <div className="w-full flex justify-center">
+        <div className="w-full max-w-4xl">
+          {textContent}
+        </div>
+      </div>
+    );
+  }
 
-        // Handle Media Right / Text Left order
-        if (layoutType === "MediaRight_TextLeft") {
-          mediaOrderClass = "md:order-2";
-          textOrderClass = "md:order-1";
-        }
+  if (isMediaOnly) {
+    return (
+      <div className="w-full flex justify-center">
+        <div className="w-full max-w-5xl">
+          {mediaContent}
+        </div>
+      </div>
+    );
+  }
 
-        // Handle shape-based column sizing for Two-Column layouts
-        if (isTwoColumn) {
-          const shape = page.mediaShape;
+  if (isTwoColumn) {
+    const mediaOnRight = layoutType === "MediaRight_TextLeft";
 
-          if (shape === "4:5" || shape === "9:16") {
-            // Taller shapes get less space
-            mediaColClass = "w-full md:w-5/12";
-            textColClass = "w-full md:w-7/12";
-          } else if (shape === "16:9") {
-            // Wider shapes get more space
-            mediaColClass = "w-full md:w-7/12";
-            textColClass = "w-full md:w-5/12";
-          } else if (shape === "5:4") {
-            // Slightly wide
-            mediaColClass = "w-full md:w-6/12";
-            textColClass = "w-full md:w-6/12";
-          }
-          // 1:1 stays 50/50
-        }
-
-        let content = null;
-
-        if (isTextOnly) {
-          // Full-width, centered text column
-          content = <div className="w-full max-w-2xl mx-auto">{textContent}</div>;
-        } else if (isMediaOnly) {
-          // Full-width, centered media column
-          content = <div className="w-full max-w-5xl">{mediaContent}</div>;
-        } else if (isTwoColumn) {
-          // Two-column layout (Media Left/Right)
-          // **FIX 2: Use a single wrapper div instead of a fragment**
-          content = (
-            <div 
-              // Removed key here, as the parent div has the key=id
-              className="flex flex-col md:flex-row gap-16 w-full"
+    return (
+      <div className="w-full flex justify-center">
+        <div className="w-full max-w-5xl">
+          <div className="flex flex-col gap-10 md:flex-row md:gap-16">
+            <div
+              className={`w-full md:w-1/2 ${
+                mediaOnRight ? "md:order-2" : "md:order-1"
+              }`}
             >
-              {/* Media */}
-              <div className={`${mediaColClass} ${mediaOrderClass}`}>
-                {mediaContent}
-              </div>
-              {/* Text */}
-              <div className={`${textColClass} ${textOrderClass}`}>
-                {textContent}
-              </div>
+              {mediaContent}
             </div>
-          );
-          // **End Fix 2**
-        } else {
-          // Top/Bottom Layouts
-          content = (
-            <div className={`flex flex-col gap-16 items-center justify-center ${fullWidthClass}`}>
-              {/* For Top/Bottom, we render them sequentially */}
-              {layoutType === "MediaTop_TextBottom" && (
-                <>
-                  <div className="w-full">{mediaContent}</div>
-                  <div className="w-full max-w-2xl">
-                    {textContent}
-                  </div>
-                </>
-              )}
-              {layoutType === "MediaBottom_TextTop" && (
-                <>
-                  <div className="w-full max-w-2xl">
-                    {textContent}
-                  </div>
-                  <div className="w-full">{mediaContent}</div>
-                </>
-              )}
+            <div
+              className={`w-full md:w-1/2 ${
+                mediaOnRight ? "md:order-1" : "md:order-2"
+              }`}
+            >
+              {textContent}
             </div>
-          );
-        }
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-        return content;
-      })()}
+  // Stacked layouts
+  return (
+    <div className="w-full flex justify-center">
+      <div className="w-full max-w-5xl flex flex-col gap-10">
+        {layoutType === "MediaTop_TextBottom" && (
+          <>
+            <div className="w-full">{mediaContent}</div>
+            <div className="w-full max-w-2xl">
+              {textContent}
+            </div>
+          </>
+        )}
+        {layoutType === "MediaBottom_TextTop" && (
+          <>
+            <div className="w-full max-w-2xl">
+              {textContent}
+            </div>
+            <div className="w-full">{mediaContent}</div>
+          </>
+        )}
+      </div>
     </div>
   );
 }
-

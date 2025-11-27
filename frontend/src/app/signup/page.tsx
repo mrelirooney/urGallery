@@ -29,9 +29,9 @@ export default function SignupPage() {
         <h1 className="mb-6 text-center text-2xl font-bold text text-gray-900">Create Account</h1>
         {err && <p className="mb-3 text-red-600">{err}</p>}
         <form onSubmit={onSubmit} className="grid gap-3">
-          <input className="bg-gray-100 border rounded px-3 py-2 border-neutral-300" placeholder="Email"
+          <input className="bg-gray-100 border rounded px-3 py-2 border-neutral-300 text-neutral-800" placeholder="Email"
                 value={email} onChange={e => setEmail(e.target.value)} />
-          <input className="bg-gray-100 border rounded px-3 py-2 border-neutral-300" type="password" placeholder="Password"
+          <input className="bg-gray-100 border rounded px-3 py-2 border-neutral-300 text-neutral-800" type="password" placeholder="Password"
                 value={password} onChange={e => setPassword(e.target.value)} />
           <button className="px-3 py-2 bg-black text-white rounded disabled:opacity-60">
             Sign Up

@@ -15,19 +15,21 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
-from django.urls import path, include
 from django.contrib import admin
+from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from pathlib import Path
-import sys
 from artists.api import search_artists, artist_detail
 
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    # 👇 NEW: hook up auth endpoints
+    path("api/auth/", include("accounts.urls")),
+    # existing artist endpoints
     path("api/artists/search/", search_artists, name="search-artists"),
-    path("api/artists/<slug:slug>/", artist_detail, name="artist-detail"), 
+    path("api/artists/<slug:slug>/", artist_detail, name="artist-detail"),
+    # whatever Gemini set up here
     path("api/", include("api.urls")),
 ]
 

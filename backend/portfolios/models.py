@@ -114,6 +114,8 @@ class Page(models.Model):
         ("5:4", "Wide (5:4)"),
     ]
 
+
+
 class Meta:
     ordering = ["order", "id"]
     constraints = [
@@ -183,3 +185,64 @@ def _page_saved(sender, instance: Page, **kwargs):
 @receiver(post_delete, sender=Page)
 def _page_deleted(sender, instance: Page, **kwargs):
     _recount_pages(instance.portfolio_id)
+
+
+class DraftPortfolio(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="draft_portfolios")
+    slug = models.SlugField(max_length=255, unique=True)
+    
+    # Editable profile info
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    privacy = models.CharField(
+        max_length=20,
+        choices=Privacy.choices,   # reuse same choices
+        default=Privacy.DRAFT,
+    )
+
+    # Metadata
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    # A flag to detect unpublished changes
+    has_unpublished_changes = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Draft: {self.title}"
+
+
+class DraftPage(models.Model):
+    draft_portfolio = models.ForeignKey(
+        DraftPortfolio,
+        on_delete=models.CASCADE,
+        related_name="pages"
+    )
+
+    # Same editable fields as Page
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    order = models.PositiveIntegerField(default=0)
+
+    layout = models.CharField(
+        max_length=50,
+        choices=PortfolioPageLayout.choices,
+        default=PortfolioPageLayout.MEDIA_LEFT_TEXT_RIGHT,
+    )
+
+    media_image = models.ImageField(
+        upload_to="draft_portfolio_pages/",
+        blank=True,
+        null=True
+    )
+
+    media_shape = models.CharField(
+        max_length=4,
+        choices=MEDIA_SHAPE_CHOICES,
+        default="1:1",
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Draft Page {self.order} for {self.draft_portfolio.slug}"

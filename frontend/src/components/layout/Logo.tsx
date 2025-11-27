@@ -8,7 +8,7 @@ type Props = Omit<ImageProps, "src" | "alt"> & { className?: string };
 export function LogoPrimary({ className = "", ...rest }: Props) {
   return (
     <Image
-      src="/Logos/urGalleryLogo-Primary-black.png"
+      src="/Logos/urGalleryLogo-Primary-black-01.png"
       alt="urGallery"
       // intrinsic pixel size of the asset (any reasonable ratio works)
       width={1200}

@@ -1,4 +1,5 @@
-from django.urls import path, include
+# accounts/urls.py
+from django.urls import path
 from .views import (
     CookieTokenObtainPairView,
     CookieTokenRefreshView,
@@ -6,14 +7,13 @@ from .views import (
     RegisterView,
     LogoutView,
 )
-from accounts.api import search_users
+from .api import search_users  # local import is cleaner
 
 urlpatterns = [
     path("login/",   CookieTokenObtainPairView.as_view(),   name="login"),
     path("refresh/", CookieTokenRefreshView.as_view(),      name="refresh"),
     path("me/",      MeView.as_view(),                      name="me"),
-    path("register/",RegisterView.as_view(),                name="register"),
-    path("logout/",  LogoutView.as_view(),                  name="logout"), 
-    path("api/", include("apps.accounts.urls")),
+    path("register/", RegisterView.as_view(),               name="register"),
+    path("logout/",  LogoutView.as_view(),                  name="logout"),
     path("artists/search/", search_users, name="search-artists"),
 ]

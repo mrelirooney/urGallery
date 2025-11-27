@@ -2,7 +2,14 @@
 import React, { useEffect, useState } from "react";
 import PortfolioTitle from "./primitives/PortfolioTitle";
 import Pagination from "./primitives/Pagination";
-import PageRenderer, { PortfolioPageData, LayoutType, MediaShapeType } from "./PageRenderer";
+import PageRenderer, {
+  PortfolioPageData,
+  LayoutType,
+  MediaShapeType,
+} from "./PageRenderer";
+
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 type PortfolioWrapperProps = {
   slug: string;
@@ -33,48 +40,56 @@ export default function PortfolioWrapper({ slug }: PortfolioWrapperProps) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!slug) {
+      console.log(
+        "⚠️ Slug is not available yet, skipping portfolio load."
+      );
+      return;
+    }
+
     async function loadPortfolio() {
       try {
         setLoading(true);
         setError(null);
 
-        // 🔧 Get the base URL - make sure it's defined!
-        const base = process.env.NEXT_PUBLIC_DJANGO_BASE_URL ?? "http://127.0.0.1:8000";
-        
-        console.log("🔍 Base URL:", base);
-        console.log("🔍 Fetching portfolio from:", `${base}/api/portfolios/${slug}/`);
-        
-        const res = await fetch(`${base}/api/portfolios/${slug}/`);
+        const url = `${API_BASE}/api/portfolios/${slug}/`;
+        console.log("Fetching live portfolio:", url);
 
+        const res = await fetch(url);
         if (!res.ok) {
           throw new Error(`Failed to fetch portfolio: ${res.status}`);
         }
 
         const data: ApiPortfolio = await res.json();
-        
-        console.log("📦 API Response:", data);
-
         setPortfolioTitle(data.title ?? "");
 
-        // 🖼️ Map backend pages → frontend PageRenderer shape
+        // Map backend Page → frontend PageRenderer shape
         const mappedPages: PortfolioPageData[] = data.pages
           .slice()
           .sort((a, b) => a.order - b.order)
           .map((page, index) => {
-            // ✅ Django returns full URLs, so use them directly
-            const mediaSrc = page.media_image || null;
-            
-            console.log(`📸 Page ${index + 1} media_image:`, page.media_image);
-            console.log(`📸 Page ${index + 1} full mediaSrc:`, mediaSrc);
-            
+            // Build a *safe* mediaSrc
+            let mediaSrc: string | null = null;
+            if (page.media_image) {
+              // If backend already gave us a full URL, just use it
+              if (page.media_image.startsWith("http")) {
+                mediaSrc = page.media_image;
+              } else {
+                // Otherwise, prefix with API_BASE
+                mediaSrc = `${API_BASE}${page.media_image}`;
+              }
+            }
+
             return {
               id: page.id,
-              pageNumber: index + 1,
-              layoutType: page.layout ?? "MediaLeft_TextRight",
               title: page.title,
               description: page.description,
-              mediaSrc: mediaSrc,
-              mediaShape: page.media_shape ?? "1:1",
+              // Fall back to your default layout if null/undefined
+              layoutType: (page.layout || "MediaBottom_TextTop") as LayoutType,
+              mediaSrc,
+              // Make live view respect saved media shape
+              mediaShape: (page.media_shape || "1:1") as MediaShapeType,
+              pageNumber: index + 1,
             };
           });
 
@@ -111,17 +126,25 @@ export default function PortfolioWrapper({ slug }: PortfolioWrapperProps) {
   return (
     <section className="mx-auto max-w-7xl flex-col justify-between text-neutral-100">
       <div className="min-h-[85vh] w-full max-w-7xl py-8 flex flex-col justify-between gap-6">
-        <PortfolioTitle text={portfolioTitle} align="left" size="xs" color="text-neutral-200" />
-        
+        <PortfolioTitle
+          text={portfolioTitle}
+          align="left"
+          size="xs"
+          color="text-neutral-200"
+        />
+
         <div className="max-h-[60vh] flex flex-col justify-center gap-6">
-          <PageRenderer pages={pages} currentPageIndex={currentPageIndex} />
+          <PageRenderer
+            pages={pages}
+            currentPageIndex={currentPageIndex}
+          />
         </div>
-        
-        <Pagination 
-          totalPages={pages.length} 
+
+        <Pagination
+          totalPages={pages.length}
           currentPage={currentPageIndex + 1}
           onChangePage={(newIndex) => setCurrentPageIndex(newIndex)}
-        />        
+        />
       </div>
     </section>
   );

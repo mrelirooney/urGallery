@@ -5,18 +5,18 @@ import { MediaShapeType } from "./PageRenderer";
 
 interface ShapePickerModalProps {
   isOpen: boolean;
-  currentShape: MediaShapeType | null;
+  currentShape: MediaShapeType;
   onClose: () => void;
-  onSelectShape: (shape: MediaShapeType | null) => void;
+  onSelectShape: (shape: MediaShapeType) => void;
 }
 
-const SHAPE_OPTIONS: { value: MediaShapeType | null; label: string; aspect: string }[] = [
+const SHAPE_OPTIONS: { value: MediaShapeType; label: string; aspect: string }[] = [
   { value: "1:1", label: "Square", aspect: "1:1" },
   { value: "16:9", label: "Wide", aspect: "16:9" },
+  { value: "21:9", label: "Cinematic", aspect: "21:9" },
   { value: "9:16", label: "Vertical", aspect: "9:16" },
   { value: "4:5", label: "Portrait", aspect: "4:5" },
   { value: "5:4", label: "Landscape", aspect: "5:4" },
-  { value: null, label: "No Media", aspect: "—" },
 ];
 
 export default function ShapePickerModal({
@@ -27,7 +27,7 @@ export default function ShapePickerModal({
 }: ShapePickerModalProps) {
   if (!isOpen) return null;
 
-  const handleSelect = (shape: MediaShapeType | null) => {
+  const handleSelect = (shape: MediaShapeType) => {
     onSelectShape(shape);
     onClose();
   };
@@ -54,7 +54,7 @@ export default function ShapePickerModal({
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {SHAPE_OPTIONS.map((option) => {
             const isSelected = currentShape === option.value;
-            
+            if (!isOpen) return null;
             return (
               <button
                 key={option.value ?? "no-media"}
