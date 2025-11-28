@@ -1,171 +1,261 @@
 🎨 urGallery – Version 0 (MVP)
 
-urGallery is a portfolio-builder made for artists and creators who want to show their work beautifully — without touching code.
-This version focuses on rock-solid artist profiles and flexible portfolio pages with dynamic layouts.
+urGallery is a portfolio-builder made for artists and creators who want to showcase their work beautifully — without touching code.
+Version 0 focuses on rock-solid artist profiles, clean public portfolios, and now a fully functional Portfolio Editor that supports drafts, publishing, custom layouts, dynamic page ordering, and responsive media shapes.
 
 🧩 Tech Stack
-Layer	Tool	Purpose
-Frontend	Next.js (React + TypeScript)	UI, routing, and rendering
-Styling	Tailwind CSS	Utility-first, responsive styling
-Animations	Framer Motion	Smooth artist-page interactions
-Backend	Django + DRF (Django REST Framework)	API, models, serialization
+Layer	Tool / Framework	Purpose
+Frontend	Next.js (React + TypeScript)	UI, routing, rendering
+Styling	Tailwind CSS	Utility-first responsive styling
+Animations	Framer Motion	Smooth interactions
+Backend	Django + Django REST Framework (DRF)	API, models, serializers
 Database	PostgreSQL	Persistent storage
 Auth	JWT (SimpleJWT)	Secure access + refresh tokens
-Storage	Django Media Files (Pillow)	Portfolio images & avatars
+Storage	Django Media Files (Pillow)	Portfolio images
 CORS	django-cors-headers	Frontend ↔ Backend communication
-Version Control	GitHub	Repo + project history
+Version Control	GitHub	Repo + collaboration
 ⚙️ Backend Progress
+✅ Core Django System
 
-✅ Django project structured cleanly
-✅ accounts, artists, and portfolios apps connected
-✅ Slugs enabled for artists & portfolios
-✅ JWT authentication functional
-✅ CORS configured + working with Next.js
-✅ Media upload system working in Django Admin
-✅ Models migrated (User, Profile, Portfolio, Page, PageMedia)
-✅ REST API endpoints serving correct JSON
-✅ Portfolio → Page → Media relationships complete
+Clean project structure
 
-Big Wins:
+accounts, artists, and portfolios apps fully connected
 
-Portfolio JSON dynamically delivers page layouts & media
+JWT auth fully functional
 
-Frontend successfully loads media from backend
+CORS configured with Next.js
 
-Page ordering + media shape support included
+Media file system working (upload → backend → frontend)
 
-🧱 Backend Models Overview
-Model	Purpose
-User	Email-based authentication
-Profile	Display name, title, bio, location, avatar
-Portfolio	Linked to a user; title, slug, ordering
-Page	Linked to portfolio; layout, order, title, description
-PageMedia	Image or asset for a page; tracks media shape
+All migrations completed (User, Profile, Portfolio, DraftPortfolio, Page, DraftPage)
+
+✅ Portfolio Data Model (Finalized)
+
+Portfolio (live) and DraftPortfolio (editor copy)
+
+Page and DraftPage with:
+
+title, description
+
+layout (media-left, media-top, etc.)
+
+media_image
+
+media_shape (1:1, 4:5, 16:9, etc.)
+
+order
+
+is_public
+
+✅ Backend Features Completed
+
+Draft and Live portfolio separation
+
+Editor PATCH update logic (pages, layouts, media, shapes, order)
+
+Publish endpoint copies draft → live
+
+Slugs enabled for artists & portfolios
+
+Portfolio JSON dynamically delivers layouts & media
+
+Handles both relative & absolute image URLs
+
+Improved serializers for editor + live views
+
+🏆 Big Backend Wins
+
+Full draft → publish pipeline
+
+Live pages always reflect last published state
+
+Draft editor never affects live view unless published
+
+Image URLs consistently resolve in both environments
+
 🖥️ Frontend Progress
+🌟 Portfolio Editor (MVP Complete)
+✔ Page & Content Editing
 
-✅ Next.js + Tailwind fully configured
-✅ Artist Landing Page implemented
+Edit page titles, descriptions, and media
 
-Header animation on scroll
+Add new pages
 
-Avatar + display name + title + bio + location
+Delete pages (with safeguard: cannot delete last page)
 
-Portfolio section integrated
-✅ Dynamic routing:
+Reorder pages via thumbnail drag-and-drop
+
+Live thumbnail selection auto-scrolls editor
+
+✔ Layout + Media Shape System
+
+LayoutPickerModal (media-left, media-right, media-bottom, centered, etc.)
+
+ShapePickerModal (1:1, 4:5, 5:4, 9:16, 16:9)
+
+Editor preview reactive to layout + shape
+
+Live portfolio respects layout & shape after publish
+
+✔ Draft vs Publish Workflow
+
+Editor loads draft state
+
+Save Draft → persists full editor state
+
+Publish → copies draft → live portfolio
+
+Live view never changes until you publish
+
+Loading states + smart re-fetching built into wrappers
+
+✔ Undo / Redo Engine
+
+Works for text edits, layout changes, media changes, and page structure
+
+Toolbar buttons
+
+Keyboard shortcuts:
+
+Undo: Ctrl+Z
+
+Redo: Ctrl+Shift+Z
+
+History persists during session
+
+✔ Image Handling
+
+Image uploads update preview
+
+Live portfolios build correct media URLs
+
+Works for both relative and absolute django paths
+
+🌟 Artist Public Pages (Previously Completed)
+
+Artist header (avatar, name, title, bio, location)
+
+Animated hero header on scroll
+
+Linked portfolios section
+
+Clean responsive design
+
+🌟 Public Portfolio Pages (Live View)
+
+Dynamic routing:
 
 /artist/[slug]
 
-/artist/[slug]/portfolio/[portfolioSlug]
-✅ PageRenderer system built
+/[slug]/[portfolioSlug]
 
-Generates layouts dynamically
+PageRenderer generates layouts dynamically
 
-Reads data directly from API
+Pagination UI with clickable dots
 
-Media + text primitives in place
+Responsive media rendering via MediaSlot
 
-Page numbers + arrow navigation working
-✅ MediaSlot supports aspect ratios:
-1:1, 4:5, 5:4, 9:16, 16:9
-✅ Pagination fixed to bottom of wrapper
-
-Component Highlights:
-
-PortfolioWrapper – handles API fetching + pagination
-
-PageRenderer – core dynamic layout engine
-
-PageInfo / PageTitle / PageDescription – text primitives
-
-MediaSlot – responsive image system
-
-Pagination – page navigation UI
+PortfolioWrapper handles all fetch + state
 
 🔒 Security & Auth
 
-JWT access + refresh token flow
+JWT access + refresh token system
 
-CORS locked down to dev origins
+Secure token handling from Next.js
 
-Django ORM & permission-safe architecture
+Artist-only editing access
 
-Planned: email verification + password reset
+CORS locked to dev origins
 
-🗂️ Component Architecture (Current)
+Django permissions safe by default
+
+(Future) Email verification + password reset
+
+🗂️ Component Architecture (Updated)
 components/
  ├── artist/
  │   └── ArtistHeader.tsx
  ├── portfolio/
- │   ├── PortfolioWrapper.tsx
- │   ├── PageRenderer.tsx
- │   ├── MediaSlot.tsx
+ │   ├── PortfolioWrapper.tsx        // Live portfolio
+ │   ├── PageRenderer.tsx            // Live + editor rendering
+ │   ├── MediaSlot.tsx               // Live media display
  │   ├── PageInfo.tsx
  │   ├── Pagination.tsx
- │   └── primitives/
- │       ├── PageTitle.tsx
- │       ├── PageDescription.tsx
- │       └── PortfolioTitle.tsx
- └── layout/
-     └── BaseTwoBoxes.tsx
+ │   ├── primitives/
+ │   │     ├── PageTitle.tsx
+ │   │     ├── PageDescription.tsx
+ │   │     └── PortfolioTitle.tsx
+ │   └── editor/
+ │         ├── PortfolioEditorShell.tsx
+ │         ├── EditorTopBar.tsx
+ │         ├── LayoutPickerModal.tsx
+ │         ├── ShapePickerModal.tsx
+ │         ├── MediaSlot.tsx         // Editor version
+ │         ├── PageRenderer.tsx      // Editor version
+ │         └── hooks/
+ │               ├── useHistory.ts
+ │               └── useAuth.ts
 
 📈 Next Steps (Backend)
 
-Add editing endpoints for:
+Fix is_public persistence in editor + publish
 
-Create Portfolio
+Ensure PATCH includes privacy field
 
-Add pages
+Improve image upload state normalization
 
-Upload media via API
+Add server-side validation for layout + shape compatibility
 
-Add permissions + privacy controls
-
-Add URL validation for social links
-
-Add theme system for artists
+Optional: add themes / color palettes
 
 📈 Next Steps (Frontend)
 
-Build Portfolio Editor (big next feature)
+Fix Privacy toggle sync with backend
 
-Add:
+Make Publish auto-save if draft isn't saved
 
-Add Page
+Prevent “image flash then disappear” after upload
 
-Edit Page
+Improve layout previews visually in the editor
 
-Upload Media
+Add redirect after publish
 
-Reorder Pages
+Add better loading + error states
 
-Add layout selection UI
-
-Work on mobile responsiveness
-
-Clean up animation transitions
-
-🚀 V0 Goal
+🚀 V0 Goal (Complete)
 
 A creator can:
 
 Visit an artist page
 
-View their portfolio
+View their public portfolio
 
-Flip through pages
+Flip through portfolio pages
 
-See media + text arranged cleanly
+Experience dynamic layouts
 
-Share their public link
+Read text + view images cleanly
 
-V0 is about presentation, stability, and the foundation for editing tools.
+Share a clean public link
 
-🌟 Milestone Log
+Edit their portfolio through the full editor
+
+Save drafts and publish live updates
+
+V0 establishes stability, clarity, and the full foundation needed for V1’s AI-powered features.
+
+🌟 Milestone Log (Updated)
 Status	Milestone
 ✅	Artist profile fetch + display
 ✅	Portfolio JSON fetch working
-✅	PageRenderer hooked to backend
+✅	PageRenderer layout engine
 ✅	Media displayed from Django
 ✅	Pagination fully functional
-⚙️	Layout editor (coming next)
-⚙️	Portfolio CRUD UI (coming next)
+✅	Draft/Live portfolio system
+✅	Editor page CRUD
+✅	Layout & shape picker
+✅	Image uploads to backend
+✅	Undo/redo system
+⚙️	Privacy and publish polish
+⚙️	Editor UI/UX refinement
+⚙️	Final V0 QA
