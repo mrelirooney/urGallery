@@ -5,11 +5,11 @@ from . import views, editor_views
 urlpatterns = [
     # Public viewer endpoints
     path("<slug:slug>/", views.portfolio_detail, name="portfolio-detail"),
-    path(
-        "<slug:slug>/pages/<int:page_number>/",
-        views.portfolio_page_detail,
-        name="portfolio-page",
-    ),
+    #path(
+        #"<slug:slug>/pages/<int:page_number>/",
+        #views.portfolio_page_detail,
+        #name="portfolio-page",
+    #),
 
     # --- Editor: portfolio data for React editor (GET) ---
     # This is what your frontend calls at /api/portfolios/<slug>/editor/

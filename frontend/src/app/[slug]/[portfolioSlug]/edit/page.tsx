@@ -1,4 +1,4 @@
-// frontend/src/app/portfolio-test/page.tsx
+// frontend/src/app/[slug]/[portfolioSlug]/edit/page.tsx
 
 import Container from "@/components/layout/Container";
 import PortfolioEditorShell from "@/components/portfolio/editor/PortfolioEditorShell";
@@ -12,9 +12,6 @@ export const dynamic = "force-dynamic";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-
-// Hard-coded test slug for now
-const TEST_PORTFOLIO_SLUG = "my-first-portfolio-for-test";
 
 // Shape of what the editor endpoint returns
 type EditorPortfolioApi = {
@@ -33,12 +30,22 @@ type EditorPortfolioApi = {
   }[];
 };
 
-async function fetchEditorPortfolio(): Promise<EditorPortfolioApi | null> {
+type RouteParams = {
+  slug: string;          // artist slug, e.g. "mrelirooney"
+  portfolioSlug: string; // portfolio slug, e.g. "picture-portfolio-1"
+};
+
+async function fetchEditorPortfolio(
+  portfolioSlug: string,
+): Promise<EditorPortfolioApi | null> {
   try {
     const res = await fetch(
-      `${API_BASE}/api/portfolios/${TEST_PORTFOLIO_SLUG}/editor/`,
+      `${API_BASE}/api/portfolios/${encodeURIComponent(
+        portfolioSlug,
+      )}/editor/`,
       {
         cache: "no-store",
+        credentials: "include",
       },
     );
 
@@ -55,15 +62,20 @@ async function fetchEditorPortfolio(): Promise<EditorPortfolioApi | null> {
   }
 }
 
-export default async function PortfolioTestPage() {
-  const apiPortfolio = await fetchEditorPortfolio();
+export default async function EditPortfolioPage({
+  params,
+}: {
+  params: RouteParams;
+}) {
+  const apiPortfolio = await fetchEditorPortfolio(params.portfolioSlug);
 
   if (!apiPortfolio) {
     return (
       <main className="py-16">
         <Container>
           <p className="text-red-500">
-            Could not load the test portfolio editor. Check the Django server.
+            Could not load this portfolio editor. Make sure the Django server is
+            running and that this portfolio exists.
           </p>
         </Container>
       </main>
@@ -80,7 +92,11 @@ export default async function PortfolioTestPage() {
       title: page.title,
       description: page.description,
       // Build full URL so images load from localhost:8000, not 3000
-      mediaSrc: page.media_image ? `${API_BASE}${page.media_image}` : null,
+      mediaSrc: page.media_image
+        ? page.media_image.startsWith("http")
+          ? page.media_image
+          : `${API_BASE}${page.media_image}`
+        : null,
       // Use whatever your PortfolioPageData calls this field
       mediaShape2: (page.media_shape || "1:1") as MediaShapeType,
     }));

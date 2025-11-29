@@ -7,12 +7,15 @@ import PageRenderer, {
   LayoutType,
   MediaShapeType,
 } from "./PageRenderer";
+import EditPortfolioButton from "@/components/portfolio/EditPortfolioButton";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
+
 type PortfolioWrapperProps = {
-  slug: string;
+  slug: string;        // portfolio slug
+  artistSlug: string;  // owner’s profile slug
 };
 
 type ApiPage = {
@@ -32,12 +35,13 @@ type ApiPortfolio = {
   pages: ApiPage[];
 };
 
-export default function PortfolioWrapper({ slug }: PortfolioWrapperProps) {
+export default function PortfolioWrapper({ slug, artistSlug }: PortfolioWrapperProps) {
   const [portfolioTitle, setPortfolioTitle] = useState<string>("");
   const [pages, setPages] = useState<PortfolioPageData[]>([]);
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
 
   useEffect(() => {
     if (!slug) {
@@ -126,12 +130,17 @@ export default function PortfolioWrapper({ slug }: PortfolioWrapperProps) {
   return (
     <section className="mx-auto max-w-7xl flex-col justify-between text-neutral-100">
       <div className="min-h-[85vh] w-full max-w-7xl py-8 flex flex-col justify-between gap-6">
-        <PortfolioTitle
-          text={portfolioTitle}
-          align="left"
-          size="xs"
-          color="text-neutral-200"
-        />
+        <div className="flex items-center justify-between gap-4">
+          <PortfolioTitle
+            text={portfolioTitle}
+            align="left"
+            size="xs"
+            color="text-neutral-200"
+          />
+
+          {/* Only shows for the owner (logic is inside EditPortfolioButton) */}
+          <EditPortfolioButton artistSlug={artistSlug} portfolioSlug={slug} />
+        </div>
 
         <div className="max-h-[60vh] flex flex-col justify-center gap-6">
           <PageRenderer

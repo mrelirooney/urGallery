@@ -23,6 +23,8 @@ export default function Navbar() {
     return null;
   }
   
+  // Where "View Profile" should go
+  const profileHref = user?.slug ? `/${user.slug}` : "/login";
   const searchParams = useSearchParams();
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -146,7 +148,7 @@ export default function Navbar() {
                   <ul className="py-1 text-sm text-gray-700">
                     <li>
                       <Link
-                        href="/profile"
+                        href={profileHref}
                         className="block px-3 py-2 hover:bg-gray-50"
                         role="menuitem"
                         onClick={() => setMenuOpen(false)}

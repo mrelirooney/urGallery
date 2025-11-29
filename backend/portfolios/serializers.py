@@ -151,6 +151,8 @@ class PortfolioSerializer(serializers.ModelSerializer):
             "pages",
         ]
 
+        read_only_fields = ["slug"]
+
 
 class ArtistLandingSerializer(serializers.Serializer):
     """Placeholder for potential future artist landing-specific data."""

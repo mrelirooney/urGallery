@@ -6,6 +6,7 @@ import ArtistLandingMotion from "@/components/artist/ArtistLandingMotion";
 import PortfolioWrapper from "@/components/portfolio/PortfolioWrapper";
 import { notFound } from "next/navigation";
 
+
 type RouteParams = { slug: string };
 
 // --- helpers ---
@@ -38,16 +39,11 @@ export async function generateMetadata(
 
 // --- main page ---
 export default async function ArtistPage({ params } : { params: RouteParams}) {
-  const { slug } = await params;
+  const data = await getArtistLanding(params.slug);
 
-  let data: ArtistLanding;
-  try {
-    data = await getArtistLanding(slug);
-  } catch (err: any) {
-    if (err?.message === "NOT_FOUND") {
-      return <div className="py-16 text-center">Check the link and try again.</div>;
-    }
-    throw err;
+  if (!data) {
+    // If an artist with this slug doesn't exist, show 404 instead of crashing
+    notFound();
   }
 
   const { profile, portfolios } = data;
@@ -100,7 +96,7 @@ export default async function ArtistPage({ params } : { params: RouteParams}) {
       <section id="portfolio-shell" className="bg-neutral-900 text-white">
         {/* keep Container, but remove duplicate id and keep it neutral */}
         <Container className="bg-neutral-900 text-white">
-          <PortfolioWrapper slug={firstPortfolio.slug} />
+          <PortfolioWrapper slug={firstPortfolio.slug} artistSlug={profile.slug} />
         </Container>
       </section>
     </main>

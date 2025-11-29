@@ -6,6 +6,8 @@ from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
+from .models import Profile
 
 
 User = get_user_model()
@@ -84,15 +86,42 @@ class RegisterView(generics.CreateAPIView):
         return Response({"detail": "Account created successfully"}, status=status.HTTP_201_CREATED)
     
 class MeView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
-    def get(self, request, *args, **kwargs):
-        u = request.user
+    def get(self, request):
+        user = request.user
+        profile = user.profile  # ← from Profile model
+
+        # --- avatar logic ---
+        # 1) Prefer the uploaded avatar file on the User model
+        if user.avatar:
+            try:
+                avatar_url = request.build_absolute_uri(user.avatar.url)
+            except Exception:
+                avatar_url = None
+        # 2) Fallbacks: custom S3 key or default avatar from Profile
+        elif profile.avatar_s3_key:
+            avatar_url = profile.avatar_s3_key
+        elif profile.default_avatar:
+            avatar_url = profile.default_avatar.s3_key
+        else:
+            avatar_url = None
+
         return Response({
-            "id": str(u.id),
-            "email": getattr(u, "email", ""),
-            "first_name": getattr(u, "first_name", ""),
-            "last_name": getattr(u, "last_name", ""),
+            "id": user.id,
+            "email": user.email,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+
+            # MOST IMPORTANT FIELDS
+            "slug": profile.slug,
+            "display_name": profile.display_name,
+            "title": profile.title,
+            "location": profile.location,
+            "bio": profile.bio,
+
+            # avatar for navbar
+            "avatar_url": avatar_url,
         })
     
 class LogoutView(APIView):

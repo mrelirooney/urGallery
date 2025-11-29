@@ -12,6 +12,7 @@ import ShapePickerModal from "./ShapePickerModal";
 import PrivacyModal from "./PrivacyModal";
 import useHistory from "@/hooks/useHistory";
 import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
@@ -46,6 +47,13 @@ const createEmptyPage = (): PortfolioPageData => ({
 
 export type PrivacyState = "public" | "private";
 
+
+const djangoPrivacyFromState = (state: PrivacyState): "public" | "draft" | "link_only" => {
+  if (state === "public") return "public";
+  // Treat the "Private" button as Link-only in Django
+  return "link_only";
+};
+
 interface EditorState {
   title: string;
   pages: PortfolioPageData[];
@@ -60,6 +68,11 @@ export default function PortfolioEditorShell({
   initialPrivacy,
   portfolioSlug,
 }: PortfolioEditorShellProps) {
+
+  const router = useRouter();
+  const { user } = useAuth();   // Needed so we can redirect using artistSlug
+  const artistSlug = user?.slug ?? "";
+  
   // -------- Initial editor state --------
   const initialEditorState: EditorState = {
     title: portfolioTitle,
@@ -345,51 +358,71 @@ export default function PortfolioEditorShell({
   const handleCloseLayout = () => setIsLayoutModalOpen(false);
   const handleCloseShape = () => setIsShapeModalOpen(false);
 
-  const savePortfolio = async (nextPrivacy?: PrivacyState) => {
-    if (!portfolioSlug) {
-      console.warn("No portfolioSlug – cannot sync draft/publish");
-      console.log("Current editor state:", editorState);
+  const savePortfolio = async (
+  nextPrivacy?: PrivacyState,
+  options?: { silent?: boolean }
+) => {
+  if (!portfolioSlug) {
+    console.warn("No portfolioSlug – cannot sync draft/publish");
+    return;
+  }
+
+  const effectivePrivacy: PrivacyState = nextPrivacy ?? editorState.privacy;
+
+  const payload = {
+    title: editorState.title,
+    privacy: djangoPrivacyFromState(effectivePrivacy),
+    pages: editorState.pages.map((page, index) => ({
+      id: page.id,
+      title: page.title,
+      description: page.description,
+      layout: page.layoutType,
+      media_shape: page.mediaShape2,
+      order: index,
+    })),
+  };
+  let res;
+  try {
+    res = await fetch(
+      `${API_BASE}/api/portfolios/${portfolioSlug}/editor/`,
+      {
+        method: "PATCH",
+        credentials: "include",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    if (!res.ok) {
+      console.error(
+        "Failed to save portfolio",
+        res.status,
+        await res.text()
+      );
       return;
     }
 
-    // Build payload from current editor state
-    const payload = {
-      title: editorState.title,
-      privacy: nextPrivacy ?? editorState.privacy,
-      pages: editorState.pages.map((page, index) => ({
-        id: page.id,
-        title: page.title,
-        description: page.description,
-        layout: page.layoutType,          // 👈 use layoutType here
-        media_shape: page.mediaShape2 ?? page.mediaShape2, // pick the one you actually have
-        order: index,                     // or page.order if you track it
-      })),
-    };
-
-    try {
-      const res = await fetch(
-        `${API_BASE}/api/portfolios/${portfolioSlug}/editor/`,
-        {
-          method: "PATCH",
-          credentials: "include",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        }
-      );
-
-      if (!res.ok) {
-        console.error("Failed to save portfolio", res.status);
-        return;
-      }
-
+    if (!options?.silent) {
       console.log("Portfolio saved successfully");
-    } catch (err) {
-      console.error("Error saving portfolio", err);
     }
-  };
+  } catch (err) {
+    console.error("Error saving portfolio", err);
+    return;
+  }
+  // --- NEW SLUG SYNC FROM DJANGO ---
+  const data = await res.json();
+
+  if (data.slug && data.slug !== portfolioSlug) {
+    console.log(
+      `Slug changed from ${portfolioSlug} → ${data.slug}, redirecting...`
+    );
+
+    router.replace(`/${artistSlug}/${data.slug}/edit`);
+  }
+}
 
 
   const handleDraft = () => {
@@ -401,27 +434,31 @@ export default function PortfolioEditorShell({
     if (!portfolioSlug) return;
 
     try {
+      // 1) Save current editor state (title, pages, privacy) silently
+      await savePortfolio(undefined, { silent: true });
+
+      // 2) Call publish endpoint
       const res = await fetch(
-        `${API_BASE}/api/portfolios/${portfolioSlug}/editor/publish/`, // 👈 note 'publish/' exactly
+        `${API_BASE}/api/portfolios/${portfolioSlug}/editor/publish/`,
         {
           method: "POST",
+          credentials: "include",
           headers: {
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
-      if (!res.ok) throw new Error("Publish failed");
+      if (!res.ok) {
+        console.error("Publish failed", res.status, await res.text());
+        throw new Error("Publish failed");
+      }
 
       console.log("Portfolio published successfully!");
     } catch (err) {
       console.error("Error publishing portfolio:", err);
     }
   };
-
-
-
-
 
 
   // -------- Page-level change handlers --------

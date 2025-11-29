@@ -8,11 +8,11 @@ type ArtistPortfolioPageProps = {
   };
 };
 
-export default async function ArtistPortfolioPage({ params }: ArtistPortfolioPageProps) {
+export default function PortfolioPage({ params }: { params: { slug: string; portfolioSlug: string } }) {
   return (
-    <main className="min-h-screen">
-      {/* ... */}
-      <PortfolioWrapper slug={params.portfolioslug} /> // Pass directly from params
-    </main>
+    <PortfolioWrapper
+      slug={params.portfolioSlug}       // portfolio slug
+      artistSlug={params.slug}         // artist profile slug
+    />
   );
 }
