@@ -24,13 +24,9 @@ from artists.api import search_artists, artist_detail
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    # 👇 NEW: hook up auth endpoints
-    path("api/auth/", include("accounts.urls")),
-    # existing artist endpoints
-    path("api/artists/search/", search_artists, name="search-artists"),
-    path("api/artists/<slug:slug>/", artist_detail, name="artist-detail"),
-    # whatever Gemini set up here
+    # Use the simple session-based auth in api.views for V0
     path("api/", include("api.urls")),
+
 ]
 
 if settings.DEBUG:

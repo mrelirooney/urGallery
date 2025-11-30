@@ -59,7 +59,7 @@ AUTH_USER_MODEL = "accounts.User" #Added this for the users models
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "accounts.auth.CookieJWTAuthentication",   # <— our cookie reader
+        "rest_framework.authentication.SessionAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.AllowAny",
@@ -107,6 +107,8 @@ CSRF_TRUSTED_ORIGINS = [
 CSRF_COOKIE_SECURE = False
 SESSION_COOKIE_SECURE = False
 SECURE_SSL_REDIRECT = False
+SESSION_COOKIE_SAMESITE = "None"   # only for localhost
+CSRF_COOKIE_SAMESITE = "None"       # only for localhost
 
 
 ROOT_URLCONF = 'config.urls'
