@@ -1,5 +1,7 @@
-// frontend/src/app/[slug]/[portfolioSlug]/edit/page.tsx
+"use client";
 
+import React, { useEffect, useState } from "react";
+import { EditorAPI } from "@/lib/auth/client";
 import Container from "@/components/layout/Container";
 import PortfolioEditorShell from "@/components/portfolio/editor/PortfolioEditorShell";
 import type {
@@ -7,18 +9,23 @@ import type {
   MediaShapeType,
   LayoutType,
 } from "@/components/portfolio/editor/PageRenderer";
+import { useParams } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+// Base URL for turning /media/... paths into full URLs
+const API_BASE = (process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8000")
+  .replace(/\/+$/, "")
+  .replace(/\/api$/, "");
 
-// Shape of what the editor endpoint returns
+// Shape of what the editor endpoint returns (DraftPortfolio + DraftPages)
 type EditorPortfolioApi = {
   id: number;
   title: string;
   slug: string;
+  description: string;
   privacy: "public" | "draft" | "link_only";
+  has_unpublished_changes?: boolean;
   pages: {
     id: number;
     title: string;
@@ -31,58 +38,80 @@ type EditorPortfolioApi = {
 };
 
 type RouteParams = {
-  slug: string;          // artist slug, e.g. "mrelirooney"
-  portfolioSlug: string; // portfolio slug, e.g. "picture-portfolio-1"
+  slug: string;
+  portfolioSlug: string;
 };
 
-async function fetchEditorPortfolio(
-  portfolioSlug: string,
-): Promise<EditorPortfolioApi | null> {
-  try {
-    const res = await fetch(
-      `${API_BASE}/api/portfolios/${encodeURIComponent(
-        portfolioSlug,
-      )}/editor/`,
-      {
-        cache: "no-store",
-        credentials: "include",
-      },
-    );
+export default function EditPortfolioPage() {
+  const { slug, portfolioSlug } = useParams<RouteParams>();
 
-    if (!res.ok) {
-      console.error("Failed to fetch editor portfolio", res.status);
-      return null;
+  const [apiPortfolio, setApiPortfolio] = useState<EditorPortfolioApi | null>(
+    null
+  );
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+  let cancelled = false;
+
+  (async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const data = await EditorAPI.fetchEditorPortfolio(slug, portfolioSlug);
+
+      if (!cancelled && data && typeof data === "object") {
+        setApiPortfolio(data as EditorPortfolioApi);
+      }
+    } catch (err: any) {
+      console.error("Error fetching editor portfolio:", err);
+      if (!cancelled) {
+        setError(
+          err?.message ??
+            "Could not load this portfolio editor. Make sure Django is running and this portfolio exists."
+        );
+        setApiPortfolio(null);
+      }
+    } finally {
+      if (!cancelled) {
+        setLoading(false);
+      }
     }
+  })();
 
-    const data = (await res.json()) as EditorPortfolioApi;
-    return data;
-  } catch (err) {
-    console.error("Error fetching editor portfolio", err);
-    return null;
-  }
-}
+  return () => {
+    cancelled = true;
+  };
+}, [slug, portfolioSlug]);
 
-export default async function EditPortfolioPage({
-  params,
-}: {
-  params: RouteParams;
-}) {
-  const apiPortfolio = await fetchEditorPortfolio(params.portfolioSlug);
 
-  if (!apiPortfolio) {
+  if (loading) {
     return (
       <main className="py-16">
         <Container>
-          <p className="text-red-500">
-            Could not load this portfolio editor. Make sure the Django server is
-            running and that this portfolio exists.
+          <p className="text-neutral-500 text-center">Loading editor…</p>
+        </Container>
+      </main>
+    );
+  }
+
+  if (!apiPortfolio || error) {
+    return (
+      <main className="py-16">
+        <Container>
+          <p className="text-red-500 text-center">
+            {error ??
+              "Could not load this portfolio editor. Make sure Django is running and this portfolio exists."}
           </p>
         </Container>
       </main>
     );
   }
 
-  // Map API pages into the shape PageRenderer / PortfolioEditorShell expect
+  // -----------------------------
+  // Map API data into editor pages
+  // -----------------------------
   const pages: PortfolioPageData[] = apiPortfolio.pages
     .slice()
     .sort((a, b) => a.order - b.order)
@@ -91,17 +120,16 @@ export default async function EditPortfolioPage({
       layoutType: page.layout,
       title: page.title,
       description: page.description,
-      // Build full URL so images load from localhost:8000, not 3000
       mediaSrc: page.media_image
         ? page.media_image.startsWith("http")
           ? page.media_image
           : `${API_BASE}${page.media_image}`
         : null,
-      // Use whatever your PortfolioPageData calls this field
-      mediaShape2: (page.media_shape || "1:1") as MediaShapeType,
+      // NOTE: PortfolioEditorShell expects `mediaShape`, not `mediaShape2`
+      mediaShape: (page.media_shape || "1:1") as MediaShapeType,
     }));
 
-  // Map backend privacy ("public" | "draft" | "link_only") to FE privacy ("public" | "private")
+  // Editor only needs public/private; backend still keeps draft/link_only
   const initialPrivacy: "public" | "private" =
     apiPortfolio.privacy === "public" ? "public" : "private";
 
@@ -110,10 +138,14 @@ export default async function EditPortfolioPage({
       <Container>
         <PortfolioEditorShell
           portfolioTitle={apiPortfolio.title}
+          portfolioSlug={apiPortfolio.slug}
+          artistSlug={slug}
           initialPages={pages}
           initialPageIndex={0}
           initialPrivacy={initialPrivacy}
-          portfolioSlug={apiPortfolio.slug}
+          // If PortfolioEditorShell takes these, you can wire them up too:
+          // initialDescription={apiPortfolio.description}
+          // hasUnpublishedChanges={apiPortfolio.has_unpublished_changes}
         />
       </Container>
     </main>

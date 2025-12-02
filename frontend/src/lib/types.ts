@@ -1,11 +1,12 @@
-
 export interface ArtistProfile {
+  id: number;
+  slug: string;
   display_name: string;
-  title?: string;
-  location?: string;
-  bio?: string;
+  title: string;
+  location: string;
+  bio: string;
+  avatar_url: string | null;
   avatar_s3_key?: string | null;
-  avatar_url?: string | null;
   website_url?: string;
   instagram_url?: string;
   twitter_url?: string;
@@ -36,6 +37,7 @@ export interface PortfolioSummary {
 
 export interface ArtistLanding {
   profile: ArtistProfile;
+  profile_slug: string;
   portfolios: PortfolioSummary[];
 }
 

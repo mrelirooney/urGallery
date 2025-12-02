@@ -1,3 +1,5 @@
+// frontend/src/app/[slug]/page.tsx
+
 import type { Metadata } from "next";
 import Container from "@/components/layout/Container";
 import type { ArtistLanding } from "@/lib/types";
@@ -6,40 +8,58 @@ import ArtistLandingMotion from "@/components/artist/ArtistLandingMotion";
 import PortfolioWrapper from "@/components/portfolio/PortfolioWrapper";
 import { notFound } from "next/navigation";
 
-
 type RouteParams = { slug: string };
 
-// --- helpers ---
-const base = process.env.DJANGO_BASE_URL || "http://127.0.0.1:8000";
+// make sure you already have this type above:
+type ArtistPageProps = {
+  params: Promise<RouteParams>;
+  artistName: string;
+  artistAvatarUrl: string | null;
+};
 
-async function getArtistLanding(slug: string) {
-  const res = await fetch(`${base}/api/artists/${slug}/`, { cache: "no-store" });
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+
+// Fetch artist profile + portfolios for the landing page
+async function getArtistLanding(slug: string): Promise<ArtistLanding | null> {
+  const res = await fetch(`${API_BASE}/api/artists/${slug}/`, {
+    credentials: "include",   // send cookies
+    cache: "no-store",        // always fresh
+  });
+
   if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`Failed to load artist: ${res.status}`);
+  if (!res.ok) {
+    throw new Error(`Failed to load artist: ${res.status}`);
+  }
+
   return res.json();
 }
 
 // --- metadata for SEO / sharing ---
 export async function generateMetadata(
-  { params }: { params: RouteParams }
+  { params }: ArtistPageProps
 ): Promise<Metadata> {
   const { slug } = await params;
   const data = await getArtistLanding(slug);
-  const profile = data?.profile ?? data;
-  if (!data) return { title: "Artist not found – urGallery" };
 
-  const portfolios = Array.isArray(data.portfolios) ? data.portfolios : [];
-  const firstPortfolio = portfolios[0] ?? null;
+  if (!data) {
+    return { title: "Artist not found | urGallery" };
+  }
+
+  const { profile } = data;
 
   return {
-    title: `${data.display_name} – urGallery`,
-    description: data.bio || `${data.display_name} on urGallery`,
+    title: `${profile.display_name} | urGallery`,
+    description: profile.bio || `${profile.display_name} on urGallery`,
   };
 }
 
 // --- main page ---
-export default async function ArtistPage({ params } : { params: RouteParams}) {
-  const data = await getArtistLanding(params.slug);
+export default async function ArtistPage(
+  { params }: ArtistPageProps
+) {
+  const { slug } = await params;
+  const data = await getArtistLanding(slug);
 
   if (!data) {
     // If an artist with this slug doesn't exist, show 404 instead of crashing
@@ -49,9 +69,33 @@ export default async function ArtistPage({ params } : { params: RouteParams}) {
   const { profile, portfolios } = data;
   const firstPortfolio = portfolios[0];
 
+  
+  const raw = profile?.avatar_url;
+  const base =
+    process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+
+  let src: string;
+
+  if (!raw) {
+    // fallback to default
+    src = "/default-avatar.png";
+  } else if (raw.startsWith("http://") || raw.startsWith("https://")) {
+    // already an absolute URL from the backend (/api/auth/me style)
+    src = raw;
+  } else {
+    // relative path from the artist landing serializer
+    const normalizedBase = base
+      .replace(/\/+$/, "")
+      .replace(/\/api$/, "");
+    src =
+      normalizedBase +
+      (raw.startsWith("/") ? raw : `/${raw}`);
+  }
+
   return (
     <main className="flex flex-col">
       <ArtistLandingMotion pagesCount={firstPortfolio?.pages_count ?? 1} />
+
       {/* Artist Header Section */}
       <section className="bg-gray-50 border-b border-neutral-200">
         <Container>
@@ -60,6 +104,7 @@ export default async function ArtistPage({ params } : { params: RouteParams}) {
           </div>
         </Container>
       </section>
+
       {/* Compact sticky profile (appears in compact mode) */}
       <div
         id="artist-profile-compact"
@@ -70,18 +115,17 @@ export default async function ArtistPage({ params } : { params: RouteParams}) {
           <div className="flex items-center gap-3">
             <div className="h-9 w-9 rounded-full overflow-hidden border border-neutral-300">
               <img
-                src={`${(process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8000")
-                  .replace(/\/+$/, "")
-                  .replace(/\/api$/, "")}${profile?.avatar_url ?? "/default-avatar.png"}`}
-                alt={`${profile?.display_name ?? "Artist"} avatar`}
-                className="h-full w-full object-cover"
+                src={src}
+                    alt={`${profile?.display_name ?? "Artist"} avatar`}
+                    className="h-full w-full object-cover"
               />
             </div>
             <span className="font-semibold text-neutral-900">
               {profile?.display_name ?? "Loading..."}
             </span>
           </div>
-          {/* Right: quick contacts (placeholder icons for now) */}
+
+          {/* Right: quick contacts (placeholder icons) */}
           <div className="flex items-center gap-3 text-neutral-700">
             <span className="h-2 w-2 rounded-full bg-neutral-500" />
             <span className="h-2 w-2 rounded-full bg-neutral-500" />
@@ -89,14 +133,20 @@ export default async function ArtistPage({ params } : { params: RouteParams}) {
           </div>
         </div>
       </div>
+
       {/* Portfolio Section */}
-      {/* 2A) sentinel must be a tiny, empty element above the section */}
       <div id="portfolio-sentinel" />
 
       <section id="portfolio-shell" className="bg-neutral-900 text-white">
-        {/* keep Container, but remove duplicate id and keep it neutral */}
         <Container className="bg-neutral-900 text-white">
-          <PortfolioWrapper slug={firstPortfolio.slug} artistSlug={profile.slug} />
+          {firstPortfolio && (
+            <PortfolioWrapper
+              slug={firstPortfolio.slug}
+              artistSlug={profile.slug}
+              artistName={profile.display_name}
+              artistAvatarUrl={profile.avatar_url}
+            />
+          )}
         </Container>
       </section>
     </main>

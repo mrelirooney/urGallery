@@ -32,6 +32,7 @@ export interface PortfolioEditorShellProps {
   initialPages: PortfolioPageData[];
   initialPageIndex?: number;
   initialPrivacy: "public" | "private";
+  artistSlug: string;
   /** Optional – used for the privacy modal link */
   portfolioSlug?: string;
 }

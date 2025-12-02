@@ -4,16 +4,43 @@ import type { AuthResponse } from "./types";
 
 const API_BASE = (process.env.NEXT_PUBLIC_API_BASE ?? "").replace(/\/$/, "");
 
+// 🔹 read csrftoken from cookies (browser only)
+function getCsrfToken(): string | null {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(/csrftoken=([^;]+)/);
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+// 🔹 call this once so Django sets the csrftoken cookie
+export async function initCsrf() {
+  await fetch(`${API_BASE}/api/auth/csrf/`, {
+    credentials: "include",
+    cache: "no-store",
+  });
+}
+
 async function postJSON<T>(path: string, body: unknown) {
+  const csrfToken = getCsrfToken();
+
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+  if (csrfToken) {
+    headers["X-CSRFToken"] = csrfToken;
+  }
+
   const res = await fetch(`${API_BASE}${path}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",      // ✅ send/receive cookies
+    headers,
+    credentials: "include",
     body: JSON.stringify(body),
     cache: "no-store",
   });
   const data = (await res.json().catch(() => ({}))) as T;
-  if (!res.ok) throw new Error((data as any)?.detail || (data as any)?.error || "Request failed");
+  if (!res.ok)
+    throw new Error(
+      (data as any)?.detail || (data as any)?.error || "Request failed"
+    );
   return data;
 }
 
@@ -44,4 +71,31 @@ export const AuthAPI = {
 
   logout: () => postJSON("/api/auth/logout/", {}),
   refresh: () => postJSON("/api/auth/refresh/", {}),
+};
+
+// --- Editor / portfolios API ----
+
+export type EditorPortfolioApi = {
+  id: number;
+  title: string;
+  slug: string;
+  description: string;
+  // NOTE: your backend uses "public" | "private" | "draft" | "link_only"
+  privacy: "public" | "private" | "draft" | "link_only";
+  has_unpublished_changes: boolean;
+  pages: any[]; // you can tighten this later
+};
+
+export const EditorAPI = {
+  // GET /api/artists/<artist_slug>/portfolios/<portfolio_slug>/
+  fetchEditorPortfolio(artistSlug: string, portfolioSlug: string) {
+    return getJSON<EditorPortfolioApi>(
+      `/api/artists/${artistSlug}/portfolios/${portfolioSlug}/`
+    );
+  },
+
+  // (optional) public view if you ever need it elsewhere
+  fetchPublicPortfolio(portfolioSlug: string) {
+    return getJSON(`/api/portfolios/${portfolioSlug}/`);
+  },
 };

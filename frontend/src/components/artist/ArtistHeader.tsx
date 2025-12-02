@@ -16,9 +16,10 @@ export default function ArtistHeader({ profile }: Props) {
       .replace(/\/+$/, "")
       .replace(/\/api$/, "") || "http://localhost:8000";
 
-  const src = profile?.avatar_url
-    ? `${origin}${profile.avatar_url}`
-    : "/avatars/astra-chat-profilepic.jpeg";
+  const src =
+  profile?.avatar_url && profile.avatar_url.length > 0
+    ? profile.avatar_url            // use it as-is
+    : "/avatars/default-avatar.png"; // your existing fallback
   return (
     <div id="artist-profile" data-probe="ArtistHeader-V3">
       {/* Top: Avatar */}
@@ -56,7 +57,7 @@ export default function ArtistHeader({ profile }: Props) {
       <div className="md:col-span-2">
         <p className="mt-6 max-w-3xl text-neutral-700 leading-relaxed">
           Bio:<br></br>
-          {profile?.bio ?? ""}
+          {profile.bio || "This artist hasn't added a bio yet."}
         </p>
       </div>
     </div>

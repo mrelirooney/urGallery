@@ -59,6 +59,7 @@ AUTH_USER_MODEL = "accounts.User" #Added this for the users models
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
+        "accounts.auth.CookieJWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
@@ -74,7 +75,7 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": True,
     "AUTH_COOKIE": "access",  # name for access cookie
     "AUTH_COOKIE_REFRESH": "refresh",
-    "AUTH_COOKIE_SECURE": True,
+    "AUTH_COOKIE_SECURE": False,
     "AUTH_COOKIE_HTTP_ONLY": True,
     "AUTH_COOKIE_SAMESITE": "Lax",
     "UPDATE_LAST_LOGIN": True,   # <- make SimpleJWT write User.last_login on login

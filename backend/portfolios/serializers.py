@@ -164,3 +164,37 @@ class ArtistProfileSerializer(serializers.Serializer):
     Placeholder serializer for profile data on the artist landing page.
     """
     pass
+
+class PublicPageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Page
+        fields = [
+            "id",
+            "title",
+            "description",
+            "order",
+            "layout",
+            "media_image",
+            "media_shape",
+            "created_at",
+        ]
+
+class PublicPortfolioSerializer(serializers.ModelSerializer):
+    pages = PublicPageSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Portfolio
+        fields = [
+            "id",
+            "title",
+            "slug",
+            "privacy",
+            "order_index",
+            "pages_count",
+            "cover_page",
+            "created_at",
+            "updated_at",
+            "pages",
+        ]
+        read_only_fields = ["slug"]
+

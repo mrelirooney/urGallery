@@ -16,6 +16,8 @@ const API_BASE =
 type PortfolioWrapperProps = {
   slug: string;        // portfolio slug
   artistSlug: string;  // owner’s profile slug
+  artistName: string;
+  artistAvatarUrl: string | null;
 };
 
 type ApiPage = {
@@ -35,7 +37,7 @@ type ApiPortfolio = {
   pages: ApiPage[];
 };
 
-export default function PortfolioWrapper({ slug, artistSlug }: PortfolioWrapperProps) {
+export default function PortfolioWrapper({ slug, artistSlug, artistName, artistAvatarUrl, }: PortfolioWrapperProps) {
   const [portfolioTitle, setPortfolioTitle] = useState<string>("");
   const [pages, setPages] = useState<PortfolioPageData[]>([]);
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
@@ -56,7 +58,7 @@ export default function PortfolioWrapper({ slug, artistSlug }: PortfolioWrapperP
         setLoading(true);
         setError(null);
 
-        const url = `${API_BASE}/api/portfolios/${slug}/`;
+        const url = `${API_BASE}/api/artists/${artistSlug}/portfolios/${slug}/`;
         console.log("Fetching live portfolio:", url);
 
         const res = await fetch(url);

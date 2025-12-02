@@ -1,19 +1,24 @@
-# backend/api/urls.py
+from django.urls import path
+from accounts.views import (
+    CookieTokenObtainPairView,
+    CookieTokenRefreshView,
+    RegisterView,
+    MeView,
+    LogoutView,
+    csrf_cookie_view,
+)
 from django.urls import path, include
-from artists.api import artist_detail, search_artists
-from . import views
 
 urlpatterns = [
-    # ---- AUTH ----
-    path("auth/login/", views.login_view, name="login"),
-    path("auth/logout/", views.logout_view, name="logout"),
-    path("auth/me/", views.me_view, name="me"),
+    # CSRF warm-up
+    path("auth/csrf/", csrf_cookie_view, name="csrf-cookie"),
 
-
-    # artist + search endpoints (direct)
-    path("artists/<slug:slug>/", artist_detail, name="artist-detail"),
-    path("search/", search_artists, name="artist-search"),
-
-    # portfolios endpoints (this one IS a package with its own urls.py)
-    path("portfolios/", include("portfolios.urls")),
+    # AUTH
+    path("auth/login/", CookieTokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("auth/refresh/", CookieTokenRefreshView.as_view(), name="token_refresh"),
+    path("auth/register/", RegisterView.as_view(), name="register"),
+    path("auth/me/", MeView.as_view(), name="me"),
+    path("auth/logout/", LogoutView.as_view(), name="logout"),
+    path("artists/", include("artists.urls")),
 ]
+

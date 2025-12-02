@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { AuthAPI } from "@/lib/auth/client";
+import { AuthAPI, initCsrf } from "@/lib/auth/client";
 
 export type User = {
   id: string | number;
@@ -59,10 +59,22 @@ export function useAuth() {
     }
   }, [router]);
 
+  
+
   // Initial load once on mount
   useEffect(() => {
-    refreshUser();
-  }, [refreshUser]);
+    async function init() {
+      try {
+        await initCsrf();   // <-- from client.ts
+      } catch (err) {
+        console.error("Failed to init CSRF", err);
+      }
+      refreshUser();
+    }
+
+    init();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Re-check auth whenever pathname changes (but not on login/signup)
   useEffect(() => {

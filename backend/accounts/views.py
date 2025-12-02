@@ -8,9 +8,19 @@ from rest_framework.permissions import AllowAny
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 from .models import Profile
+from django.views.decorators.csrf import ensure_csrf_cookie
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
 
 
 User = get_user_model()
+
+class EmailTokenObtainPairSerializer(TokenObtainPairSerializer):
+    """
+    SimpleJWT serializer that uses `email` instead of `username`
+    as the login identifier.
+    """
+    username_field = "email"
 
 class CookieTokenObtainPairView(TokenObtainPairView):
     """
@@ -18,7 +28,8 @@ class CookieTokenObtainPairView(TokenObtainPairView):
     instead of returning them in the JSON body.
     """
     permission_classes = [AllowAny]
-
+    serializer_class = EmailTokenObtainPairSerializer
+    
     def post(self, request, *args, **kwargs):
         # 1️ Use the regular SimpleJWT serializer to validate user credentials
         serializer = self.get_serializer(data=request.data)
@@ -132,4 +143,14 @@ class LogoutView(APIView):
             resp.delete_cookie(name, path="/")
             resp.set_cookie(name, "", expires=0, path="/", samesite="Lax")
         return resp
+
+@ensure_csrf_cookie
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def csrf_cookie_view(request):
+    """
+    Simple endpoint that sets the CSRF cookie (csrftoken).
+    Frontend calls this once so future POSTs can include X-CSRFToken.
+    """
+    return Response({"detail": "CSRF cookie set"})
 
