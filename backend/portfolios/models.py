@@ -224,7 +224,9 @@ class DraftPortfolio(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
-        if self.title:
+        # Only generate slug if it doesn't exist yet (on creation)
+        # Once created, the slug should remain stable to match the live portfolio
+        if not self.slug and self.title:
             base = slugify(self.title) or "portfolio"
             slug = base
             counter = 1

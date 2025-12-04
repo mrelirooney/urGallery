@@ -87,10 +87,12 @@ export type EditorPortfolioApi = {
 };
 
 export const EditorAPI = {
-  // GET /api/artists/<artist_slug>/portfolios/<portfolio_slug>/
+  // GET /api/portfolios/<portfolio_slug>/editor/
+  // This returns the DraftPortfolio with DraftPage IDs (not live Page IDs)
   fetchEditorPortfolio(artistSlug: string, portfolioSlug: string) {
+    // Note: artistSlug is not needed for the draft endpoint, but we keep it for API compatibility
     return getJSON<EditorPortfolioApi>(
-      `/api/artists/${artistSlug}/portfolios/${portfolioSlug}/`
+      `/api/portfolios/${portfolioSlug}/editor/`
     );
   },
 

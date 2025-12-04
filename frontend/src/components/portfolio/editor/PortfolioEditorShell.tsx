@@ -17,6 +17,12 @@ import { useRouter } from "next/navigation";
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
+const getCsrfToken = (): string => {
+  if (typeof document === "undefined") return "";
+  const match = document.cookie.match(/csrftoken=([^;]+)/);
+  return match ? decodeURIComponent(match[1]) : "";
+};
+
 interface EditorPageApi {
   id: number;
   title: string;
@@ -141,9 +147,9 @@ export default function PortfolioEditorShell({
   const handleReorder = async (fromIndex: number, toIndex: number) => {
     if (fromIndex === toIndex) return;
 
-    // 1) Update local state (same logic as before)
     let newPagesForApi: PortfolioPageData[] = [];
 
+    // 1) Update local state
     updateState((prev) => {
       const clampedTo = Math.min(
         Math.max(toIndex, 0),
@@ -154,10 +160,8 @@ export default function PortfolioEditorShell({
       const [moved] = newPages.splice(fromIndex, 1);
       newPages.splice(clampedTo, 0, moved);
 
-      // Keep a copy for the API call
       newPagesForApi = newPages;
 
-      // Keep currentPageIndex in sync with new order
       let newCurrent = prev.currentPageIndex;
       if (fromIndex === prev.currentPageIndex) {
         newCurrent = clampedTo;
@@ -180,13 +184,12 @@ export default function PortfolioEditorShell({
       };
     });
 
-    // 2) Sync new order to Django
+    // 2) Sync to Django
     if (!portfolioSlug) {
       console.warn("No portfolioSlug provided – cannot sync page order.");
       return;
     }
 
-    // If there are any unsaved pages with non-numeric ids, skip API sync for now
     const hasTempIds = newPagesForApi.some(
       (p) => typeof p.id !== "number",
     );
@@ -197,21 +200,19 @@ export default function PortfolioEditorShell({
       return;
     }
 
-    const base = process.env.NEXT_PUBLIC_API_BASE;
-    if (!base) {
-      console.error("NEXT_PUBLIC_API_BASE is not set – cannot sync page order.");
-      return;
-    }
-
     try {
       const res = await fetch(
         `${API_BASE}/api/portfolios/${portfolioSlug}/editor/reorder/`,
         {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+          method: "PATCH", // ✅ Django expects PATCH
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCsrfToken(),
+          },
           body: JSON.stringify({
-            // Django expects a list of Page IDs in the new order
-            order: newPagesForApi.map((p) => p.id as number),
+            // ✅ Django expects `page_ids`
+            page_ids: newPagesForApi.map((p) => p.id as number),
           }),
         },
       );
@@ -230,6 +231,7 @@ export default function PortfolioEditorShell({
       console.error("Error while syncing page order:", err);
     }
   };
+
 
 
   const handleAddPage = async () => {
@@ -260,8 +262,9 @@ export default function PortfolioEditorShell({
           headers: {
             Accept: "application/json",
             "Content-Type": "application/json",
+            "X-CSRFToken": getCsrfToken(), // ✅ new
           },
-          body: JSON.stringify({}), // nothing to send, backend makes a blank page
+          body: JSON.stringify({}),
         }
       );
 
@@ -298,32 +301,30 @@ export default function PortfolioEditorShell({
   const handleDeletePage = useCallback(async () => {
     if (pages.length <= 1) return;
 
-    const pageToDelete = pages[currentPageIndex];
+  const pageToDelete = pages[currentPageIndex];
 
-    // Optimistically update UI
-    updateState((prev) => {
-      if (prev.pages.length <= 1) return prev;
+  // optimistic UI (unchanged)
+  updateState((prev) => {
+    if (prev.pages.length <= 1) return prev;
+    const newPages = prev.pages
+      .filter((_, index) => index !== prev.currentPageIndex)
+      .map((page, index) => ({
+        ...page,
+        order: index + 1,
+      }));
 
-      const newPages = prev.pages
-        .filter((_, index) => index !== prev.currentPageIndex)
-        .map((page, index) => ({
-          ...page,
-          order: index + 1,
-        }));
+    const newIndex = Math.min(prev.currentPageIndex, newPages.length - 1);
 
-      const newIndex = Math.min(prev.currentPageIndex, newPages.length - 1);
+    return {
+      ...prev,
+      pages: newPages,
+      currentPageIndex: newIndex,
+    };
+  });
 
-      return {
-        ...prev,
-        pages: newPages,
-        currentPageIndex: newIndex,
-      };
-    });
-
-    // If we don't have a slug or a numeric id, we can't hit the API – just stop
-    if (!portfolioSlug || typeof pageToDelete.id !== "number") {
-      return;
-    }
+  if (!portfolioSlug || typeof pageToDelete.id !== "number") {
+    return;
+  }
 
     try {
       const res = await fetch(
@@ -331,6 +332,9 @@ export default function PortfolioEditorShell({
         {
           method: "DELETE",
           credentials: "include",
+          headers: {
+            "X-CSRFToken": getCsrfToken(), // ✅ new
+          },
         }
       );
 
@@ -360,70 +364,72 @@ export default function PortfolioEditorShell({
   const handleCloseShape = () => setIsShapeModalOpen(false);
 
   const savePortfolio = async (
-  nextPrivacy?: PrivacyState,
-  options?: { silent?: boolean }
-) => {
-  if (!portfolioSlug) {
-    console.warn("No portfolioSlug – cannot sync draft/publish");
-    return;
-  }
-
-  const effectivePrivacy: PrivacyState = nextPrivacy ?? editorState.privacy;
-
-  const payload = {
-    title: editorState.title,
-    privacy: djangoPrivacyFromState(effectivePrivacy),
-    pages: editorState.pages.map((page, index) => ({
-      id: page.id,
-      title: page.title,
-      description: page.description,
-      layout: page.layoutType,
-      media_shape: page.mediaShape2,
-      order: index,
-    })),
-  };
-  let res;
-  try {
-    res = await fetch(
-      `${API_BASE}/api/portfolios/${portfolioSlug}/editor/`,
-      {
-        method: "PATCH",
-        credentials: "include",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      }
-    );
-
-    if (!res.ok) {
-      console.error(
-        "Failed to save portfolio",
-        res.status,
-        await res.text()
-      );
+    nextPrivacy?: PrivacyState,
+    options?: { silent?: boolean }
+  ) => {
+    if (!portfolioSlug) {
+      console.warn("No portfolioSlug – cannot sync draft/publish");
       return;
     }
 
-    if (!options?.silent) {
-      console.log("Portfolio saved successfully");
+    const effectivePrivacy: PrivacyState = nextPrivacy ?? editorState.privacy;
+
+    const payload = {
+      title: editorState.title,
+      privacy: djangoPrivacyFromState(effectivePrivacy),
+      pages: editorState.pages.map((page, index) => ({
+        id: page.id,
+        title: page.title,
+        description: page.description,
+        layout: page.layoutType,
+        media_shape: page.mediaShape2,
+        order: index,
+      })),
+    };
+    let res;
+    try {
+      res = await fetch(
+        `${API_BASE}/api/portfolios/${portfolioSlug}/editor/`,
+        {
+          method: "PATCH",
+          credentials: "include",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCsrfToken(), // ✅ new
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error(
+          "Failed to save portfolio",
+          res.status,
+          errorText
+        );
+        return false;
+      }
+
+      if (!options?.silent) {
+        console.log("Portfolio saved successfully");
+      }
+      return true;
+    } catch (err) {
+      console.error("Error saving portfolio", err);
+      return false;
     }
-  } catch (err) {
-    console.error("Error saving portfolio", err);
-    return;
+    // --- NEW SLUG SYNC FROM DJANGO ---
+    // TEMP: ignore slug changes from backend until we fully wire
+    // draft+live rename logic. For now we just stay on the same URL.
+    // if (data.slug && data.slug !== portfolioSlug) {
+    //   console.log(
+    //     `Slug changed from ${portfolioSlug} → ${data.slug}, redirecting...`
+    //   );
+    //   router.replace(`/${artistSlug}/${data.slug}/edit`);
+    // }
   }
-  // --- NEW SLUG SYNC FROM DJANGO ---
-  const data = await res.json();
-
-  if (data.slug && data.slug !== portfolioSlug) {
-    console.log(
-      `Slug changed from ${portfolioSlug} → ${data.slug}, redirecting...`
-    );
-
-    router.replace(`/${artistSlug}/${data.slug}/edit`);
-  }
-}
 
 
   const handleDraft = () => {
@@ -432,13 +438,21 @@ export default function PortfolioEditorShell({
   };
 
   const handlePublish = async () => {
-    if (!portfolioSlug) return;
+    if (!portfolioSlug) {
+      console.error("Cannot publish: no portfolio slug");
+      return;
+    }
 
     try {
-      // 1) Save current editor state (title, pages, privacy) silently
-      await savePortfolio(undefined, { silent: true });
+      // First, save the draft to ensure all changes are persisted
+      const saveResult = await savePortfolio(undefined, { silent: true });
+      if (saveResult === false) {
+        console.error("Failed to save draft before publishing");
+        alert("Failed to save draft. Please try again.");
+        return;
+      }
 
-      // 2) Call publish endpoint
+      // Then publish the draft to live
       const res = await fetch(
         `${API_BASE}/api/portfolios/${portfolioSlug}/editor/publish/`,
         {
@@ -446,18 +460,31 @@ export default function PortfolioEditorShell({
           credentials: "include",
           headers: {
             "Content-Type": "application/json",
+            "X-CSRFToken": getCsrfToken(),
           },
         },
       );
 
       if (!res.ok) {
-        console.error("Publish failed", res.status, await res.text());
-        throw new Error("Publish failed");
+        const errorText = await res.text();
+        console.error("Publish failed", res.status, errorText);
+        let errorMessage = "Failed to publish portfolio";
+        try {
+          const errorData = JSON.parse(errorText);
+          errorMessage = errorData.detail || errorMessage;
+        } catch {
+          errorMessage = errorText || errorMessage;
+        }
+        alert(errorMessage);
+        return;
       }
 
-      console.log("Portfolio published successfully!");
-    } catch (err) {
+      const data = await res.json();
+      console.log("Portfolio published successfully!", data);
+      alert("Portfolio published successfully!");
+    } catch (err: any) {
       console.error("Error publishing portfolio:", err);
+      alert(`Error publishing portfolio: ${err?.message || "Unknown error"}`);
     }
   };
 
@@ -486,26 +513,26 @@ export default function PortfolioEditorShell({
   };
 
   const handleChangeImage = async (pageIndex: number, file: File | null) => {
-  const page = pages[pageIndex];
-    if (!page) return;
+    const page = pages[pageIndex];
+      if (!page) return;
 
-    // 1) Update the UI immediately
-    if (!file) {
-      updatePage(pageIndex, (prev) => ({ ...prev, mediaSrc: null }));
-    } else {
-      const previewUrl = URL.createObjectURL(file);
-      updatePage(pageIndex, (prev) => ({ ...prev, mediaSrc: previewUrl }));
-    }
+      // 1) Update the UI immediately
+      if (!file) {
+        updatePage(pageIndex, (prev) => ({ ...prev, mediaSrc: null }));
+      } else {
+        const previewUrl = URL.createObjectURL(file);
+        updatePage(pageIndex, (prev) => ({ ...prev, mediaSrc: previewUrl }));
+      }
 
-    // 2) If we don't have a slug or a numeric page id yet,
-    //    we can't persist this change to the backend.
-    if (!portfolioSlug || typeof page.id !== "number") {
-      console.warn(
-        "Image changed only in the editor state. " +
-          "This page doesn't have a numeric id yet, so the new image won't persist on reload.",
-      );
-      return;
-    }
+      // 2) If we don't have a slug or a numeric page id yet,
+      //    we can't persist this change to the backend.
+      if (!portfolioSlug || typeof page.id !== "number") {
+    console.warn(
+      "Image changed only in the editor state. " +
+        "This page doesn't have a numeric id yet, so the new image won't persist on reload.",
+    );
+    return;
+  }
 
     try {
       const formData = new FormData();
@@ -513,7 +540,6 @@ export default function PortfolioEditorShell({
       if (file) {
         formData.append("media_image", file);
       } else {
-        // Clear the image on the backend
         formData.append("media_image", "");
       }
 
@@ -523,33 +549,41 @@ export default function PortfolioEditorShell({
         )}/editor/pages/${page.id}/`,
         {
           method: "PATCH",
+          credentials: "include",          // ✅ new
+          headers: {
+            "X-CSRFToken": getCsrfToken(), // ✅ new
+          },
           body: formData,
         },
       );
 
-      if (!res.ok) {
-        console.error("Failed to update page image", res.status, await res.text());
-        return;
-      }
+        if (!res.ok) {
+          console.error("Failed to update page image", res.status, await res.text());
+          return;
+        }
 
-      const data = await res.json();
-      const newUrl = (data as any).media_image as string | null;
+        const data = await res.json();
+        const newUrl = (data as any).media_image as string | null;
 
-      // Use the canonical URL returned by Django
-      if (newUrl) {
-        updatePage(pageIndex, (prev) => ({ ...prev, mediaSrc: newUrl }));
+        // Use the canonical URL returned by Django
+        if (newUrl) {
+          updatePage(pageIndex, (prev) => ({ ...prev, mediaSrc: newUrl }));
+        }
+      } catch (err) {
+        console.error("Error while uploading page image", err);
       }
-    } catch (err) {
-      console.error("Error while uploading page image", err);
-    }
-  };
+    };
 
   const handleChangePortfolioTitle = (value: string) => {
     updateState((prev) => ({ ...prev, title: value }));
   };
 
-  const handleChangePrivacy = (nextPrivacy: PrivacyState) => {
+  const handleChangePrivacy = async (nextPrivacy: PrivacyState) => {
+    // Update local state immediately for responsive UI
     updateState((prev) => ({ ...prev, privacy: nextPrivacy }));
+    
+    // Save to backend immediately
+    await savePortfolio(nextPrivacy, { silent: true });
   };
 
   // -------- Render --------

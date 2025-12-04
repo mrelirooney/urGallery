@@ -22,11 +22,12 @@ from django.conf.urls.static import static
 from artists.api import search_artists, artist_detail
 
 
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     # Use the simple session-based auth in api.views for V0
     path("api/", include("api.urls")),
-
+    path("api/portfolios/", include("portfolios.urls")),
 ]
 
 if settings.DEBUG:

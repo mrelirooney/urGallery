@@ -36,6 +36,7 @@ class PortfolioDetailSerializer(serializers.ModelSerializer):
     """
     Editor view of a DraftPortfolio + its DraftPages.
     """
+    
     pages = PageSummarySerializer(many=True, read_only=True)
 
     class Meta:
@@ -52,6 +53,7 @@ class PortfolioDetailSerializer(serializers.ModelSerializer):
             "pages",
         ]
 
+EditorPortfolioSerializer = PortfolioDetailSerializer
 
 class PortfolioUpdateSerializer(serializers.ModelSerializer):
     """
@@ -88,6 +90,92 @@ class PageEditorSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "media_image": {"required": False, "allow_null": True},
         }
+
+
+class PageEditorInputSerializer(serializers.Serializer):
+    """
+    Serializer for accepting page data from the frontend during bulk save.
+    Note: id is optional because new pages might not have an ID yet.
+    """
+    id = serializers.IntegerField(required=False, allow_null=True)
+    title = serializers.CharField(required=False, allow_blank=True)
+    description = serializers.CharField(required=False, allow_blank=True)
+    layout = serializers.CharField(required=False)
+    media_shape = serializers.CharField(required=False)
+    order = serializers.IntegerField(required=False)
+
+
+class PortfolioEditorSaveSerializer(serializers.ModelSerializer):
+    """
+    Serializer that accepts nested pages for bulk save.
+    Used by Save Draft to save portfolio + all pages in one request.
+    """
+    pages = PageEditorInputSerializer(many=True, required=False)
+    
+    class Meta:
+        model = DraftPortfolio
+        fields = ["title", "description", "privacy", "pages"]
+    
+    def update(self, instance, validated_data):
+        pages_data = validated_data.pop("pages", None)
+        
+        # Update portfolio-level fields
+        instance.title = validated_data.get("title", instance.title)
+        instance.description = validated_data.get("description", instance.description)
+        instance.privacy = validated_data.get("privacy", instance.privacy)
+        instance.save()
+        
+        # Update/create/delete pages if provided
+        if pages_data is not None:
+            # Get existing page IDs
+            existing_pages = {p.id: p for p in instance.pages.all()}
+            incoming_ids = {p.get("id") for p in pages_data if p.get("id") is not None}
+            
+            # Delete pages that are no longer in the list
+            to_delete_ids = set(existing_pages.keys()) - incoming_ids
+            if to_delete_ids:
+                instance.pages.filter(id__in=to_delete_ids).delete()
+            
+            # Update or create pages
+            for idx, page_data in enumerate(pages_data):
+                page_id = page_data.get("id")
+                
+                # Use order from array position if not provided
+                page_order = page_data.get("order", idx)
+                
+                if page_id and page_id in existing_pages:
+                    # Update existing page
+                    page = existing_pages[page_id]
+                    # Only update fields that are provided in the payload
+                    if "title" in page_data:
+                        page.title = page_data["title"]
+                    if "description" in page_data:
+                        page.description = page_data["description"]
+                    if "layout" in page_data:
+                        page.layout = page_data["layout"]
+                    if "media_shape" in page_data:
+                        page.media_shape = page_data["media_shape"]
+                    page.order = page_order
+                    page.save()
+                else:
+                    # Create new page (shouldn't happen often, but handle it)
+                    DraftPage.objects.create(
+                        draft_portfolio=instance,
+                        title=page_data.get("title", "Untitled Page"),
+                        description=page_data.get("description", ""),
+                        layout=page_data.get("layout", "MediaRight_TextLeft"),
+                        media_shape=page_data.get("media_shape", "1:1"),
+                        order=page_order,
+                    )
+            
+            # Normalize order to ensure contiguous values (0, 1, 2, ...)
+            pages = list(instance.pages.all().order_by("order", "id"))
+            for idx, dpage in enumerate(pages):
+                if dpage.order != idx:
+                    dpage.order = idx
+                    dpage.save(update_fields=["order"])
+        
+        return instance
 
 
 class PageReorderSerializer(serializers.Serializer):

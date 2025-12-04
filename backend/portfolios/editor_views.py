@@ -8,16 +8,17 @@ from rest_framework.decorators import (
     authentication_classes,
     permission_classes,
 )
-from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 
-from .models import Portfolio, Page, DraftPortfolio, DraftPage
+from .models import Portfolio, Page, DraftPortfolio, DraftPage, PortfolioPageLayout
 from .serializers import (
     PortfolioDetailSerializer,
     PageEditorSerializer,
     PageReorderSerializer,
+    PortfolioEditorSaveSerializer,
+    PublicPortfolioSerializer,
 )
 
 User = get_user_model()
@@ -52,7 +53,6 @@ def _get_or_create_draft(slug: str, user) -> DraftPortfolio:
         title=live.title,
         description=getattr(live, "description", "") or "",
         privacy=live.privacy,
-        order_index=getattr(live, "order_index", 0),
     )
 
     # Copy live pages into the draft
@@ -62,9 +62,11 @@ def _get_or_create_draft(slug: str, user) -> DraftPortfolio:
             title=page.title,
             description=page.description,
             layout=page.layout,
+            media_shape=page.media_shape,
+            media_image=page.media_image,  # Copy the image too
             order=page.order,
-            image=page.image,
         )
+
 
     return draft
 
@@ -93,7 +95,6 @@ def _mark_draft_dirty(draft: DraftPortfolio) -> None:
 
 
 @api_view(["GET", "PATCH"])
-@authentication_classes([SessionAuthentication])
 @permission_classes([IsAuthenticated])
 def editor_portfolio_detail(request, slug):
     """
@@ -110,12 +111,15 @@ def editor_portfolio_detail(request, slug):
         serializer = PortfolioDetailSerializer(draft, context={"request": request})
         return Response(serializer.data)
 
-    # PATCH – update draft only (slug is stable; do NOT change slug here)
-    serializer = PortfolioDetailSerializer(draft, data=request.data, partial=True)
+    # PATCH – update draft portfolio + pages (used by Save Draft)
+    # Use PortfolioEditorSaveSerializer to handle nested pages
+    serializer = PortfolioEditorSaveSerializer(draft, data=request.data, partial=True)
     if serializer.is_valid():
         serializer.save()
         _mark_draft_dirty(draft)
-        return Response(serializer.data)
+        # Return the full draft with pages using PortfolioDetailSerializer
+        response_serializer = PortfolioDetailSerializer(draft, context={"request": request})
+        return Response(response_serializer.data)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -124,7 +128,6 @@ def editor_portfolio_detail(request, slug):
 
 
 @api_view(["POST"])
-@authentication_classes([SessionAuthentication])
 @permission_classes([IsAuthenticated])
 def editor_create_page(request, slug):
     """
@@ -142,15 +145,15 @@ def editor_create_page(request, slug):
     data = {
         "title": request.data.get("title") or "Untitled Page",
         "description": request.data.get("description") or "",
-        # Use whatever layout default your DraftPage model expects:
-        "layout": request.data.get("layout") or DraftPage.LAYOUT_MEDIA_RIGHT_TEXT_LEFT,
+        # Use the PortfolioPageLayout enum for the default layout
+        "layout": request.data.get("layout") or PortfolioPageLayout.MEDIA_RIGHT_TEXT_LEFT,
         "order": next_order,
-        "draft": draft.id,
     }
 
     serializer = PageEditorSerializer(data=data)
     if serializer.is_valid():
-        page = serializer.save()
+        # Pass draft_portfolio as the FK when saving
+        page = serializer.save(draft_portfolio=draft)
         _mark_draft_dirty(draft)
         return Response(
             PageEditorSerializer(page, context={"request": request}).data,
@@ -164,7 +167,6 @@ def editor_create_page(request, slug):
 
 
 @api_view(["GET", "PATCH", "DELETE"])
-@authentication_classes([SessionAuthentication])
 @permission_classes([IsAuthenticated])
 def editor_update_page(request, slug, page_id):
     """
@@ -177,7 +179,7 @@ def editor_update_page(request, slug, page_id):
     if draft.user != request.user:
         return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    page = get_object_or_404(DraftPage, id=page_id, draft=draft)
+    page = get_object_or_404(DraftPage, id=page_id, draft_portfolio=draft)
 
     if request.method == "GET":
         serializer = PageEditorSerializer(page, context={"request": request})
@@ -205,7 +207,6 @@ def editor_update_page(request, slug, page_id):
 
 
 @api_view(["PATCH"])
-@authentication_classes([SessionAuthentication])
 @permission_classes([IsAuthenticated])
 def editor_reorder_pages(request, slug):
     """
@@ -236,17 +237,17 @@ def editor_reorder_pages(request, slug):
     _normalize_draft_page_order(draft)
     _mark_draft_dirty(draft)
 
-    serializer = PageReorderSerializer(
-        draft.pages.all().order_by("order", "id"), many=True
-    )
-    return Response(serializer.data)
+    # Return the page IDs in their new order
+    reordered_pages = draft.pages.all().order_by("order", "id")
+    return Response({
+        "page_ids": [p.id for p in reordered_pages]
+    })
 
 
 # ---------- PUBLISH ----------
 
 
 @api_view(["POST"])
-@authentication_classes([SessionAuthentication])
 @permission_classes([IsAuthenticated])
 def publish_portfolio(request, slug):
     """
@@ -254,42 +255,62 @@ def publish_portfolio(request, slug):
 
     Slug is treated as a stable ID; we do NOT change Portfolio.slug here.
     """
-    draft = _get_or_create_draft(slug, request.user)
+    try:
+        draft = _get_or_create_draft(slug, request.user)
 
-    if draft.user != request.user:
-        return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        if draft.user != request.user:
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    portfolio = get_object_or_404(
-        Portfolio.objects.select_related("user").prefetch_related("pages"),
-        slug=slug,
-        user=request.user,
-    )
+        portfolio = get_object_or_404(
+            Portfolio.objects.select_related("user").prefetch_related("pages"),
+            slug=slug,
+            user=request.user,
+        )
 
-    with transaction.atomic():
-        # 1) Copy top-level fields from draft to live (but NOT slug)
-        portfolio.title = draft.title
-        if hasattr(portfolio, "description"):
-            portfolio.description = draft.description
-        portfolio.privacy = draft.privacy
-        if hasattr(portfolio, "order_index"):
-            portfolio.order_index = draft.order_index
-        portfolio.save()
+        with transaction.atomic():
+            # 1) Copy top-level fields from draft to live (but NOT slug)
+            portfolio.title = draft.title
+            if hasattr(portfolio, "description"):
+                portfolio.description = draft.description
+            portfolio.privacy = draft.privacy
+            if hasattr(portfolio, "order_index"):
+                portfolio.order_index = draft.order_index
+            portfolio.save()
 
-        # 2) Replace live pages with draft pages
-        portfolio.pages.all().delete()
-        for dpage in draft.pages.all().order_by("order", "id"):
-            Page.objects.create(
-                portfolio=portfolio,
-                title=dpage.title,
-                description=dpage.description,
-                layout=dpage.layout,
-                order=dpage.order,
-                image=dpage.image,
-            )
+            # 2) Replace live pages with draft pages
+            portfolio.pages.all().delete()
+            for dpage in draft.pages.all().order_by("order", "id"):
+                # Create the page - Django will handle the media_image field assignment
+                # Note: The file path will remain the same (draft_portfolio_pages/...)
+                # but that's okay - the file still exists and is accessible
+                Page.objects.create(
+                    portfolio=portfolio,
+                    title=dpage.title,
+                    description=dpage.description,
+                    layout=dpage.layout,
+                    order=dpage.order,
+                    media_image=dpage.media_image if dpage.media_image else None,
+                    media_shape=dpage.media_shape,
+                )
 
-        # 3) Mark draft as having no unpublished changes
-        draft.has_unpublished_changes = False
-        draft.save(update_fields=["has_unpublished_changes"])
+            # 3) Mark draft as having no unpublished changes
+            draft.has_unpublished_changes = False
+            draft.save(update_fields=["has_unpublished_changes"])
 
-    serializer = PortfolioDetailSerializer(portfolio, context={"request": request})
-    return Response(serializer.data, status=status.HTTP_200_OK)
+        # Refresh the portfolio from DB to ensure related pages are loaded
+        portfolio.refresh_from_db()
+        
+        # Return the published portfolio using the public serializer
+        serializer = PublicPortfolioSerializer(portfolio, context={"request": request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    except Exception as e:
+        import traceback
+        error_detail = str(e)
+        traceback_str = traceback.format_exc()
+        print(f"Error publishing portfolio: {error_detail}")
+        print(traceback_str)
+        return Response(
+            {"detail": f"Error publishing portfolio: {error_detail}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )

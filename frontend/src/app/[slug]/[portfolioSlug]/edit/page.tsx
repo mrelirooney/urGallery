@@ -125,8 +125,8 @@ export default function EditPortfolioPage() {
           ? page.media_image
           : `${API_BASE}${page.media_image}`
         : null,
-      // NOTE: PortfolioEditorShell expects `mediaShape`, not `mediaShape2`
-      mediaShape: (page.media_shape || "1:1") as MediaShapeType,
+      // PortfolioEditorShell expects `mediaShape2`
+      mediaShape2: (page.media_shape || "1:1") as MediaShapeType,
     }));
 
   // Editor only needs public/private; backend still keeps draft/link_only
