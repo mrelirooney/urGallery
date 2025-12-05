@@ -121,6 +121,12 @@ def editor_portfolio_detail(request, slug):
         response_serializer = PortfolioDetailSerializer(draft, context={"request": request})
         return Response(response_serializer.data)
 
+    # Log validation errors for debugging
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.error(f"Portfolio save validation failed: {serializer.errors}")
+    logger.error(f"Request data: {request.data}")
+    
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -273,11 +279,10 @@ def publish_portfolio(request, slug):
             if hasattr(portfolio, "description"):
                 portfolio.description = draft.description
             portfolio.privacy = draft.privacy
-            if hasattr(portfolio, "order_index"):
-                portfolio.order_index = draft.order_index
             portfolio.save()
 
             # 2) Replace live pages with draft pages
+            # Handle case where draft has no pages (empty portfolio)
             portfolio.pages.all().delete()
             for dpage in draft.pages.all().order_by("order", "id"):
                 # Create the page - Django will handle the media_image field assignment

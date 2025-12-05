@@ -36,15 +36,27 @@ class ArtistLandingView(APIView):
             profile, context={"request": request}
         ).data
 
-        # 3) Base queryset = this user's portfolios, ordered as in the editor
-        portfolios_qs = Portfolio.objects.filter(
-            user=profile.user
-        ).order_by("order_index", "id")
+        # 3) Base queryset = this user's portfolios
+        portfolios_qs = Portfolio.objects.filter(user=profile.user)
 
         # 4) Privacy rules:
-        #    - If the viewer is NOT this user, only show public portfolios
-        if not request.user.is_authenticated or request.user != profile.user:
-            portfolios_qs = portfolios_qs.filter(privacy="public")
+        #    - If the viewer is the owner → show all portfolios
+        #    - Otherwise → show public AND link_only portfolios
+        is_owner = request.user.is_authenticated and request.user == profile.user
+        if not is_owner:
+            portfolios_qs = portfolios_qs.filter(privacy__in=["public", "link_only"])
+        
+        # 5) Order portfolios: public first, then by order_index, then by id
+        # This ensures the first public portfolio shows by default
+        from django.db.models import Case, When, IntegerField
+        portfolios_qs = portfolios_qs.annotate(
+            privacy_priority=Case(
+                When(privacy="public", then=1),
+                When(privacy="link_only", then=2),
+                default=3,
+                output_field=IntegerField(),
+            )
+        ).order_by("privacy_priority", "order_index", "id")
 
         # 5) Build a lightweight summary for each portfolio
         portfolios_data = []
@@ -95,9 +107,10 @@ class ArtistPortfolioDetailView(RetrieveAPIView):
         if self.request.user.is_authenticated and self.request.user == owner:
             return Portfolio.objects.filter(user=owner)
 
-        # Otherwise → only public portfolios
+        # Otherwise → show public portfolios AND link_only (private) portfolios
+        # Anyone with the direct link can view link_only portfolios
         return Portfolio.objects.filter(
             user=owner,
-            privacy="public",
+            privacy__in=["public", "link_only"],
         )
 

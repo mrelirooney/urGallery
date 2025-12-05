@@ -17,31 +17,45 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
   const listRef = useRef<HTMLUListElement>(null);
   const debounceRef = useRef<number | null>(null);
 
-  // local query state (your hook returns run/results/loading/clear)
-  const [open, setOpen] = useState(false);
-  const [active, setActive] = useState(-1);
-  const [query, setQuery] = useState("");
-
-  const { run, results, loading, clear } = useSearch();
-
-  // Debounce searches when query changes
-  useEffect(() => {
-    if (debounceRef.current) window.clearTimeout(debounceRef.current);
-    if (!query.trim()) {
-      clear();
-      setOpen(false);
-      setActive(-1);
-      return;
-    }
-    debounceRef.current = window.setTimeout(() => {
-      run(query.trim());
-      setOpen(true);
-      setActive(-1);
-    }, 250);
-    return () => {
-      if (debounceRef.current) window.clearTimeout(debounceRef.current);
-    };
-  }, [query, run, clear]);
+    // local query state (your hook returns run/results/loading/clear)
+    const [open, setOpen] = useState(false);
+    const [active, setActive] = useState(-1);
+    const [query, setQuery] = useState("");
+    const [mounted, setMounted] = useState(false);
+  
+    const { run, results, loading, clear } = useSearch();
+  
+    // Ensure component is mounted (client-side only)
+    useEffect(() => {
+      setMounted(true);
+    }, []);
+  
+    // Debounce searches when query changes
+    useEffect(() => {
+      if (!mounted) return; // Don't run on server
+      
+      if (debounceRef.current && typeof window !== 'undefined') {
+        window.clearTimeout(debounceRef.current);
+      }
+      if (!query.trim()) {
+        clear();
+        setOpen(false);
+        setActive(-1);
+        return;
+      }
+      if (typeof window !== 'undefined') {
+        debounceRef.current = window.setTimeout(() => {
+          run(query.trim());
+          setOpen(true);
+          setActive(-1);
+        }, 250);
+      }
+      return () => {
+        if (debounceRef.current && typeof window !== 'undefined') {
+          window.clearTimeout(debounceRef.current);
+        }
+      };
+    }, [query, run, clear, mounted]);
 
   // Navigate to artist page
   function go(r: SearchResult) {
@@ -109,7 +123,7 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
       </div>
 
       {/* Results dropdown */}
-      {open && results.length > 0 && (
+      {mounted && open && results.length > 0 && (
         <ul
           ref={listRef}
           className="absolute z-20 mt-2 w-full rounded-xl bg-white shadow-lg ring-1 ring-black/10 overflow-hidden"
@@ -146,7 +160,7 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
         </ul>
       )}
 
-      {open && !loading && results.length === 0 && query.trim() && (
+      {mounted && open && !loading && results.length === 0 && query.trim() && (
         <div className="absolute z-20 mt-2 w-full rounded-xl bg-white shadow ring-1 ring-black/10 px-4 py-3 text-sm text-neutral-500">
           No artists found.
         </div>

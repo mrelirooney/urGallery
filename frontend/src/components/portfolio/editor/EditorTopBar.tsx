@@ -58,11 +58,11 @@ export default function EditorTopBar({
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   return (
-    <div className="w-full bg-neutral-800 text-neutral-100 p-4 rounded-xl flex flex-col gap-3">
+    <div className="w-full bg-neutral-800 text-neutral-100 flex flex-col gap-3">
       {/* --- Top row buttons --- */}
       <div className="flex items-center justify-between">
         <button onClick={onCancel} className="text-sm opacity-80 hover:opacity-100">
-          Cancel
+          Back
         </button>
 
         <div className="flex gap-3">
@@ -74,10 +74,10 @@ export default function EditorTopBar({
           </button>
 
           <button onClick={onAdd} className="btn-small">
-            Add Page
+            Add
           </button>
           <button disabled={disableDelete} onClick={onDeletePage} className="btn-small">
-            Delete Page
+            Delete
           </button>
 
           <button onClick={onOpenPrivacy} className="btn-small">
@@ -85,7 +85,7 @@ export default function EditorTopBar({
           </button>
 
           <button onClick={onSaveDraft} className="btn-small">
-            Save Draft
+            Save
           </button>
           <button onClick={onPublish} className="btn-primary">
             Publish

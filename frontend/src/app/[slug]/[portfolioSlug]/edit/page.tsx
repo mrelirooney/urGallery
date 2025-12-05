@@ -134,7 +134,7 @@ export default function EditPortfolioPage() {
     apiPortfolio.privacy === "public" ? "public" : "private";
 
   return (
-    <main className="py-8">
+    <main className="py-1">
       <Container>
         <PortfolioEditorShell
           portfolioTitle={apiPortfolio.title}

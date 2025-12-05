@@ -6,6 +6,7 @@ import Link from "next/link";
 import Logo from "@/components/layout/Logo";
 import AvatarButton from "../menus/AvatarButton";
 import SearchInput from "@/components/search/SearchInput";
+import PortfolioMenu from "@/components/layout/PortfolioMenu";
 import { useAuth } from "@/hooks/useAuth";
 import { Menu, X } from "lucide-react";
 
@@ -15,6 +16,15 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const pathname = usePathname();
+  // Check if we're on an artist profile page
+  // Pattern: /slug (no sub-paths like /edit, /login, etc.)
+  const isArtistProfilePage = pathname && 
+  /^\/[^\/]+$/.test(pathname) && 
+  !pathname.startsWith('/login') &&
+  !pathname.startsWith('/signup') &&
+  !pathname.startsWith('/settings') &&
+  !pathname.startsWith('/sandbox') &&
+  pathname !== '/';
   const hideNavbar =
   pathname?.startsWith("/portfolio-test") ||      // dev editor route
   pathname?.includes("/editor");                  // future real editor routes
@@ -85,18 +95,27 @@ export default function Navbar() {
 
   // --- 4. Return JSX ---
   return (
-    <header id="site-navbar" className="sticky top-0 z-10 bg-gray-50 border-b border-gray-200">
-      <div className="mx-auto max-w-6xl px-8 h-14 flex items-center justify-between">
+    <>
+      {/* Portfolio Menu */}
+      {isArtistProfilePage && (
+        <PortfolioMenu isOpen={open} onClose={() => setOpen(false)} />
+      )}
+
+      <header id="site-navbar" className="sticky top-0 z-10 bg-gray-50 border-b border-gray-200">
+        <div className="mx-auto max-w-6xl px-8 h-14 flex items-center justify-between">
         {/* Left: Logo */}
         <div className="flex">
-           <button
-            onClick={() => setOpen(!open)}
-            className="rounded-md text-neutral-800 transition"
-          >
-            {open ? <X size={28} /> : <Menu size={28} />}
-          </button>
+          {/* Only show hamburger on artist profile pages */}
+          {isArtistProfilePage && (
+            <button
+              onClick={() => setOpen(!open)}
+              className="rounded-md text-neutral-800 transition"
+            >
+              {open ? <X size={28} /> : <Menu size={28} />}
+            </button>
+          )}
 
-          <Link href="/" aria-label="Home" className="ml-3">
+          <Link href="/" aria-label="Home" className={isArtistProfilePage ? "ml-3" : ""}>
             <Logo className="h-5 w-auto" />
           </Link>
         </div>
@@ -110,7 +129,6 @@ export default function Navbar() {
             <SearchInput
               variant="nav"
               placeholder="Search…"
-              onSelect={(r) => console.log("go to", r)}
             />
 
             <div className="relative" ref={menuRef}>
@@ -199,5 +217,6 @@ export default function Navbar() {
         )}
       </div>
     </header>
+    </>
   );
 }

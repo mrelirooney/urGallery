@@ -349,10 +349,13 @@ export default function PortfolioEditorShell({
 
 
   const handleCancel = () => {
-    // For now: just go back a step in history
-    if (typeof window !== "undefined") {
+    // Navigate back to the artist's profile page with a full reload
+    if (artistSlug) {
+      window.location.href = `/${artistSlug}`;
+    } else {
+      // Fallback: go back in history if no slug
       window.history.back();
-    }
+      }
   };
 
   const handleOpenPrivacy = () => setIsPrivacyModalOpen(true);
@@ -409,6 +412,21 @@ export default function PortfolioEditorShell({
           res.status,
           errorText
         );
+        // Try to parse error as JSON to show validation errors
+        try {
+          const errorData = JSON.parse(errorText);
+          console.error("Validation errors:", errorData);
+          if (!options?.silent) {
+            const errorMsg = typeof errorData === 'object' 
+              ? JSON.stringify(errorData, null, 2)
+              : errorData.detail || errorText;
+            alert(`Failed to save: ${errorMsg}`);
+          }
+        } catch {
+          if (!options?.silent) {
+            alert(`Failed to save portfolio: ${errorText || res.status}`);
+          }
+        }
         return false;
       }
 
@@ -480,9 +498,13 @@ export default function PortfolioEditorShell({
       }
 
       const data = await res.json();
-      console.log("Portfolio published successfully!", data);
-      alert("Portfolio published successfully!");
-    } catch (err: any) {
+        console.log("Portfolio published successfully!", data);
+        alert("Portfolio published successfully!");
+        // Navigate back to the artist's profile page with a full reload
+        if (artistSlug) {
+          window.location.href = `/${artistSlug}`;
+        }
+            } catch (err: any) {
       console.error("Error publishing portfolio:", err);
       alert(`Error publishing portfolio: ${err?.message || "Unknown error"}`);
     }
@@ -588,7 +610,7 @@ export default function PortfolioEditorShell({
 
   // -------- Render --------
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col">
       {/* Top bar with thumbnails + actions */}
       <EditorTopBar
         pages={pages}
@@ -611,7 +633,7 @@ export default function PortfolioEditorShell({
       />
 
       {/* Canvas area */}
-      <section className="rounded-3xl bg-neutral-900 px-10 py-8 text-neutral-50 shadow-lg">
+      <section className="bg-neutral-900 text-neutral-50 shadow-lg">
         {/* Title + controls strip */}
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
           <input

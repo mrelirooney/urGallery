@@ -16,8 +16,8 @@ const API_BASE =
 type PortfolioWrapperProps = {
   slug: string;        // portfolio slug
   artistSlug: string;  // owner’s profile slug
-  artistName: string;
-  artistAvatarUrl: string | null;
+  artistName?: string;
+  artistAvatarUrl?: string | null;
 };
 
 type ApiPage = {
@@ -61,14 +61,18 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
         const url = `${API_BASE}/api/artists/${artistSlug}/portfolios/${slug}/`;
         console.log("Fetching live portfolio:", url);
 
-        const res = await fetch(url);
+        const res = await fetch(url, {
+          credentials: "include", // Send auth cookies
+        });
         if (!res.ok) {
           throw new Error(`Failed to fetch portfolio: ${res.status}`);
         }
 
         const data: ApiPortfolio = await res.json();
+        console.log("📦 API Response:", data); // Debug: see what we're getting
         setPortfolioTitle(data.title ?? "");
 
+        
         // Map backend Page → frontend PageRenderer shape
         const mappedPages: PortfolioPageData[] = data.pages
           .slice()
@@ -111,7 +115,7 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
     }
 
     loadPortfolio();
-  }, [slug]);
+  },  [slug, artistSlug]);
 
   if (loading) {
     return (

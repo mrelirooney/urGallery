@@ -6,12 +6,34 @@ export async function GET(req: Request) {
   const q = searchParams.get("q") ?? "";
   if (!q) return NextResponse.json({ results: [] });
 
-  const base = process.env.DJANGO_BASE_URL || "http://127.0.0.1:8000";
-  const url = `${base}/api/artists/search/?q=${encodeURIComponent(q)}`;
+  const base = process.env.NEXT_PUBLIC_API_BASE || process.env.DJANGO_BASE_URL || "http://127.0.0.1:8000";
+  const normalizedBase = base.replace(/\/+$/, "").replace(/\/api$/, "");
+  const url = `${normalizedBase}/api/artists/search/?q=${encodeURIComponent(q)}`;
 
-  const resp = await fetch(url, { cache: "no-store" });
-  if (!resp.ok) return NextResponse.json({ results: [] }, { status: 200 });
+  // Forward cookies from the client request to Django
+  const cookieHeader = req.headers.get("cookie");
+  const headers: HeadersInit = {};
+  if (cookieHeader) {
+    headers["Cookie"] = cookieHeader;
+  }
 
-  const data = await resp.json();
-  return NextResponse.json(data);
+  try {
+    const resp = await fetch(url, { 
+      cache: "no-store",
+      headers,
+    });
+    
+    if (!resp.ok) {
+      const errorText = await resp.text();
+      console.error("Search API error:", resp.status, resp.statusText, errorText);
+      return NextResponse.json({ results: [] }, { status: 200 });
+    }
+
+    const data = await resp.json();
+    console.log("Search results:", data); // Debug: see what we're getting
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error("Search fetch error:", error);
+    return NextResponse.json({ results: [] }, { status: 200 });
+  }
 }

@@ -4,7 +4,7 @@ from rest_framework import generics, permissions, status
 
 from themes.models import Theme
 from tags.models import Hashtag
-from portfolios.models import Portfolio, Page
+from portfolios.models import Portfolio, Page, DraftPortfolio
 from accounts.models import Profile
 
 from .serializers import (
@@ -152,10 +152,30 @@ class MyPortfolioListCreateView(generics.ListCreateAPIView):
 class MyPortfolioDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = PortfolioSerializer
+    lookup_field = "slug"
 
     def get_queryset(self):
         # ownership enforcement
         return Portfolio.objects.filter(user=self.request.user)
+
+    def destroy(self, request, *args, **kwargs):
+        """
+        Delete both the live Portfolio and its associated DraftPortfolio.
+        """
+        instance = self.get_object()
+        slug = instance.slug
+        
+        # Delete DraftPortfolio if it exists (CASCADE will delete DraftPages)
+        try:
+            draft = DraftPortfolio.objects.get(slug=slug, user=request.user)
+            draft.delete()
+        except DraftPortfolio.DoesNotExist:
+            pass  # No draft exists, that's fine
+        
+        # Delete the live Portfolio (CASCADE will delete Pages)
+        instance.delete()
+        
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class PortfolioPublicListView(generics.ListAPIView):

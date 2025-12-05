@@ -116,6 +116,16 @@ class PortfolioEditorSaveSerializer(serializers.ModelSerializer):
         model = DraftPortfolio
         fields = ["title", "description", "privacy", "pages"]
     
+    def validate_privacy(self, value):
+        """Ensure privacy value is valid."""
+        from portfolios.models import Privacy
+        valid_choices = [choice[0] for choice in Privacy.choices]
+        if value not in valid_choices:
+            raise serializers.ValidationError(
+                f"Invalid privacy value. Must be one of: {', '.join(valid_choices)}"
+            )
+        return value
+    
     def update(self, instance, validated_data):
         pages_data = validated_data.pop("pages", None)
         
@@ -126,6 +136,7 @@ class PortfolioEditorSaveSerializer(serializers.ModelSerializer):
         instance.save()
         
         # Update/create/delete pages if provided
+        # Note: pages_data can be None (not provided), [] (empty array), or [pages...]
         if pages_data is not None:
             # Get existing page IDs
             existing_pages = {p.id: p for p in instance.pages.all()}
@@ -136,35 +147,51 @@ class PortfolioEditorSaveSerializer(serializers.ModelSerializer):
             if to_delete_ids:
                 instance.pages.filter(id__in=to_delete_ids).delete()
             
-            # Update or create pages
+            # Update or create pages (handle empty array case)
             for idx, page_data in enumerate(pages_data):
                 page_id = page_data.get("id")
                 
                 # Use order from array position if not provided
                 page_order = page_data.get("order", idx)
                 
+                # Validate layout value if provided
+                layout_value = page_data.get("layout")
+                if layout_value:
+                    from portfolios.models import PortfolioPageLayout
+                    valid_layouts = [choice[0] for choice in PortfolioPageLayout.choices]
+                    if layout_value not in valid_layouts:
+                        # Default to a valid layout if invalid
+                        layout_value = PortfolioPageLayout.MEDIA_RIGHT_TEXT_LEFT
+                
+                # Validate media_shape if provided
+                media_shape_value = page_data.get("media_shape", "1:1")
+                from portfolios.models import MEDIA_SHAPE_CHOICES
+                valid_shapes = [choice[0] for choice in MEDIA_SHAPE_CHOICES]
+                if media_shape_value not in valid_shapes:
+                    media_shape_value = "1:1"  # Default
+                
                 if page_id and page_id in existing_pages:
                     # Update existing page
                     page = existing_pages[page_id]
                     # Only update fields that are provided in the payload
                     if "title" in page_data:
-                        page.title = page_data["title"]
+                        page.title = page_data.get("title", "Untitled Page")
                     if "description" in page_data:
-                        page.description = page_data["description"]
-                    if "layout" in page_data:
-                        page.layout = page_data["layout"]
+                        page.description = page_data.get("description", "")
+                    if layout_value:
+                        page.layout = layout_value
                     if "media_shape" in page_data:
-                        page.media_shape = page_data["media_shape"]
+                        page.media_shape = media_shape_value
                     page.order = page_order
                     page.save()
                 else:
-                    # Create new page (shouldn't happen often, but handle it)
+                    # Create new page (frontend might send pages with IDs that don't exist yet)
                     DraftPage.objects.create(
                         draft_portfolio=instance,
                         title=page_data.get("title", "Untitled Page"),
                         description=page_data.get("description", ""),
-                        layout=page_data.get("layout", "MediaRight_TextLeft"),
-                        media_shape=page_data.get("media_shape", "1:1"),
+                        layout=layout_value or "MediaRight_TextLeft",
+                        media_shape=media_shape_value,
                         order=page_order,
                     )
             

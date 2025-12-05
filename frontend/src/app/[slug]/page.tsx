@@ -5,7 +5,7 @@ import Container from "@/components/layout/Container";
 import type { ArtistLanding } from "@/lib/types";
 import ArtistHeader from "@/components/artist/ArtistHeader";
 import ArtistLandingMotion from "@/components/artist/ArtistLandingMotion";
-import PortfolioWrapper from "@/components/portfolio/PortfolioWrapper";
+import PortfolioSelector from "@/components/portfolio/PortfolioSelector";
 import { notFound } from "next/navigation";
 
 type RouteParams = { slug: string };
@@ -56,9 +56,11 @@ export async function generateMetadata(
 
 // --- main page ---
 export default async function ArtistPage(
-  { params }: ArtistPageProps
+  { params, searchParams }: ArtistPageProps & { searchParams?: Promise<{ portfolio?: string }> }
 ) {
   const { slug } = await params;
+  const params_data = await searchParams;
+  const portfolioSlug = params_data?.portfolio;
   const data = await getArtistLanding(slug);
 
   if (!data) {
@@ -139,13 +141,19 @@ export default async function ArtistPage(
 
       <section id="portfolio-shell" className="bg-neutral-900 text-white">
         <Container className="bg-neutral-900 text-white">
-          {firstPortfolio && (
-            <PortfolioWrapper
-              slug={firstPortfolio.slug}
+          {portfolios.length > 0 ? (
+            <PortfolioSelector
               artistSlug={profile.slug}
-              artistName={profile.display_name}
-              artistAvatarUrl={profile.avatar_url}
+              portfolios={portfolios}
+              profile={profile}
+              initialPortfolioSlug={portfolioSlug}
             />
+          ) : (
+            <div className="py-16 px-4 text-center">
+              <p className="text-neutral-400 text-lg">
+                This artist only has private portfolios. Ask them for a link to see their portfolio.
+              </p>
+            </div>
           )}
         </Container>
       </section>

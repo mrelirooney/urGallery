@@ -44,11 +44,14 @@ class UserSerializer(serializers.ModelSerializer):
 class PortfolioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Portfolio
-        fields = ("id", "user", "title", "privacy", "order_index", "pages_count", "created_at", "updated_at")
-        read_only_fields = ("id", "user", "pages_count", "created_at", "updated_at")
+        fields = ("id", "user", "title", "privacy", "order_index", "pages_count", "created_at", "updated_at", "slug")
+        read_only_fields = ("id", "user", "pages_count", "created_at", "updated_at", "slug")
 
     def create(self, validated_data):
         validated_data["user"] = self.context["request"].user
+        # Set default privacy to link_only if not provided
+        if "privacy" not in validated_data:
+            validated_data["privacy"] = "link_only"
         return super().create(validated_data)
 
 class PageSerializer(serializers.ModelSerializer):
