@@ -95,9 +95,9 @@ class PageEditorSerializer(serializers.ModelSerializer):
 class PageEditorInputSerializer(serializers.Serializer):
     """
     Serializer for accepting page data from the frontend during bulk save.
-    Note: id is optional because new pages might not have an ID yet.
+    Note: id can be an integer (existing page) or a string UUID (new page from frontend).
     """
-    id = serializers.IntegerField(required=False, allow_null=True)
+    id = serializers.CharField(required=False, allow_null=True, allow_blank=True)
     title = serializers.CharField(required=False, allow_blank=True)
     description = serializers.CharField(required=False, allow_blank=True)
     layout = serializers.CharField(required=False)
@@ -149,7 +149,16 @@ class PortfolioEditorSaveSerializer(serializers.ModelSerializer):
             
             # Update or create pages (handle empty array case)
             for idx, page_data in enumerate(pages_data):
-                page_id = page_data.get("id")
+                page_id_raw = page_data.get("id")
+                
+                # Convert page_id to integer if possible; string UUIDs mean "new page"
+                page_id = None
+                if page_id_raw:
+                    try:
+                        page_id = int(page_id_raw)
+                    except (ValueError, TypeError):
+                        # String UUID from frontend = new page, treat as None
+                        page_id = None
                 
                 # Use order from array position if not provided
                 page_order = page_data.get("order", idx)

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSearch } from "@/hooks/useSearch";
+import { Search } from "lucide-react";
 import type { SearchResult } from "@/lib/search/types";
 
 type Props = {
@@ -95,7 +96,7 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
 
   return (
     <div className="relative w-full max-w-3xl">
-      <div className="flex items-center gap-2 rounded-full bg-white shadow ring-1 ring-black/10 px-5 py-3">
+      <div className="flex items-center gap-2 rounded-full bg-white shadow ring-1 ring-black/10 px-2 py-0">
         <input
           ref={inputRef}
           value={query}
@@ -116,9 +117,9 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
               if (r) handleSelect(r);
             });
           }}
-          className="shrink-0 rounded-full bg-neutral-900 text-white px-4 py-2 text-sm font-medium hover:bg-neutral-800"
+          className="shrink-0 rounded-full text-black px-2 py-2 text-sm font-medium"
         >
-          Go
+          <Search size={18} />
         </button>
       </div>
 
