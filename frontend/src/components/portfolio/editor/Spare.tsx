@@ -48,7 +48,7 @@ export interface EditorTopBarProps {
 // --- DRAG-AND-DROP THUMBNAIL COMPONENT ---
 
 interface SortableThumbnailProps extends PageThumbnailProps {
-  id: number;
+  id: string | number; 
   page: PortfolioPageData;
   index: number;
   isSelected: boolean;

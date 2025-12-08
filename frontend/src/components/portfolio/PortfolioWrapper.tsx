@@ -136,7 +136,7 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
   return (
     <section className="mx-auto max-w-7xl flex-col justify-between text-neutral-100">
       <div className="min-h-[85vh] w-full max-w-7xl py-8 flex flex-col justify-between gap-6">
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center justify-between">
           <PortfolioTitle
             text={portfolioTitle}
             align="left"

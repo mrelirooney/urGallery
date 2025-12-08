@@ -109,8 +109,8 @@ export default function PageRenderer({
   );
 
   // ----- shape-aware column widths -----
-  let mediaCols = "col-span-6";
-  let textCols = "col-span-6";
+  let mediaCols = "col-span-5";
+  let textCols = "col-span-7";
 
   if (shape === "9:16") {
     // tall, vertical – narrower media

@@ -195,31 +195,38 @@ export default function PageRenderer({
   }
 
   if (isTwoColumn) {
-    const mediaOnRight = layoutType === "MediaRight_TextLeft";
+  const mediaOnRight = layoutType === "MediaRight_TextLeft";
 
-    return (
-      <div className="w-full flex justify-center">
-        <div className="w-full max-w-5xl">
-          <div className="flex flex-col gap-10 md:flex-row md:gap-16">
-            <div
-              className={`w-full md:w-1/2 ${
-                mediaOnRight ? "md:order-2" : "md:order-1"
-              }`}
-            >
-              {mediaContent}
-            </div>
-            <div
-              className={`w-full md:w-1/2 ${
-                mediaOnRight ? "md:order-1" : "md:order-2"
-              }`}
-            >
-              {textContent}
-            </div>
+  return (
+    <div className="w-full">
+      <div className="max-w-6xl mx-auto px-6 md:px-8 bg-neutral-900">
+        <div className="grid items-start md:items-center gap-10 md:gap-16 md:grid-cols-12">
+          {/* Text column */}
+          <div
+            className={`
+              w-full
+              md:col-span-7
+              ${mediaOnRight ? "md:order-1" : "md:order-2"}
+            `}
+          >
+            {textContent}
+          </div>
+
+          {/* Media column */}
+          <div
+            className={`
+              w-full
+              md:col-span-5
+              ${mediaOnRight ? "md:order-2" : "md:order-1"}
+            `}
+          >
+            {mediaContent}
           </div>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   // Stacked layouts
   return (

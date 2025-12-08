@@ -73,8 +73,8 @@ export default function ShapePickerModal({
                     <div
                       className="border-2 border-neutral-400 bg-neutral-700"
                       style={{
-                        width: option.value === "1:1" ? "60px" : option.value === "16:9" ? "80px" : option.value === "9:16" ? "40px" : option.value === "4:5" ? "50px" : "70px",
-                        height: option.value === "1:1" ? "60px" : option.value === "16:9" ? "45px" : option.value === "9:16" ? "70px" : option.value === "4:5" ? "62px" : "56px",
+                        width: option.value === "1:1" ? "60px" : option.value === "16:9" ? "80px" : option.value === "9:16" ? "40px" : option.value === "4:5" ? "50px" : option.value === "21:9" ? "80px" :  "70px",
+                        height: option.value === "1:1" ? "60px" : option.value === "16:9" ? "45px" : option.value === "9:16" ? "70px" : option.value === "4:5" ? "62px" : option.value === "21:9" ? "35px" : "56px",
                       }}
                     />
                   ) : (

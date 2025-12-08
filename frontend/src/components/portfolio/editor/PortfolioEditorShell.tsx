@@ -610,7 +610,7 @@ export default function PortfolioEditorShell({
 
   // -------- Render --------
   return (
-    <div className="flex flex-col">
+    <div className="w-full max-w-7xl mx-auto px-8 py-10 md:py-12 bg-neutral-950">
       {/* Top bar with thumbnails + actions */}
       <EditorTopBar
         pages={pages}
@@ -650,21 +650,21 @@ export default function PortfolioEditorShell({
               onClick={handleOpenShape}
               className="rounded-full border border-neutral-500 px-3 py-1 text-neutral-200 hover:border-neutral-300 hover:text-white"
             >
-              Media Shapes
+              Frames {/* Media Shapes */}
             </button>
             <button
               type="button"
               onClick={handleOpenLayout}
               className="rounded-full border border-neutral-500 px-3 py-1 text-neutral-200 hover:border-neutral-300 hover:text-white"
             >
-              Page Layout
+              Layouts
             </button>
           </div>
         </div>
 
         {/* Actual page canvas */}
         <div className="flex justify-center">
-          <div className="w-full max-w-5xl">
+          <div className="w-full max-w-6xl">
             <PageRenderer
               pages={pages}
               currentPageIndex={currentPageIndex}

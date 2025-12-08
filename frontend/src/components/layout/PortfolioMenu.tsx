@@ -318,9 +318,9 @@ export default function PortfolioMenu({ isOpen, onClose }: Props) {
         </div>
 
         {/* Add Portfolio button */}
-        <div className="p-4 border-t border-gray-200">
+        <div className="p-4">
             {isOwner && (
-            <div className="p-4 border-t border-gray-200">
+            <div >
                 <button
                 onClick={handleAddPortfolio}
                 className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition font-medium"
