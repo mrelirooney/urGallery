@@ -8,6 +8,7 @@ import ArtistLandingMotion from "@/components/artist/ArtistLandingMotion";
 import PortfolioSelector from "@/components/portfolio/PortfolioSelector";
 import { notFound } from "next/navigation";
 
+
 type RouteParams = { slug: string };
 
 // make sure you already have this type above:
@@ -99,9 +100,22 @@ export default async function ArtistPage(
       <ArtistLandingMotion pagesCount={firstPortfolio?.pages_count ?? 1} />
 
       {/* Artist Header Section */}
-      <section className="bg-gray-50 border-b border-neutral-200">
+      <section className="bg-[var(--foreground)] border-b border-neutral-200 relative">
+        {/* Banner Image - Full width, outside container */}
+        {profile?.banner_image_url && (
+          <div className="absolute top-0 left-0 right-0 h-[33vh] overflow-hidden">
+            <img
+              src={profile.banner_image_url}
+              alt={`${profile?.display_name ?? "Artist"} banner`}
+              className="w-full h-full object-cover"
+            />
+            {/* Overlay for better text readability */}
+          </div>
+        )}
+        
+        {/* Content Container - stays constrained */}
         <Container>
-          <div className="mx-auto max-w-6xl py-10 lg:py-10">
+          <div className="mx-auto max-w-6xl py-10 lg:py-10 relative z-10">
             <ArtistHeader profile={profile} />
           </div>
         </Container>

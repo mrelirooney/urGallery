@@ -28,6 +28,10 @@ type ApiPage = {
   layout?: LayoutType | null;
   media_image: string | null;
   media_shape: MediaShapeType | null;
+  media_image_2: string | null;
+  media_shape_2: MediaShapeType | null;
+  title_2: string;
+  description_2: string;
 };
 
 type ApiPortfolio = {
@@ -90,15 +94,30 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
               }
             }
 
+            // Build mediaSrc2 for second column
+            let mediaSrc2: string | null = null;
+            if (page.media_image_2) {
+              if (page.media_image_2.startsWith("http")) {
+                mediaSrc2 = page.media_image_2;
+              } else {
+                mediaSrc2 = `${API_BASE}${page.media_image_2}`;
+              }
+            }
+
             return {
               id: page.id,
               title: page.title,
               description: page.description,
               // Fall back to your default layout if null/undefined
-              layoutType: (page.layout || "MediaBottom_TextTop") as LayoutType,
+              layoutType: (page.layout || "MediaLeft_TextRight") as LayoutType,
               mediaSrc,
               // Make live view respect saved media shape
               mediaShape: (page.media_shape || "1:1") as MediaShapeType,
+              // Second column fields
+              mediaSrc2,
+              mediaShape2: (page.media_shape_2 || "1:1") as MediaShapeType,
+              title2: page.title_2 || "",
+              description2: page.description_2 || "",
               pageNumber: index + 1,
             };
           });

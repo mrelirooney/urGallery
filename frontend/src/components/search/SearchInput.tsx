@@ -96,7 +96,7 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
 
   return (
     <div className="relative w-full max-w-3xl">
-      <div className="flex items-center gap-2 rounded-full bg-white shadow ring-1 ring-black/10 px-2 py-0">
+      <div className="flex items-center gap-2 rounded-full bg-[var(--foreground)] ring-1 ring-black/10 px-2 py-0">
         <input
           ref={inputRef}
           value={query}
@@ -104,7 +104,7 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
           onFocus={() => results.length > 0 && setOpen(true)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className="w-full outline-none bg-transparent text-neutral-700"
+          className="w-full outline-none text-neutral-700"
           aria-label="Search"
         />
         <button

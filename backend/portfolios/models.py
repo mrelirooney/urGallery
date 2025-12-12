@@ -95,10 +95,13 @@ class Portfolio(models.Model):
 class PortfolioPageLayout(models.TextChoices):
     MEDIA_LEFT_TEXT_RIGHT = "MediaLeft_TextRight", "Media Left • Text Right"
     MEDIA_RIGHT_TEXT_LEFT = "MediaRight_TextLeft", "Media Right • Text Left"
-    MEDIA_TOP_TEXT_BOTTOM = "MediaTop_TextBottom", "Media Top • Text Bottom"
-    MEDIA_BOTTOM_TEXT_TOP = "MediaBottom_TextTop", "Media Bottom • Text Top"
+    TWO_COLUMN_MEDIA_ONLY = "TwoColumnMediaOnly", "Two Column Media Only"
+    TWO_COLUMN_MEDIA_WITH_TEXT = "TwoColumnMediaWithText", "Two Column Media With Text"
     TEXT_ONLY = "TextOnly", "Text Only"
     MEDIA_ONLY = "MediaOnly", "Media Only"
+    # Legacy layouts - kept for backward compatibility but hidden from UI
+    MEDIA_TOP_TEXT_BOTTOM = "MediaTop_TextBottom", "Media Top • Text Bottom"
+    MEDIA_BOTTOM_TEXT_TOP = "MediaBottom_TextTop", "Media Bottom • Text Top"
 
 
 MEDIA_SHAPE_CHOICES = [
@@ -127,6 +130,7 @@ class Page(models.Model):
         default=PortfolioPageLayout.MEDIA_LEFT_TEXT_RIGHT,
     )
 
+    # First column/media
     media_image = models.ImageField(
         upload_to="portfolio_pages/",
         blank=True,
@@ -138,6 +142,23 @@ class Page(models.Model):
         choices=MEDIA_SHAPE_CHOICES,
         default="1:1",
     )
+
+    # Second column/media (for two-column layouts)
+    media_image_2 = models.ImageField(
+        upload_to="portfolio_pages/",
+        blank=True,
+        null=True,
+    )
+
+    media_shape_2 = models.CharField(
+        max_length=4,
+        choices=MEDIA_SHAPE_CHOICES,
+        default="1:1",
+        blank=True,
+    )
+
+    title_2 = models.CharField(max_length=255, blank=True)
+    description_2 = models.TextField(blank=True)
 
     class Meta:
         ordering = ["order", "id"]
@@ -255,6 +276,7 @@ class DraftPage(models.Model):
         default=PortfolioPageLayout.MEDIA_LEFT_TEXT_RIGHT,
     )
 
+    # First column/media
     media_image = models.ImageField(
         upload_to="draft_portfolio_pages/",
         blank=True,
@@ -266,6 +288,23 @@ class DraftPage(models.Model):
         choices=MEDIA_SHAPE_CHOICES,
         default="1:1",
     )
+
+    # Second column/media (for two-column layouts)
+    media_image_2 = models.ImageField(
+        upload_to="draft_portfolio_pages/",
+        blank=True,
+        null=True
+    )
+
+    media_shape_2 = models.CharField(
+        max_length=4,
+        choices=MEDIA_SHAPE_CHOICES,
+        default="1:1",
+        blank=True,
+    )
+
+    title_2 = models.CharField(max_length=255, blank=True)
+    description_2 = models.TextField(blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

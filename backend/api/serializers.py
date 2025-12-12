@@ -26,14 +26,37 @@ class ProfileSerializer(serializers.ModelSerializer):
         )
 
 class ProfileWriteSerializer(serializers.ModelSerializer):
+    first_name = serializers.CharField(required=False, allow_blank=True, write_only=True)
+    last_name = serializers.CharField(required=False, allow_blank=True, write_only=True)
+    
     class Meta:
         model = Profile
         fields = (
             "display_name","title","location","bio",
             "default_avatar","avatar_s3_key",
+            "banner_image",
             "website_url","instagram_url","twitter_url","behance_url","dribbble_url","youtube_url","tiktok_url",
             "theme",
+            "first_name","last_name",  # User fields
         )
+    
+    def update(self, instance, validated_data):
+        # Extract User fields
+        first_name = validated_data.pop("first_name", None)
+        last_name = validated_data.pop("last_name", None)
+        
+        # Update Profile fields
+        profile = super().update(instance, validated_data)
+        
+        # Update User fields
+        user = profile.user
+        if first_name is not None:
+            user.first_name = first_name
+        if last_name is not None:
+            user.last_name = last_name
+        user.save()
+        
+        return profile
 
 class UserSerializer(serializers.ModelSerializer):
     profile = ProfileSerializer(read_only=True)

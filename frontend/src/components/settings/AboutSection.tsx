@@ -3,7 +3,6 @@
 export default function AboutSection() {
   return (
     <div className="p-8">
-      <h2 className="text-xl font-semibold text-neutral-900 mb-4">About Us</h2>
       <div className="prose prose-lg">
         <p className="text-neutral-700 py-1">
             urGallery is a portfolio builder made for artists and creators who want to 
@@ -162,5 +161,8 @@ export default function AboutSection() {
     </div>
   );
 }
+
+
+
 
 

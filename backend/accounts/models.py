@@ -86,6 +86,14 @@ class Profile(models.Model):
         max_length=255, null=True, blank=True, help_text="If provided, overrides default avatar"
     )
 
+    # banner image
+    banner_image = models.ImageField(
+        upload_to="banners/",
+        blank=True,
+        null=True,
+        help_text="Banner image displayed behind profile picture"
+    )
+
     # socials (same as before)
     website_url   = models.URLField(blank=True)
     instagram_url = models.URLField(blank=True)

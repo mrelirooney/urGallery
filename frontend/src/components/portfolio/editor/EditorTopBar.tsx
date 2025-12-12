@@ -58,7 +58,7 @@ export default function EditorTopBar({
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   return (
-    <div className="w-full bg-neutral-800 text-neutral-100 flex flex-col gap-3">
+    <div className="w-full bg-green-800 text-neutral-100 flex flex-col gap-3">
       {/* --- Top row buttons --- */}
       <div className="flex items-center justify-between">
         <button onClick={onCancel} className="text-sm opacity-80 hover:opacity-100">

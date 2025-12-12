@@ -8,7 +8,7 @@ from accounts.views import (
     csrf_cookie_view,
 )
 from django.urls import path, include
-from api.views import MyPortfolioListCreateView, MyPortfolioDetailView
+from api.views import MyPortfolioListCreateView, MyPortfolioDetailView, MyProfileView
 
 urlpatterns = [
     # CSRF warm-up
@@ -21,6 +21,9 @@ urlpatterns = [
     path("auth/me/", MeView.as_view(), name="me"),
     path("auth/logout/", LogoutView.as_view(), name="logout"),
     path("artists/", include("artists.urls")),
+    
+    # PROFILE (user's own profile)
+    path("my/profile/", MyProfileView.as_view(), name="my-profile"),
     
     # PORTFOLIOS (user's own portfolios)
     path("my/portfolios/", MyPortfolioListCreateView.as_view(), name="my-portfolio-list-create"),

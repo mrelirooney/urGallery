@@ -13,8 +13,8 @@ interface LayoutPickerModalProps {
 const LAYOUT_OPTIONS: { value: LayoutType; label: string; icon: string }[] = [
   { value: "MediaLeft_TextRight", label: "Media Left • Text Right", icon: "◧" },
   { value: "MediaRight_TextLeft", label: "Media Right • Text Left", icon: "◨" },
-  { value: "MediaTop_TextBottom", label: "Media Top • Text Bottom", icon: "⬒" },
-  { value: "MediaBottom_TextTop", label: "Media Bottom • Text Top", icon: "⬓" },
+  { value: "TwoColumnMediaOnly", label: "Two Column Media Only", icon: "▐▐" },
+  { value: "TwoColumnMediaWithText", label: "Two Column Media With Text", icon: "⫸" },
   { value: "TextOnly", label: "Text Only", icon: "≡" },
   { value: "MediaOnly", label: "Media Only", icon: "▭" },
 ];

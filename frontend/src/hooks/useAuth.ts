@@ -17,6 +17,7 @@ export type User = {
   location?: string;
   bio?: string;
   avatar_url?: string | null;
+  banner_image_url?: string | null;
 };
 
 export function useAuth() {

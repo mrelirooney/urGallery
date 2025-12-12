@@ -27,6 +27,10 @@ class PageSummarySerializer(serializers.ModelSerializer):
             "layout",
             "media_image",
             "media_shape",
+            "media_image_2",
+            "media_shape_2",
+            "title_2",
+            "description_2",
             "created_at",
             "updated_at",
         ]
@@ -84,11 +88,16 @@ class PageEditorSerializer(serializers.ModelSerializer):
             "layout",
             "media_shape",
             "media_image",
+            "media_shape_2",
+            "media_image_2",
+            "title_2",
+            "description_2",
             "created_at",
             "updated_at",
         ]
         extra_kwargs = {
             "media_image": {"required": False, "allow_null": True},
+            "media_image_2": {"required": False, "allow_null": True},
         }
 
 
@@ -102,6 +111,9 @@ class PageEditorInputSerializer(serializers.Serializer):
     description = serializers.CharField(required=False, allow_blank=True)
     layout = serializers.CharField(required=False)
     media_shape = serializers.CharField(required=False)
+    media_shape_2 = serializers.CharField(required=False, allow_blank=True)
+    title_2 = serializers.CharField(required=False, allow_blank=True)
+    description_2 = serializers.CharField(required=False, allow_blank=True)
     order = serializers.IntegerField(required=False)
 
 
@@ -191,6 +203,12 @@ class PortfolioEditorSaveSerializer(serializers.ModelSerializer):
                         page.layout = layout_value
                     if "media_shape" in page_data:
                         page.media_shape = media_shape_value
+                    if "media_shape_2" in page_data:
+                        page.media_shape_2 = page_data.get("media_shape_2", "1:1")
+                    if "title_2" in page_data:
+                        page.title_2 = page_data.get("title_2", "")
+                    if "description_2" in page_data:
+                        page.description_2 = page_data.get("description_2", "")
                     page.order = page_order
                     page.save()
                 else:
@@ -201,6 +219,9 @@ class PortfolioEditorSaveSerializer(serializers.ModelSerializer):
                         description=page_data.get("description", ""),
                         layout=layout_value or "MediaRight_TextLeft",
                         media_shape=media_shape_value,
+                        media_shape_2=page_data.get("media_shape_2", "1:1"),
+                        title_2=page_data.get("title_2", ""),
+                        description_2=page_data.get("description_2", ""),
                         order=page_order,
                     )
             
@@ -250,6 +271,10 @@ class PublicPageSummarySerializer(serializers.ModelSerializer):
             "layout",
             "media_image",
             "media_shape",
+            "media_image_2",
+            "media_shape_2",
+            "title_2",
+            "description_2",
             "created_at",
         ]
 
@@ -300,6 +325,10 @@ class PublicPageSerializer(serializers.ModelSerializer):
             "layout",
             "media_image",
             "media_shape",
+            "media_image_2",
+            "media_shape_2",
+            "title_2",
+            "description_2",
             "created_at",
         ]
 

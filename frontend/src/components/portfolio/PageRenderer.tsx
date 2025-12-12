@@ -6,8 +6,8 @@ import MediaSlot from "./primitives/MediaSlot";
 export type LayoutType =
   | "MediaLeft_TextRight"
   | "MediaRight_TextLeft"
-  | "MediaTop_TextBottom"
-  | "MediaBottom_TextTop"
+  | "TwoColumnMediaOnly"
+  | "TwoColumnMediaWithText"
   | "TextOnly"
   | "MediaOnly";
 
@@ -22,6 +22,11 @@ export type PortfolioPageData = {
   description: string;
   mediaSrc?: string | null;
   mediaShape?: MediaShapeType;
+  // Second column fields (for two-column layouts)
+  mediaSrc2?: string | null;
+  mediaShape2?: MediaShapeType;
+  title2?: string;
+  description2?: string;
 };
 
 type PageRendererProps = {
@@ -134,6 +139,27 @@ export default function PageRenderer({
     </div>
   );
 
+  // Second column media (for two-column layouts)
+  const media2 = page.mediaSrc2 ? (
+    <MediaSlot src={page.mediaSrc2} alt="Media 2" shape={page.mediaShape2 ?? "1:1"} />
+  ) : (
+    <div className="flex h-full w-full items-center justify-center bg-neutral-800/60 text-sm text-neutral-500">
+      No media
+    </div>
+  );
+
+  // Second column text (for TwoColumnMediaWithText)
+  const text2 = (
+    <div className="flex flex-col gap-4">
+      <h3 className="text-3xl font-bold leading-tight text-neutral-50">
+        {page.title2 || ""}
+      </h3>
+      <p className="whitespace-pre-line text-base text-neutral-300">
+        {page.description2 || ""}
+      </p>
+    </div>
+  );
+
   // ----- layout switch -----
   switch (layoutType) {
     case "MediaLeft_TextRight":
@@ -152,19 +178,25 @@ export default function PageRenderer({
         </div>
       );
 
-    case "MediaTop_TextBottom":
+    case "TwoColumnMediaOnly":
       return (
-        <div className="flex flex-col gap-10">
-          {media}
-          {text}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div>{media}</div>
+          <div>{media2}</div>
         </div>
       );
 
-    case "MediaBottom_TextTop":
+    case "TwoColumnMediaWithText":
       return (
-        <div className="flex flex-col gap-10">
-          {text}
-          {media}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+          <div className="flex flex-col gap-6">
+            {media}
+            {text}
+          </div>
+          <div className="flex flex-col gap-6">
+            {media2}
+            {text2}
+          </div>
         </div>
       );
 

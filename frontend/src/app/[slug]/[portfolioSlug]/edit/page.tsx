@@ -34,6 +34,10 @@ type EditorPortfolioApi = {
     layout: LayoutType;
     media_image: string | null;
     media_shape: MediaShapeType | null;
+    media_image_2: string | null;
+    media_shape_2: MediaShapeType | null;
+    title_2: string;
+    description_2: string;
   }[];
 };
 
@@ -127,6 +131,15 @@ export default function EditPortfolioPage() {
         : null,
       // PortfolioEditorShell expects `mediaShape2`
       mediaShape2: (page.media_shape || "1:1") as MediaShapeType,
+      // Second column fields
+      mediaSrc2: page.media_image_2
+        ? page.media_image_2.startsWith("http")
+          ? page.media_image_2
+          : `${API_BASE}${page.media_image_2}`
+        : null,
+      mediaShape2_2: (page.media_shape_2 || "1:1") as MediaShapeType,
+      title2: page.title_2 || "",
+      description2: page.description_2 || "",
     }));
 
   // Editor only needs public/private; backend still keeps draft/link_only
@@ -135,7 +148,7 @@ export default function EditPortfolioPage() {
 
   return (
     <main className="py-1">
-      <Container>
+      <Container className="bg-teal-900 w-100%">
         <PortfolioEditorShell
           portfolioTitle={apiPortfolio.title}
           portfolioSlug={apiPortfolio.slug}

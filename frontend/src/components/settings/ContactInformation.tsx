@@ -64,10 +64,6 @@ export default function ContactInformation() {
 
   return (
     <div className="p-8">
-      <h2 className="text-xl font-semibold text-neutral-900 mb-6">
-        Contact Information
-      </h2>
-
       <div className="flex gap-8">
         {/* Left Column - Contacts */}
         <div className="flex-1">
@@ -88,7 +84,7 @@ export default function ContactInformation() {
                     handleContactChange(contact.id, e.target.value)
                   }
                   placeholder={`Contact #${index + 1}`}
-                  className="flex-1 px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
+                  className="flex-1 px-4 py-2 text-neutral-700 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
                 />
                 <button
                   type="button"
@@ -119,7 +115,7 @@ export default function ContactInformation() {
           </button>
         </div>
 
-        {/* Right Column - Tags */}
+        {/* Right Column - Tags 
         <div className="flex-1">
           <p className="text-sm text-neutral-500 mb-2">
             Lorem ipsum dolor sit amet consectetur adipiscing
@@ -153,7 +149,7 @@ export default function ContactInformation() {
               </div>
             ))}
           </div>
-        </div>
+        </div>*/}
       </div>
     </div>
   );

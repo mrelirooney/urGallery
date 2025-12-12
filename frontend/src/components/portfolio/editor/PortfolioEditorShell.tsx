@@ -31,6 +31,10 @@ interface EditorPageApi {
   layout: LayoutType;
   media_image: string | null;
   media_shape: MediaShapeType | null;
+  media_image_2: string | null;
+  media_shape_2: MediaShapeType | null;
+  title_2: string;
+  description_2: string;
 }
 
 export interface PortfolioEditorShellProps {
@@ -50,6 +54,10 @@ const createEmptyPage = (): PortfolioPageData => ({
   description: "",
   mediaSrc: null,
   mediaShape2: "1:1",
+  mediaSrc2: null,
+  mediaShape2_2: "1:1",
+  title2: "",
+  description2: "",
 });
 
 export type PrivacyState = "public" | "private";
@@ -282,6 +290,10 @@ export default function PortfolioEditorShell({
         description: data.description,
         mediaSrc: data.media_image,
         mediaShape2: (data.media_shape ?? "1:1") as MediaShapeType,
+        mediaSrc2: data.media_image_2,
+        mediaShape2_2: (data.media_shape_2 ?? "1:1") as MediaShapeType,
+        title2: data.title_2,
+        description2: data.description_2,
       };
 
       updateState((prev) => {
@@ -386,6 +398,9 @@ export default function PortfolioEditorShell({
         description: page.description,
         layout: page.layoutType,
         media_shape: page.mediaShape2,
+        media_shape_2: page.mediaShape2_2,
+        title_2: page.title2,
+        description_2: page.description2,
         order: index,
       })),
     };
@@ -596,6 +611,75 @@ export default function PortfolioEditorShell({
       }
     };
 
+  const handleChangeImage2 = async (pageIndex: number, file: File | null) => {
+    const page = pages[pageIndex];
+    if (!page) return;
+
+    // 1) Update the UI immediately
+    if (!file) {
+      updatePage(pageIndex, (prev) => ({ ...prev, mediaSrc2: null }));
+    } else {
+      const previewUrl = URL.createObjectURL(file);
+      updatePage(pageIndex, (prev) => ({ ...prev, mediaSrc2: previewUrl }));
+    }
+
+    // 2) If we don't have a slug or a numeric page id yet, we can't persist
+    if (!portfolioSlug || typeof page.id !== "number") {
+      console.warn(
+        "Image 2 changed only in the editor state. " +
+          "This page doesn't have a numeric id yet, so the new image won't persist on reload."
+      );
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+
+      if (file) {
+        formData.append("media_image_2", file);
+      } else {
+        formData.append("media_image_2", "");
+      }
+
+      const res = await fetch(
+        `${API_BASE}/api/portfolios/${encodeURIComponent(
+          portfolioSlug
+        )}/editor/pages/${page.id}/`,
+        {
+          method: "PATCH",
+          credentials: "include",
+          headers: {
+            "X-CSRFToken": getCsrfToken(),
+          },
+          body: formData,
+        }
+      );
+
+      if (!res.ok) {
+        console.error("Failed to update page image 2", res.status, await res.text());
+        return;
+      }
+
+      const data = await res.json();
+      const newUrl = (data as any).media_image_2 as string | null;
+
+      // Use the canonical URL returned by Django
+      if (newUrl) {
+        updatePage(pageIndex, (prev) => ({ ...prev, mediaSrc2: newUrl }));
+      }
+    } catch (err) {
+      console.error("Error while uploading page image 2", err);
+    }
+  };
+
+  const handleChangeTitle2 = (pageIndex: number, newTitle: string) => {
+    updatePage(pageIndex, (page) => ({ ...page, title2: newTitle }));
+  };
+
+  const handleChangeDescription2 = (pageIndex: number, newDesc: string) => {
+    updatePage(pageIndex, (page) => ({ ...page, description2: newDesc }));
+  };
+
   const handleChangePortfolioTitle = (value: string) => {
     updateState((prev) => ({ ...prev, title: value }));
   };
@@ -610,7 +694,7 @@ export default function PortfolioEditorShell({
 
   // -------- Render --------
   return (
-    <div className="w-full max-w-7xl mx-auto px-8 py-10 md:py-12 bg-neutral-950">
+    <div className="w-full mx-auto pt-5 bg-red-900">
       {/* Top bar with thumbnails + actions */}
       <EditorTopBar
         pages={pages}
@@ -633,9 +717,9 @@ export default function PortfolioEditorShell({
       />
 
       {/* Canvas area */}
-      <section className="bg-neutral-900 text-neutral-50 shadow-lg">
+      <section className="bg-blue-900 text-neutral-50 shadow-lg">
         {/* Title + controls strip */}
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
           <input
             type="text"
             value={title}
@@ -672,6 +756,9 @@ export default function PortfolioEditorShell({
               onChangeTitle={handleChangePageTitle}
               onChangeDescription={handleChangePageDescription}
               onChangeImage={handleChangeImage}
+              onChangeImage2={handleChangeImage2}
+              onChangeTitle2={handleChangeTitle2}
+              onChangeDescription2={handleChangeDescription2}
               onChangeLayout={handleChangeLayout}
               onChangeMediaShape={handleChangeMediaShape}
             />

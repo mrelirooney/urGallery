@@ -6,6 +6,7 @@ export interface ArtistProfile {
   location: string;
   bio: string;
   avatar_url: string | null;
+  banner_image_url?: string | null;
   avatar_s3_key?: string | null;
   website_url?: string;
   instagram_url?: string;

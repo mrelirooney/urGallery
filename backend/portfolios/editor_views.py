@@ -64,6 +64,10 @@ def _get_or_create_draft(slug: str, user) -> DraftPortfolio:
             layout=page.layout,
             media_shape=page.media_shape,
             media_image=page.media_image,  # Copy the image too
+            media_shape_2=page.media_shape_2,
+            media_image_2=page.media_image_2,
+            title_2=page.title_2,
+            description_2=page.description_2,
             order=page.order,
         )
 
@@ -296,6 +300,10 @@ def publish_portfolio(request, slug):
                     order=dpage.order,
                     media_image=dpage.media_image if dpage.media_image else None,
                     media_shape=dpage.media_shape,
+                    media_image_2=dpage.media_image_2 if dpage.media_image_2 else None,
+                    media_shape_2=dpage.media_shape_2,
+                    title_2=dpage.title_2,
+                    description_2=dpage.description_2,
                 )
 
             # 3) Mark draft as having no unpublished changes

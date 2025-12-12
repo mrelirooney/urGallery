@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import SettingsNav from "@/components/settings/SettingsNav";
 import ProfileInformation from "@/components/settings/ProfileInformation";
 import ContactInformation from "@/components/settings/ContactInformation";
@@ -23,6 +23,7 @@ export default function SettingsPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [activeSection, setActiveSection] = useState<SettingsSection>("profile");
+  const profileSaveRef = useRef<(() => Promise<void>) | null>(null);
 
   // Redirect to login if not authenticated
   if (!loading && !user) {
@@ -34,9 +35,24 @@ export default function SettingsPage() {
     router.back();
   };
 
-  const handleDone = () => {
-    // TODO: Save changes when backend is connected
-    router.back();
+  const handleDone = async () => {
+    // Call save handler if it exists (for profile section)
+    if (activeSection === "profile" && profileSaveRef.current) {
+      await profileSaveRef.current();
+      
+      // Navigate to user's profile page and refresh
+      if (user?.slug) {
+        router.push(`/${user.slug}`);
+        // Refresh the page after navigation completes
+        setTimeout(() => {
+          router.refresh();
+        }, 200);
+      } else {
+        router.back();
+      }
+    } else {
+      router.back();
+    }
   };
 
   return (
@@ -69,12 +85,21 @@ export default function SettingsPage() {
 
         {/* Right Content Area */}
         <div className="flex-1 bg-white">
-          {activeSection === "profile" && <ProfileInformation />}
+          {activeSection === "profile" && (
+            <ProfileInformation 
+              onSaveRef={(saveFn) => {
+                profileSaveRef.current = saveFn;
+              }}
+              onSaveComplete={() => {
+                // This will be called after save completes
+                // Navigation happens in handleDone
+              }}
+            />
+          )}
           {activeSection === "contact" && <ContactInformation />}
           {activeSection === "customization" && (
             <div className="p-8">
-              <h2 className="text-xl font-semibold text-neutral-900 mb-4">Customization</h2>
-              <p className="text-neutral-500">Coming soon...</p>
+              <p className="text-neutral-500">Coming soon lol...</p>
             </div>
           )}
           {activeSection === "about" && <AboutSection />}
@@ -82,8 +107,8 @@ export default function SettingsPage() {
           {activeSection === "privacy" && <PrivacySection />}
           {activeSection === "help" && (
             <div className="p-8">
-              <h2 className="text-xl font-semibold text-neutral-900 mb-4">Help</h2>
-              <p className="text-neutral-500">Coming soon...</p>
+              <p className="text-neutral-500">Coming soon lol...Just send me email with all your questions or critiques for now.</p>
+              <p className="text-neutral-500">Email: <a href="mailto:mrelirooney@gmail.com">mrelirooney@gmail.com</a></p>
             </div>
           )}
         </div>

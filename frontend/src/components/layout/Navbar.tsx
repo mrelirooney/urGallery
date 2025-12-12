@@ -101,7 +101,7 @@ export default function Navbar() {
         <PortfolioMenu isOpen={open} onClose={() => setOpen(false)} />
       )}
 
-      <header id="site-navbar" className="sticky top-0 z-10 bg-gray-50 border-b border-gray-200">
+      <header id="site-navbar" className="sticky top-0 z-50 bg-[var(--foreground)] border-b border-gray-200">
         <div className="mx-auto max-w-6xl px-8 h-14 flex items-center justify-between">
         {/* Left: Logo */}
         <div className="flex">
@@ -127,6 +127,7 @@ export default function Navbar() {
           // --- Signed-in view ---
           <div className="flex items-center gap-3">
             <SearchInput
+              
               variant="nav"
               placeholder="Search…"
             />
@@ -143,7 +144,7 @@ export default function Navbar() {
                 <div
                   role="menu"
                   aria-label="User menu"
-                  className="absolute right-0 mt-2 w-44 rounded-md border border-gray-200 bg-white shadow-lg"
+                  className="absolute right-0 mt-2 w-44 rounded-md border border-gray-200 bg-white shadow-lg z-50"
                   onKeyDown={(e) => {
                     if (e.key !== "Tab") return;
                     const container = menuRef.current;

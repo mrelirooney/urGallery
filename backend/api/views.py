@@ -134,6 +134,84 @@ class MyProfileView(generics.RetrieveUpdateAPIView):
         # guarantee a profile exists
         profile, _ = Profile.objects.get_or_create(user=self.request.user)
         return profile
+    
+    def get(self, request, *args, **kwargs):
+        """Return profile with User fields included"""
+        profile = self.get_object()
+        serializer = self.get_serializer(profile)
+        data = serializer.data
+        
+        # Add User fields
+        user = profile.user
+        data['first_name'] = user.first_name
+        data['last_name'] = user.last_name
+        
+        # Add avatar URL if exists
+        if user.avatar:
+            try:
+                data['avatar_url'] = request.build_absolute_uri(user.avatar.url)
+            except Exception:
+                data['avatar_url'] = None
+        else:
+            data['avatar_url'] = None
+        
+        # Add banner image URL if exists
+        if profile.banner_image:
+            try:
+                data['banner_image_url'] = request.build_absolute_uri(profile.banner_image.url)
+            except Exception:
+                data['banner_image_url'] = None
+        else:
+            data['banner_image_url'] = None
+        
+        return Response(data)
+    
+    def update(self, request, *args, **kwargs):
+        """Handle avatar upload, banner upload, and profile update"""
+        profile = self.get_object()
+        user = profile.user
+        
+        # Handle avatar upload separately if provided
+        if 'avatar' in request.FILES:
+            user.avatar = request.FILES['avatar']
+            user.save()
+        
+        # Handle banner image upload separately if provided
+        if 'banner_image' in request.FILES:
+            profile.banner_image = request.FILES['banner_image']
+            profile.save()
+        
+        # Update profile fields
+        serializer = self.get_serializer(profile, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        
+        # Refresh profile to get updated banner_image
+        profile.refresh_from_db()
+        
+        # Return updated data with User fields
+        response_data = serializer.data
+        response_data['first_name'] = user.first_name
+        response_data['last_name'] = user.last_name
+        
+        if user.avatar:
+            try:
+                response_data['avatar_url'] = request.build_absolute_uri(user.avatar.url)
+            except Exception:
+                response_data['avatar_url'] = None
+        else:
+            response_data['avatar_url'] = None
+        
+        # Add banner image URL
+        if profile.banner_image:
+            try:
+                response_data['banner_image_url'] = request.build_absolute_uri(profile.banner_image.url)
+            except Exception:
+                response_data['banner_image_url'] = None
+        else:
+            response_data['banner_image_url'] = None
+        
+        return Response(response_data)
 
 
 # ---------- PORTFOLIOS ----------
