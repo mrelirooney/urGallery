@@ -101,7 +101,7 @@ export default function Navbar() {
         <PortfolioMenu isOpen={open} onClose={() => setOpen(false)} />
       )}
 
-      <header id="site-navbar" className="sticky top-0 z-50 bg-[var(--foreground)] border-b border-gray-200">
+      <header id="site-navbar" className="sticky top-0 z-50 bg-[var(--background)]">
         <div className="mx-auto max-w-6xl px-8 h-14 flex items-center justify-between">
         {/* Left: Logo */}
         <div className="flex">
@@ -204,13 +204,13 @@ export default function Navbar() {
           <nav className="flex items-center gap-4 text-sm">
             <Link
               href="/login"
-              className="px-3 py-1.5 rounded-lg bg-black text-white hover:opacity-80"
+              className="px-3 py-1.5 border border-white/60 rounded-xs bg-(--foreground)/0 text-white/60 hover:bg-(--foreground)/90 hover:text-black transition-opacity"
             >
               Login
             </Link>
             <Link
               href="/signup"
-              className="px-3 py-1.5 rounded-lg bg-black text-white hover:opacity-80"
+              className="px-3 py-1.5 border border-white/60 rounded-xs bg-(--foreground)/0 text-white/60 hover:bg-(--foreground)/90 hover:text-black transition-opacity"
             >
               Sign Up
             </Link>

@@ -96,7 +96,7 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
 
   return (
     <div className="relative w-full max-w-3xl">
-      <div className="flex items-center gap-2 rounded-full bg-[var(--foreground)] ring-1 ring-black/10 px-2 py-0">
+      <div className="flex items-center gap-2 rounded-xs ring-1 ring-[var(--foreground)]/10 px-2 py-0 hover:ring-[var(--foreground)]/60 focus-within:ring-[var(--foreground)]/80">
         <input
           ref={inputRef}
           value={query}
@@ -104,7 +104,7 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
           onFocus={() => results.length > 0 && setOpen(true)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className="w-full outline-none text-neutral-700"
+          className="w-full outline-none text-neutral-300"
           aria-label="Search"
         />
         <button
@@ -117,7 +117,7 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
               if (r) handleSelect(r);
             });
           }}
-          className="shrink-0 rounded-full text-black px-2 py-2 text-sm font-medium"
+          className="shrink-0 rounded-full text-white/60 hover:text-white/90 px-2 py-2 text-sm font-medium"
         >
           <Search size={18} />
         </button>

@@ -36,14 +36,29 @@ export function LogoPrimary({ className = "", ...rest }: Props) {
 
 export default function LogoMark({ className = "", ...rest }: Props) {
   return (
-    <Image
+    <div>
+    {/* Dark logo for light backgrounds - shown by default */}
+      <Image
       src="/Logos/urGalleryLogo-Secondary-ur-black.png"
       alt="ur"
       width={35}
       height={35}
       sizes="38px"
       priority
+      className="block dark:hidden opacity-60 hover:opacity-90 transition-opacity"
       {...rest}
-    />
+      />
+    {/* Light logo for dark backgrounds - shown in dark mode */}
+      <Image
+      src="/Logos/urGalleryLogo-Secondary-ur-white.png"  // Update this path to your light logo filename
+      alt="urGallery"
+      width={35}
+      height={35}
+      sizes="38px"
+      priority
+      className="hidden dark:block opacity-60 hover:opacity-90 transition-opacity"
+      {...rest}
+      />
+    </div>
   );
 }

@@ -13,6 +13,7 @@ export default function HomePage() {
       {/* 7rem ~= sticky header(3.5rem) + footer(3.5rem); tweak if needed */}
       <LogoPrimary className="h-16 sm:h-20 w-auto" />
       <SearchInput variant="hero" />
+      <p className="text-sm text-neutral-500">MVPs Loading - VIPs Only</p>
     </main>
   );
 }

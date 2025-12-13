@@ -20,6 +20,17 @@ class ArtistProfileSerializer(serializers.ModelSerializer):
             "bio",
             "avatar_url",
             "banner_image_url",
+            "website_url",
+            "instagram_url",
+            "twitter_url",
+            "behance_url",
+            "dribbble_url",
+            "youtube_url",
+            "tiktok_url",
+            "linkedin_url",
+            "twitch_url",
+            "email_contact",
+            "contact_order",
         )
 
     def get_avatar_url(self, obj):

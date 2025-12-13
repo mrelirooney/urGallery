@@ -15,6 +15,10 @@ export interface ArtistProfile {
   dribbble_url?: string;
   youtube_url?: string;
   tiktok_url?: string;
+  linkedin_url?: string;
+  twitch_url?: string;
+  email_contact?: string;
+  contact_order?: string[];
 }
 
 export interface PortfolioPage {

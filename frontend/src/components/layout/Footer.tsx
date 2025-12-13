@@ -14,15 +14,16 @@ export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="border-t border-neutral-200 bg-[var(--foreground)]">
-      <Container className="bg-[var(--foreground)] h-14 flex items-center justify-between text-xs text-neutral-600 max-w-6xl max-sm:flex-wrap max-sm:justify-center max-sm:gap-y-1">
+    <footer className=" bg-[var(--background)]">
+      <Container className="h-14 flex items-center justify-between text-xs text-neutral-600 max-w-6xl max-sm:flex-wrap max-sm:justify-center max-sm:gap-y-1">
         {/* Left: copyright */}
         <div className="whitespace-nowrap">
-            <span>&copy; urGallery {year}</span>
-            <span className="text-neutral-400">•</span>
-            <span className="rounded bg-neutral-100 px-2 py-0.5 text-[10px] leading-none text-neutral-600">
+            <span>&copy; urGallery {year} </span>
+            <span className="rounded-sm bg-neutral-800 px-2 py-0.5 text-[10px] leading-none text-neutral-600">
             v{process.env.NEXT_PUBLIC_APP_VERSION ?? "0.0.0"}
-        </span></div>
+            </span>
+            
+        </div>
 
         {/* Right: links */}
         <nav className="flex items-center gap-4">
@@ -30,7 +31,7 @@ export default function Footer() {
             <Link
               key={l.href}
               href={l.href}
-              className="hover:text-neutral-900 transition-colors"
+              className="hover:text-neutral-200 transition-colors"
             >
               {l.label}
             </Link>

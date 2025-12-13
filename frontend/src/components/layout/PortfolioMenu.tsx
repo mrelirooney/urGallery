@@ -212,7 +212,7 @@ export default function PortfolioMenu({ isOpen, onClose }: Props) {
       {/* Slide-in menu */}
       <div
         ref={menuRef}
-        className={`fixed left-0 top-0 bottom-0 w-80 bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${
+        className={`fixed left-0 top-0 bottom-0 w-80 bg-white shadow-xl z-60 transform transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >

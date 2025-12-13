@@ -6,6 +6,7 @@ import type { ArtistLanding } from "@/lib/types";
 import ArtistHeader from "@/components/artist/ArtistHeader";
 import ArtistLandingMotion from "@/components/artist/ArtistLandingMotion";
 import PortfolioSelector from "@/components/portfolio/PortfolioSelector";
+import CompactContactButtons from "@/components/artist/CompactContactButtons";
 import { notFound } from "next/navigation";
 
 
@@ -141,12 +142,8 @@ export default async function ArtistPage(
             </span>
           </div>
 
-          {/* Right: quick contacts (placeholder icons) */}
-          <div className="flex items-center gap-3 text-neutral-700">
-            <span className="h-2 w-2 rounded-full bg-neutral-500" />
-            <span className="h-2 w-2 rounded-full bg-neutral-500" />
-            <span className="h-2 w-2 rounded-full bg-neutral-500" />
-          </div>
+          {/* Right: contact buttons */}
+          <CompactContactButtons profile={profile} />
         </div>
       </div>
 

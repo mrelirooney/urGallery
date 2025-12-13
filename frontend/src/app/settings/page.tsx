@@ -24,6 +24,7 @@ export default function SettingsPage() {
   const router = useRouter();
   const [activeSection, setActiveSection] = useState<SettingsSection>("profile");
   const profileSaveRef = useRef<(() => Promise<void>) | null>(null);
+  const contactSaveRef = useRef<(() => Promise<void>) | null>(null);
 
   // Redirect to login if not authenticated
   if (!loading && !user) {
@@ -44,6 +45,16 @@ export default function SettingsPage() {
       if (user?.slug) {
         router.push(`/${user.slug}`);
         // Refresh the page after navigation completes
+        setTimeout(() => {
+          router.refresh();
+        }, 200);
+      } else {
+        router.back();
+      }
+    } else if (activeSection === "contact" && contactSaveRef.current) {
+      await contactSaveRef.current();
+      if (user?.slug) {
+        router.push(`/${user.slug}`);
         setTimeout(() => {
           router.refresh();
         }, 200);
@@ -96,7 +107,13 @@ export default function SettingsPage() {
               }}
             />
           )}
-          {activeSection === "contact" && <ContactInformation />}
+          {activeSection === "contact" && (
+            <ContactInformation 
+              onSaveRef={(saveFn) => {
+                contactSaveRef.current = saveFn;
+              }}
+            />
+          )}
           {activeSection === "customization" && (
             <div className="p-8">
               <p className="text-neutral-500">Coming soon lol...</p>

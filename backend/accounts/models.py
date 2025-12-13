@@ -102,6 +102,16 @@ class Profile(models.Model):
     dribbble_url  = models.URLField(blank=True)
     youtube_url   = models.URLField(blank=True)
     tiktok_url    = models.URLField(blank=True)
+    linkedin_url  = models.URLField(blank=True)
+    twitch_url    = models.URLField(blank=True)
+    email_contact = models.EmailField(blank=True, help_text="Public contact email (not login email)")
+    
+    # Contact order - stores the order of contact fields as an array
+    contact_order = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Order of contact fields, e.g. ['instagram_url', 'youtube_url', 'email_contact']"
+    )
 
     theme_id_hint = models.IntegerField(null=True, blank=True)
     theme = models.ForeignKey("themes.Theme", on_delete=models.SET_NULL, null=True, blank=True, related_name="profiles")

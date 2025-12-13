@@ -3,6 +3,7 @@ from accounts.models import User, Profile
 from themes.models import Theme
 from tags.models import Hashtag
 from portfolios.models import Portfolio, Page
+import re
 
 class ThemeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -22,6 +23,8 @@ class ProfileSerializer(serializers.ModelSerializer):
             "display_name","title","location","bio",
             "default_avatar","avatar_s3_key",
             "website_url","instagram_url","twitter_url","behance_url","dribbble_url","youtube_url","tiktok_url",
+            "linkedin_url","twitch_url","email_contact",
+            "contact_order",
             "theme",
         )
 
@@ -36,9 +39,31 @@ class ProfileWriteSerializer(serializers.ModelSerializer):
             "default_avatar","avatar_s3_key",
             "banner_image",
             "website_url","instagram_url","twitter_url","behance_url","dribbble_url","youtube_url","tiktok_url",
+            "linkedin_url","twitch_url","email_contact",
+            "contact_order",
             "theme",
             "first_name","last_name",  # User fields
         )
+    
+    def validate(self, data):
+        """Validate that contact fields don't contain phone numbers"""
+        # Phone number patterns to block
+        phone_pattern = re.compile(r'(\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}|\+\d{10,15}')
+        
+        contact_fields = [
+            'website_url', 'instagram_url', 'twitter_url', 'behance_url', 
+            'dribbble_url', 'youtube_url', 'tiktok_url', 'linkedin_url', 
+            'twitch_url', 'email_contact'
+        ]
+        
+        for field in contact_fields:
+            value = data.get(field, '')
+            if value and phone_pattern.search(value):
+                raise serializers.ValidationError({
+                    field: "Phone numbers are not allowed in contact fields. Please use a URL or email."
+                })
+        
+        return data
     
     def update(self, instance, validated_data):
         # Extract User fields
