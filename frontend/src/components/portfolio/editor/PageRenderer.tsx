@@ -70,7 +70,7 @@ function TextColumn({
 }: TextColumnProps) {
   if (isEditor) {
     return (
-      <div className="flex flex-col bg-yellow-900">
+      <div className="flex flex-col">
         <input
           className="w-full text-5xl font-bold leading-tight text-neutral-50 bg-transparent border border-neutral-500/60 rounded-md px-4 py-3 outline-none focus:border-neutral-200"
           value={title}
@@ -88,7 +88,7 @@ function TextColumn({
   }
 
   return (
-    <div className="flex flex-col bg-yellow-900">
+    <div className="flex flex-col">
       <h2 className="text-5xl font-bold leading-tight text-neutral-50">
         {title}
       </h2>
@@ -225,9 +225,9 @@ export default function PageRenderer({
   const mediaOnRight = layoutType === "MediaRight_TextLeft";
 
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-full bg-neutral-800">
       <div className="
-        max-w-6xl mx-auto bg-purple-900 flex items-center
+        max-w-6xl mx-auto flex items-center
         h-[50vh]        /* laptop canvas height */
         md:h-[55vh]     /* medium screens */
         lg:h-[60vh]     /* large screens */
@@ -247,7 +247,7 @@ export default function PageRenderer({
 
           {/* Media column */}
           <div
-            className={`bg-red-900
+            className={`
               w-full
               md:col-span-6
               
@@ -293,7 +293,7 @@ export default function PageRenderer({
 
     return (
       <div className="w-full h-full">
-        <div className="max-w-6xl mx-auto flex items-center h-[50vh] md:h-[55vh] lg:h-[60vh] xl:h-[66vh]">
+        <div className="max-w-6xl mx-auto flex items-center h-[40vh] md:h-[45vh] lg:h-[50vh] xl:h-[55vh]">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
             <div className="border-2 border-neutral-100 rounded-md">
               {mediaContent}
@@ -308,6 +308,7 @@ export default function PageRenderer({
   }
 
   // Two Column Media With Text layout
+  {/* This layout is not supported yet 
   if (layoutType === "TwoColumnMediaWithText") {
     const textContent2 = (
       <div className="flex flex-col gap-4">
@@ -364,17 +365,17 @@ export default function PageRenderer({
     );
 
     return (
-      <div className="w-full h-full">
+     <div className="w-full h-full">
         <div className="max-w-6xl mx-auto flex items-center h-[50vh] md:h-[55vh] lg:h-[60vh] xl:h-[66vh]">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
-            {/* First column */}
+            {/* First column 
             <div className="flex flex-col gap-4">
               <div className="border-2 border-neutral-100 rounded-md">
                 {mediaContent}
               </div>
               {textContent}
             </div>
-            {/* Second column */}
+            {/* Second column 
             <div className="flex flex-col gap-4">
               <div className="border-2 border-neutral-100 rounded-md">
                 {mediaContent2}
@@ -386,7 +387,7 @@ export default function PageRenderer({
       </div>
     );
   }
-
+*/}
   // Fallback for any unknown layout
   return (
     <div className="w-full flex justify-center">

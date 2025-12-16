@@ -25,15 +25,15 @@ export default function SignupPage() {
   return (
     
     <main className="mx-auto max-w-md py-16">
-      <div className="mx-auto w-full max-w-md rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
-        <h1 className="mb-6 text-center text-2xl font-bold text text-gray-900">Create Account</h1>
+      <div className="mx-auto w-full max-w-md rounded-2xl border border-neutral-200 bg-[var(--foreground)] p-6 shadow-sm">
+        <h1 className="mb-6 text-center text-2xl font-bold text text-[var(--light-brown)]">Create Account</h1>
         {err && <p className="mb-3 text-red-600">{err}</p>}
         <form onSubmit={onSubmit} className="grid gap-3">
-          <input className="bg-gray-100 border rounded px-3 py-2 border-neutral-300 text-neutral-800" placeholder="Email"
+          <input className="bg-gray-100 border border-neutral-300 rounded-sm px-3 py-2 text-neutral-800" placeholder="Email"
                 value={email} onChange={e => setEmail(e.target.value)} />
-          <input className="bg-gray-100 border rounded px-3 py-2 border-neutral-300 text-neutral-800" type="password" placeholder="Password"
+          <input className="bg-gray-100 border border-neutral-300 rounded-sm px-3 py-2 text-neutral-800" type="password" placeholder="Password"
                 value={password} onChange={e => setPassword(e.target.value)} />
-          <button className="px-3 py-2 bg-black text-white rounded disabled:opacity-60">
+          <button className="px-3 py-2 bg-[var(--light-brown)] text-white rounded disabled:opacity-60">
             Sign Up
           </button>
         </form>
