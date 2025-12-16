@@ -35,7 +35,6 @@ export default function Navbar() {
   
   // Where "View Profile" should go
   const profileHref = user?.slug ? `/${user.slug}` : "/login";
-  const searchParams = useSearchParams();
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
@@ -70,7 +69,7 @@ export default function Navbar() {
   useEffect(() => {
     setMenuOpen(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname, searchParams?.toString()]);
+  }, [pathname]);
 
   // close on scroll if open
   useEffect(() => {

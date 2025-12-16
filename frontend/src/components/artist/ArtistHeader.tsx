@@ -62,7 +62,7 @@ export default function ArtistHeader({ profile }: Props) {
           </div>
         </div>
         <br></br>
-        {/* Bottom: Name / Title / Dots / Location */}
+        {/* Bottom: Name / Title / Contacts / Location */}
         <div className="flex flex-col justify-center text-center md:text-left -mt-2">
           <h1 className="text-4xl lg:text-5xl font-extrabold tracking-tight text-neutral-900">
             {profile?.display_name ?? "Unknown Artist"}

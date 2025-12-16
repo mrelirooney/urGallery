@@ -101,7 +101,7 @@ export default async function ArtistPage(
       <ArtistLandingMotion pagesCount={firstPortfolio?.pages_count ?? 1} />
 
       {/* Artist Header Section */}
-      <section className="bg-[var(--foreground)] border-b border-neutral-200 relative">
+      <section className=" bg-[var(--background)] border-b border-neutral-200 relative">
         {/* Banner Image - Full width, outside container */}
         {profile?.banner_image_url && (
           <div className="absolute top-0 left-0 right-0 h-[33vh] overflow-hidden">
