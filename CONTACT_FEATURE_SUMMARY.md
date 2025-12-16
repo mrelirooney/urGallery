@@ -105,3 +105,4 @@
 - Maximum 5 contacts displayed
 - Email extraction handles `mailto:` format and plain emails
 
+
