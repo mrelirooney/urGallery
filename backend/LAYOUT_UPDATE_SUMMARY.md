@@ -106,3 +106,4 @@ description_2: TextField (blank allowed)
 - ✅ Frontend should hide these options but can still render them if needed
 - ✅ All new fields are optional (blank=True, null=True where applicable)
 
+
