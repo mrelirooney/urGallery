@@ -147,7 +147,7 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
   if (error || pages.length === 0) {
     return (
       <div className="p-8 text-center text-red-500">
-        {error ?? "No pages found for this portfolio."}
+        {error ?? "This user does not have a portfolio."}
       </div>
     );
   }
@@ -160,7 +160,7 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
             text={portfolioTitle}
             align="left"
             size="xs"
-            color="text-neutral-200"
+            color="text-[var(--light-brown)]"
           />
 
           {/* Only shows for the owner (logic is inside EditPortfolioButton) */}

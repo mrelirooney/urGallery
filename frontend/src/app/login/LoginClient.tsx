@@ -60,7 +60,7 @@ export default function LoginClient() {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
-          <SubmitButton loading={loading}>Login</SubmitButton>
+          <SubmitButton loading={loading} className="bg-[var(--light-brown)]">Login</SubmitButton>
         </form>
 
         <div className="mt-4 flex items-center justify-between text-sm">

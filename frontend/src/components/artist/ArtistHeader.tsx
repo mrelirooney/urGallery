@@ -64,12 +64,12 @@ export default function ArtistHeader({ profile }: Props) {
         <br></br>
         {/* Bottom: Name / Title / Contacts / Location */}
         <div className="flex flex-col justify-center text-center md:text-left -mt-2">
-          <h1 className="text-4xl lg:text-5xl font-extrabold tracking-tight text-neutral-900">
+          <h1 className="text-4xl lg:text-5xl font-extrabold tracking-tight text-[var(--foreground)]">
             {profile?.display_name ?? "Unknown Artist"}
           </h1>
-        <p className="mt-1 text-lg text-neutral-700">{profile?.title ?? ""}</p>
+        <p className="mt-1 text-lg text-[var(--foreground)]">{profile?.title ?? ""}</p>
 
-        <p className="mt-1 text-base text-neutral-600">
+        <p className="mt-1 text-base text-[var(--foreground)]">
           {profile?.location ?? ""}
         </p>
         
@@ -88,7 +88,7 @@ export default function ArtistHeader({ profile }: Props) {
               </button>
             ))}
             {copiedEmail && (
-              <div className="absolute -bottom-8 left-0 bg-neutral-900 text-white text-xs px-3 py-1 rounded shadow-lg">
+              <div className="absolute -bottom-8 left-0 text-[var(--foreground)] text-white text-xs px-3 py-1 rounded shadow-lg">
                 Email copied!
               </div>
             )}
@@ -100,7 +100,7 @@ export default function ArtistHeader({ profile }: Props) {
 
         {/* Row 2: Bio */}
         <div className="md:col-span-2">
-          <p className="mt-1 max-w-3xl text-neutral-700 leading-relaxed">
+          <p className="mt-1 max-w-3xl text-[var(--foreground)] leading-relaxed">
             {profile.bio || "This artist hasn't added a bio yet."}
           </p>
         </div>

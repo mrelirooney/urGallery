@@ -10,11 +10,11 @@ interface LayoutPickerModalProps {
   onSelectLayout: (layout: LayoutType) => void;
 }
 
-const LAYOUT_OPTIONS: { value: LayoutType; label: string; icon: string }[] = [
+const LAYOUT_OPTIONS: { value: LayoutType; label: string; icon: string; disabled?: boolean }[] = [
   { value: "MediaLeft_TextRight", label: "Media Left • Text Right", icon: "◧" },
   { value: "MediaRight_TextLeft", label: "Media Right • Text Left", icon: "◨" },
-  { value: "TwoColumnMediaOnly", label: "Two Column Media Only", icon: "▐▐" },
-  { value: "TwoColumnMediaWithText", label: "Two Column Media With Text", icon: "⫸" },
+  { value: "TwoColumnMediaOnly", label: "Two Column Media Only", icon: "▐▐", disabled: true },
+  { value: "TwoColumnMediaWithText", label: "Two Column Media With Text", icon: "⫸", disabled: true },
   { value: "TextOnly", label: "Text Only", icon: "≡" },
   { value: "MediaOnly", label: "Media Only", icon: "▭" },
 ];
@@ -53,16 +53,19 @@ export default function LayoutPickerModal({
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {LAYOUT_OPTIONS.map((option) => (
+        {LAYOUT_OPTIONS.map((option) => (
             <button
               key={option.value}
-              onClick={() => handleSelect(option.value)}
+              onClick={() => !option.disabled && handleSelect(option.value)}
+              disabled={option.disabled}
               className={`
-                p-6 rounded-lg border-2 transition-all
+                p-6 rounded-lg border-2 transition-all relative
                 ${
-                  currentLayout === option.value
-                    ? "border-white bg-neutral-800"
-                    : "border-neutral-700 hover:border-neutral-500 bg-neutral-800/50"
+                  option.disabled
+                    ? "border-neutral-800 bg-neutral-900/50 cursor-not-allowed opacity-50"
+                    : currentLayout === option.value
+                      ? "border-white bg-neutral-800"
+                      : "border-neutral-700 hover:border-neutral-500 bg-neutral-800/50"
                 }
               `}
             >
@@ -70,6 +73,11 @@ export default function LayoutPickerModal({
               <div className="text-sm text-neutral-200 font-medium">
                 {option.label}
               </div>
+              {option.disabled && (
+                <div className="text-xs text-neutral-500 mt-2 font-normal">
+                  Coming Soon
+                </div>
+              )}
             </button>
           ))}
         </div>

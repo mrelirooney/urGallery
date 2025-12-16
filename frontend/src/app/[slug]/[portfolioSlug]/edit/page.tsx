@@ -148,7 +148,7 @@ export default function EditPortfolioPage() {
 
   return (
     <main className="py-1">
-      <Container className="bg-teal-900 w-100%">
+      <Container className="w-100%">
         <PortfolioEditorShell
           portfolioTitle={apiPortfolio.title}
           portfolioSlug={apiPortfolio.slug}

@@ -3,12 +3,16 @@
 :root {
   --background: #faf7f2;
   --foreground: #11100e;
+  --light-brown: #c96a4a;
+  --dark-brown: #5a3e36;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #11100e;
     --foreground: #faf7f2;
+    --light-brown: #c96a4a;
+    --dark-brown: #5a3e36;
   }
 }
 
