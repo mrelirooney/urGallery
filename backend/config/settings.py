@@ -54,16 +54,19 @@ DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 # Purpose:
 # Defines which domains/IPs are allowed to serve this Django app.
 # REQUIRED when DEBUG=False or Django will block requests.
+# ------------------------------------------------------------
 # Dev Environment:
 #   ALLOWED_HOSTS=127.0.0.1,localhost
 # UAT / Docker:
 #   ALLOWED_HOSTS=localhost,backend,web
 #   (or "*" temporarily for internal testing ONLY)
 # Prod Environment:
-#   ALLOWED_HOSTS=urgallery.com,www.urgallery.com,<AWS-ELB-DNS>
+#   ALLOWED_HOSTS=urgallery.io,www.urgallery.io,<AWS-ELB-DNS>
+# ------------------------------------------------------------
 # How to Switch:
 #   Update the ALLOWED_HOSTS environment variable.
 #   This file does NOT need to change between environments.
+# ------------------------------------------------------------
 # Common Failure:
 #   If DEBUG=False and domain is missing here → site will 400.
 # ============================================================
@@ -135,20 +138,10 @@ MIDDLEWARE = [
 ]
 
 # ============================================================
-# Switching Environments Step 3: CORS + CSRF + AUTH COOKIES
+# Switching Environments Step 3a: BACKEND — CORS + CSRF + Cookies
 # Purpose:
-# Enables authentication (login/session) between Frontend and Backend.
-# This is the MOST COMMON reason logins break in Production.
-# ------------------------------------------------------------
-# Dev Environment (Localhost):
-#   FRONTEND = http://localhost:3000
-#   - Relaxed cookie rules
-#   - HTTP allowed
-# Prod Environment:
-#   FRONTEND = https://your-frontend-domain.com
-#   - HTTPS required
-#   - Secure cookies REQUIRED
-#   - Exact domain match REQUIRED
+# Controls which frontends can authenticate with the backend.
+# Most common cause of login failures in Production.
 # ------------------------------------------------------------
 # Dev Values:
 #   CORS_ALLOWED_ORIGINS=http://localhost:3000
@@ -302,7 +295,6 @@ USE_TZ = True
 # ============================================================
 
 STATIC_URL = 'static/'
-
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 

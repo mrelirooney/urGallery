@@ -41,7 +41,21 @@ function getCsrfToken(): string | null {
   return match ? decodeURIComponent(match[1]) : null;
 }
 
-// 🔹 call this once so Django sets the csrftoken cookie
+// ============================================================
+// Switching Environments Step 3b: FRONTEND — Auth Requests
+// Purpose:
+// Ensures cookies + CSRF tokens are sent correctly to backend.
+// Must match backend CORS + CSRF configuration exactly.
+// ============================================================
+// Dev Environment (Localhost):
+//   FRONTEND = http://localhost:3000
+//   - Relaxed cookie rules
+//   - HTTP allowed
+// Prod Environment:
+//   FRONTEND = https://your-frontend-domain.com
+//   - HTTPS required
+//   - Secure cookies REQUIRED
+//   - Exact domain match REQUIRED
 export async function initCsrf() {
   await fetch(`${API_BASE}/api/auth/csrf/`, {
     credentials: "include",
