@@ -1,4 +1,34 @@
-// src/lib/auth/client.ts
+// ============================================================
+// Switching Environments Step 4: FRONTEND API + AUTH CLIENT
+// Purpose:
+// Centralizes ALL frontend → backend communication so that
+// cookies, CSRF tokens, and environment URLs behave correctly
+// across Dev / UAT / Prod.
+// This file is the "MASTER SWITCH" for frontend auth behavior.
+// No other file should call fetch/axios directly for auth.
+// ------------------------------------------------------------
+// Dev Environment:
+//   NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000
+//   - credentials included
+//   - relaxed cookie rules
+//   - CSRF token read from cookie
+// Prod Environment:
+//   NEXT_PUBLIC_API_BASE_URL=https://api.yourdomain.com
+//   - credentials REQUIRED for session auth
+//   - CSRF header REQUIRED for write requests
+//   - must match backend CORS + CSRF trusted origins
+// ------------------------------------------------------------
+// Rules (DO NOT BREAK):
+// 1) All requests MUST include credentials (cookies)
+// 2) All POST/PUT/PATCH/DELETE requests MUST include X-CSRFToken
+// 3) Base URL MUST come from environment variable
+// 4) initCsrf() should be called once on app start
+// Common Failure:
+// - Login "works" but user is not authenticated
+// - Session cookie not set in browser
+// - CSRF verification fails silently in prod
+// If auth breaks in production, CHECK THIS FILE FIRST.
+// ============================================================
 
 import type { AuthResponse } from "./types";
 
