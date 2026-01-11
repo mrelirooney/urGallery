@@ -14,7 +14,7 @@ import { useParams } from "next/navigation";
 export const dynamic = "force-dynamic";
 
 // Base URL for turning /media/... paths into full URLs
-const API_BASE = (process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8000")
+const API_BASE = (process.env.NEXT_PUBLIC_API_BASE ?? "http://backend:8000")
   .replace(/\/+$/, "")
   .replace(/\/api$/, "");
 

@@ -76,7 +76,7 @@ ALLOWED_HOSTS = os.getenv(
 ).split(",")
 
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "127.0.0.1,localhost,backend,18.224.202.229,ec2-18-224-202-229.us-east-2.compute.amazonaws.com").split(",")
 
 
 # Application definition

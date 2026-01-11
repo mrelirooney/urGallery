@@ -15,7 +15,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+  process.env.NEXT_PUBLIC_API_URL ?? "http://backend:8000";
 
 const getCsrfToken = (): string => {
   if (typeof document === "undefined") return "";

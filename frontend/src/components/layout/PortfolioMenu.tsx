@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { X, Edit2, Trash2, Plus } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://backend:8000";
 
 interface Portfolio {
   id: number;

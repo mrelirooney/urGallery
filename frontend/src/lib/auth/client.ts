@@ -99,15 +99,15 @@ async function getJSON<T>(path: string) {
 }
 
 export const AuthAPI = {
-  // http://localhost:8000/api/auth/login/
+  // http://backend:8000/api/auth/login/
   login: ({ email, password }: { email: string; password: string }) =>
     postJSON("/api/auth/login/", { email, password }),
 
-  // http://localhost:8000/api/auth/register/
+  // http://backend:8000/api/auth/register/
   signup: (payload: { email: string; password: string; first_name?: string; last_name?: string }) =>
     postJSON("/api/auth/register/", payload),
 
-  // http://localhost:8000/api/auth/me/
+  // http://backend:8000/api/auth/me/
   me: () =>
     getJSON<{ id: string | number; email: string }>(
       "/api/auth/me/",
