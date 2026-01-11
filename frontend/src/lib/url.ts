@@ -4,8 +4,8 @@ export function getApiBase() {
 }
 
 export function getApiOrigin() {
-  // If NEXT_PUBLIC_API_BASE = http://localhost:8000/api
-  //  -> origin is http://localhost:8000
+  // If NEXT_PUBLIC_API_BASE = http://backend:8000/api
+  //  -> origin is http://backend:8000
   try {
     const u = new URL(getApiBase());
     return `${u.protocol}//${u.host}`;

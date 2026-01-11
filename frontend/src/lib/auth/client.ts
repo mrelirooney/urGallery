@@ -1,4 +1,34 @@
-// src/lib/auth/client.ts
+// ============================================================
+// Switching Environments Step 4: FRONTEND API + AUTH CLIENT
+// Purpose:
+// Centralizes ALL frontend → backend communication so that
+// cookies, CSRF tokens, and environment URLs behave correctly
+// across Dev / UAT / Prod.
+// This file is the "MASTER SWITCH" for frontend auth behavior.
+// No other file should call fetch/axios directly for auth.
+// ------------------------------------------------------------
+// Dev Environment:
+//   NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000
+//   - credentials included
+//   - relaxed cookie rules
+//   - CSRF token read from cookie
+// Prod Environment:
+//   NEXT_PUBLIC_API_BASE_URL=https://api.yourdomain.com
+//   - credentials REQUIRED for session auth
+//   - CSRF header REQUIRED for write requests
+//   - must match backend CORS + CSRF trusted origins
+// ------------------------------------------------------------
+// Rules (DO NOT BREAK):
+// 1) All requests MUST include credentials (cookies)
+// 2) All POST/PUT/PATCH/DELETE requests MUST include X-CSRFToken
+// 3) Base URL MUST come from environment variable
+// 4) initCsrf() should be called once on app start
+// Common Failure:
+// - Login "works" but user is not authenticated
+// - Session cookie not set in browser
+// - CSRF verification fails silently in prod
+// If auth breaks in production, CHECK THIS FILE FIRST.
+// ============================================================
 
 import type { AuthResponse } from "./types";
 
@@ -11,7 +41,21 @@ function getCsrfToken(): string | null {
   return match ? decodeURIComponent(match[1]) : null;
 }
 
-// 🔹 call this once so Django sets the csrftoken cookie
+// ============================================================
+// Switching Environments Step 3b: FRONTEND — Auth Requests
+// Purpose:
+// Ensures cookies + CSRF tokens are sent correctly to backend.
+// Must match backend CORS + CSRF configuration exactly.
+// ============================================================
+// Dev Environment (Localhost):
+//   FRONTEND = http://localhost:3000
+//   - Relaxed cookie rules
+//   - HTTP allowed
+// Prod Environment:
+//   FRONTEND = https://your-frontend-domain.com
+//   - HTTPS required
+//   - Secure cookies REQUIRED
+//   - Exact domain match REQUIRED
 export async function initCsrf() {
   await fetch(`${API_BASE}/api/auth/csrf/`, {
     credentials: "include",
@@ -55,15 +99,15 @@ async function getJSON<T>(path: string) {
 }
 
 export const AuthAPI = {
-  // http://localhost:8000/api/auth/login/
+  // http://backend:8000/api/auth/login/
   login: ({ email, password }: { email: string; password: string }) =>
     postJSON("/api/auth/login/", { email, password }),
 
-  // http://localhost:8000/api/auth/register/
+  // http://backend:8000/api/auth/register/
   signup: (payload: { email: string; password: string; first_name?: string; last_name?: string }) =>
     postJSON("/api/auth/register/", payload),
 
-  // http://localhost:8000/api/auth/me/
+  // http://backend:8000/api/auth/me/
   me: () =>
     getJSON<{ id: string | number; email: string }>(
       "/api/auth/me/",

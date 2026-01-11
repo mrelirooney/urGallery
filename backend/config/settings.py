@@ -27,11 +27,56 @@ load_dotenv(BASE_DIR / ".env")
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY", "fallback-secret")
 
-# SECURITY WARNING: don't run with debug turned on in production!
-#DEBUG = os.getenv("DEBUG", "False") == "True"
-DEBUG = "True"
+# ============================================================
+# Switching Environments Step 1: DEBUG MODE
+# Purpose:
+# Controls whether Django shows detailed error pages.
+# MUST be False in Production to avoid leaking sensitive info.
+# Dev Environment:
+#   DEBUG=True
+#   - Shows full error stack traces in browser
+#   - Faster debugging during local development
+# Prod Environment:
+#   DEBUG=False
+#   - Hides internal errors from users
+#   - Errors are logged instead of displayed
+# How to Switch:
+#   Set environment variable:
+#     DEBUG=True   (Dev)
+#     DEBUG=False  (Prod)
+# DO NOT hardcode DEBUG=True in production.
+# ============================================================
+DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
+
+# ============================================================
+# Switching Environments Step 2: ALLOWED HOSTS
+# Purpose:
+# Defines which domains/IPs are allowed to serve this Django app.
+# REQUIRED when DEBUG=False or Django will block requests.
+# ------------------------------------------------------------
+# Dev Environment:
+#   ALLOWED_HOSTS=127.0.0.1,localhost
+# UAT / Docker:
+#   ALLOWED_HOSTS=localhost,backend,web
+#   (or "*" temporarily for internal testing ONLY)
+# Prod Environment:
+#   ALLOWED_HOSTS=urgallery.io,www.urgallery.io,<AWS-ELB-DNS>
+# ------------------------------------------------------------
+# How to Switch:
+#   Update the ALLOWED_HOSTS environment variable.
+#   This file does NOT need to change between environments.
+# ------------------------------------------------------------
+# Common Failure:
+#   If DEBUG=False and domain is missing here → site will 400.
+# ============================================================
+ALLOWED_HOSTS = os.getenv(
+    "ALLOWED_HOSTS",
+    "127.0.0.1,localhost"
+).split(",")
+
+
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "127.0.0.1,localhost,backend,18.224.202.229,ec2-18-224-202-229.us-east-2.compute.amazonaws.com").split(",")
 
 
 # Application definition
@@ -92,10 +137,32 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-## For Production
-# # CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "").split(",") if os.getenv("CORS_ALLOWED_ORIGINS") else []
+# ============================================================
+# Switching Environments Step 3a: BACKEND — CORS + CSRF + Cookies
+# Purpose:
+# Controls which frontends can authenticate with the backend.
+# Most common cause of login failures in Production.
+# ------------------------------------------------------------
+# Dev Values:
+#   CORS_ALLOWED_ORIGINS=http://localhost:3000
+#   CSRF_TRUSTED_ORIGINS=http://localhost:3000
+#   SESSION_COOKIE_SECURE=False
+#   CSRF_COOKIE_SECURE=False
+#   SESSION_COOKIE_SAMESITE=Lax
+#   CSRF_COOKIE_SAMESITE=Lax
+# Prod Values:
+#   CORS_ALLOWED_ORIGINS=https://your-frontend-domain.com 
+#   CSRF_TRUSTED_ORIGINS=https://your-frontend-domain.com
+#   SESSION_COOKIE_SECURE=True
+#   CSRF_COOKIE_SECURE=True
+#   SESSION_COOKIE_SAMESITE=None
+#   CSRF_COOKIE_SAMESITE=None
+# Notes:
+# - If frontend & backend are on DIFFERENT domains, SameSite=None is required
+# - HTTPS is mandatory when Secure=True
+# - Domains MUST match exactly (https + www if used)
+# ============================================================
 
-## For Development
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
@@ -108,8 +175,43 @@ CSRF_TRUSTED_ORIGINS = [
 CSRF_COOKIE_SECURE = False
 SESSION_COOKIE_SECURE = False
 SECURE_SSL_REDIRECT = False
-SESSION_COOKIE_SAMESITE = "None"   # only for localhost
-CSRF_COOKIE_SAMESITE = "None"       # only for localhost
+SESSION_COOKIE_SAMESITE = "None" 
+CSRF_COOKIE_SAMESITE = "None"       
+
+# ============================================================
+# Switching Environments Step 7: SECURITY + HTTPS + PROXY SETTINGS (Edit above)
+# Purpose:
+# Ensures Django behaves correctly in Production behind HTTPS
+# (AWS Load Balancer / Nginx / Reverse Proxy).
+# ------------------------------------------------------------
+# Dev Environment:
+# - Usually HTTP
+# - Relaxed security settings
+# - No proxy headers required
+# UAT / Prod Environment:
+# - HTTPS expected
+# - Secure cookies required for auth/session safety
+# - Django must correctly detect HTTPS when behind a proxy
+# ------------------------------------------------------------
+# Dev Values (common):
+#   SESSION_COOKIE_SECURE=False
+#   CSRF_COOKIE_SECURE=False
+#   SECURE_SSL_REDIRECT=False
+#   USE_PROXY_SSL_HEADER=False
+# Prod Values (common):
+#   SESSION_COOKIE_SECURE=True
+#   CSRF_COOKIE_SECURE=True
+#   SECURE_SSL_REDIRECT=True   (only if configured correctly)
+#   USE_PROXY_SSL_HEADER=True  (behind AWS/ALB)
+#   SECURE_PROXY_SSL_HEADER=("HTTP_X_FORWARDED_PROTO", "https")
+# Notes:
+# - If cookies are missing in prod, Secure/SameSite settings are usually the cause.
+# - If Django thinks requests are HTTP (behind ALB), Secure cookies may not set properly.
+# - Use env vars to toggle these flags per environment.
+# - Do NOT enable SECURE_SSL_REDIRECT until proxy/https routing is confirmed.
+# - If login breaks in prod, check Step 7 + Step 3 first
+# This step must be completed BEFORE production launch.
+# ============================================================
 
 
 ROOT_URLCONF = 'config.urls'
@@ -130,15 +232,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'config.wsgi.application'
-
-
-# Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
-DATABASES = {"default": dj_database_url.parse(os.getenv("DATABASE_URL"))}
-
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -171,10 +264,80 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
+# ============================================================
+# Switching Environments Step 5: STATIC + MEDIA FILES
+# Purpose:
+# Controls how static assets (CSS/JS) and user uploads (media)
+# are served in Dev vs UAT vs Production.
+# ------------------------------------------------------------
+# Dev Environment:
+# - Static files served automatically by Django
+# - Media files stored locally
+# - No collectstatic required
+# Prod Environment:
+# - Static files MUST be collected via `collectstatic`
+# - Media files MUST be served by external storage (S3, etc.)
+# - Django should NOT serve static/media directly
+# ------------------------------------------------------------
+# Dev Values:
+#   STATIC_URL=/static/
+#   MEDIA_URL=/media/
+#   MEDIA_ROOT=<project_root>/media
+# Prod Values (example):
+#   STATIC_URL=/static/
+#   STATIC_ROOT=<project_root>/staticfiles
+#   MEDIA_URL=https://<cdn-or-bucket>/media/
+# Notes:
+# - collectstatic MUST be run during deployment
+# - Missing STATIC_ROOT in prod will break admin + styles
+# - Media uploads will NOT persist in prod without storage
+# This step must be completed BEFORE production launch.
+# ============================================================
 
 STATIC_URL = 'static/'
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
+# ============================================================
+# Switching Environments Step 6: DATABASE CONFIG (DEV vs UAT vs PROD)
+# Purpose:
+# Controls which database Django connects to.
+# Dev uses local DB. UAT/Prod should use a managed DB (e.g., AWS RDS).
+# ------------------------------------------------------------
+# Dev Environment:
+# - Local Postgres (or sqlite)
+# - Fast iteration
+# - Data can be disposable
+# UAT Environment:
+# - Staging Postgres (separate DB from Prod)
+# - Mirrors prod schema
+# - Safe place to test migrations + auth flows
+# Prod Environment:
+# - Production Postgres (AWS RDS recommended)
+# - Real user data
+# - MUST be backed up and stable
+# ------------------------------------------------------------
+# Dev Values (example):
+#   DB_NAME=urgallery_dev
+#   DB_USER=postgres
+#   DB_PASSWORD=localpassword
+#   DB_HOST=127.0.0.1
+#   DB_PORT=5432
+# Prod Values (example):
+#   DB_NAME=<rds_db_name>
+#   DB_USER=<rds_user>
+#   DB_PASSWORD=<rds_password>
+#   DB_HOST=<rds_endpoint>
+#   DB_PORT=5432
+# Notes:
+# - Use environment variables ONLY (never hardcode credentials)
+# - Run migrations against the correct environment DB:
+#     python manage.py migrate
+# - If data looks "missing" in prod, you may be pointing at the dev DB.
+# This step must be completed BEFORE production launch.
+# ============================================================
+
+DATABASES = {"default": dj_database_url.parse(os.getenv("DATABASE_URL"))}
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

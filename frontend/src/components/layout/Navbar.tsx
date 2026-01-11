@@ -108,7 +108,7 @@ export default function Navbar() {
           {isArtistProfilePage && (
             <button
               onClick={() => setOpen(!open)}
-              className="rounded-md text-neutral-800 transition"
+              className="rounded-md text-[var(--light-brown)] transition"
             >
               {open ? <X size={28} /> : <Menu size={28} />}
             </button>

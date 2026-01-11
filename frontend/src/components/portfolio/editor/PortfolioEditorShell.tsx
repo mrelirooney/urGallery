@@ -15,7 +15,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+  process.env.NEXT_PUBLIC_API_URL ?? "http://backend:8000";
 
 const getCsrfToken = (): string => {
   if (typeof document === "undefined") return "";
@@ -694,7 +694,7 @@ export default function PortfolioEditorShell({
 
   // -------- Render --------
   return (
-    <div className="w-full mx-auto pt-5 bg-red-900">
+    <div className="w-full mx-auto pt-5">
       {/* Top bar with thumbnails + actions */}
       <EditorTopBar
         pages={pages}
@@ -717,7 +717,7 @@ export default function PortfolioEditorShell({
       />
 
       {/* Canvas area */}
-      <section className="bg-blue-900 text-neutral-50 shadow-lg">
+      <section className="text-neutral-50 bg-neutral-800 shadow-lg">
         {/* Title + controls strip */}
         <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
           <input

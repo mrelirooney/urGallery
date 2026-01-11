@@ -14,7 +14,7 @@ import { useParams } from "next/navigation";
 export const dynamic = "force-dynamic";
 
 // Base URL for turning /media/... paths into full URLs
-const API_BASE = (process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8000")
+const API_BASE = (process.env.NEXT_PUBLIC_API_BASE ?? "http://backend:8000")
   .replace(/\/+$/, "")
   .replace(/\/api$/, "");
 
@@ -148,7 +148,7 @@ export default function EditPortfolioPage() {
 
   return (
     <main className="py-1">
-      <Container className="bg-teal-900 w-100%">
+      <Container className="w-100%">
         <PortfolioEditorShell
           portfolioTitle={apiPortfolio.title}
           portfolioSlug={apiPortfolio.slug}

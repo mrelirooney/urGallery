@@ -12,7 +12,7 @@ export default function SubmitButton({
       {...rest}
       disabled={loading || rest.disabled}
       className={[
-        "w-full rounded-full bg-black px-4 py-2 text-white transition",
+        "w-full rounded-sm bg-[var(--light-brown)] px-4 py-2 text-white transition",
         "hover:opacity-90 disabled:opacity-50",
         className,
       ].join(" ")}

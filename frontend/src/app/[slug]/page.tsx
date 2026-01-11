@@ -20,7 +20,7 @@ type ArtistPageProps = {
 };
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+  process.env.NEXT_PUBLIC_API_BASE || "http://backend:8000";
 
 // Fetch artist profile + portfolios for the landing page
 async function getArtistLanding(slug: string): Promise<ArtistLanding | null> {
@@ -76,7 +76,7 @@ export default async function ArtistPage(
   
   const raw = profile?.avatar_url;
   const base =
-    process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+    process.env.NEXT_PUBLIC_API_BASE || "http://backend:8000";
 
   let src: string;
 
@@ -101,7 +101,7 @@ export default async function ArtistPage(
       <ArtistLandingMotion pagesCount={firstPortfolio?.pages_count ?? 1} />
 
       {/* Artist Header Section */}
-      <section className=" bg-[var(--background)] border-b border-neutral-200 relative">
+      <section className=" bg-[var(--background)] relative">
         {/* Banner Image - Full width, outside container */}
         {profile?.banner_image_url && (
           <div className="absolute top-0 left-0 right-0 h-[33vh] overflow-hidden">
@@ -125,7 +125,7 @@ export default async function ArtistPage(
       {/* Compact sticky profile (appears in compact mode) */}
       <div
         id="artist-profile-compact"
-        className="sticky top-0 z-20 hidden bg-white/90 backdrop-blur border-b border-neutral-200"
+        className="sticky top-0 z-20 hidden bg-[var(--background)]  backdrop-blur"
       >
         <div className="mx-auto max-w-6xl h-16 px-8 flex items-center justify-between">
           {/* Left: avatar + name */}
@@ -137,7 +137,7 @@ export default async function ArtistPage(
                     className="h-full w-full object-cover"
               />
             </div>
-            <span className="font-semibold text-neutral-900">
+            <span className="font-semibold text-[var(--light-brown)]">
               {profile?.display_name ?? "Loading..."}
             </span>
           </div>
@@ -151,7 +151,7 @@ export default async function ArtistPage(
       <div id="portfolio-sentinel" />
 
       <section id="portfolio-shell" className="bg-neutral-900 text-white">
-        <Container className="bg-neutral-900 text-white">
+        <Container className="text-white">
           {portfolios.length > 0 ? (
             <PortfolioSelector
               artistSlug={profile.slug}
@@ -171,3 +171,4 @@ export default async function ArtistPage(
     </main>
   );
 }
+
