@@ -20,7 +20,7 @@ type ArtistPageProps = {
 };
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+  process.env.NEXT_PUBLIC_API_BASE || "http://backend:8000";
 
 // Fetch artist profile + portfolios for the landing page
 async function getArtistLanding(slug: string): Promise<ArtistLanding | null> {
@@ -76,7 +76,7 @@ export default async function ArtistPage(
   
   const raw = profile?.avatar_url;
   const base =
-    process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+    process.env.NEXT_PUBLIC_API_BASE || "http://backend:8000";
 
   let src: string;
 
