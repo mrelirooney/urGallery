@@ -76,11 +76,11 @@ function TextColumn({
 
   // VIEW MODE – plain text
   return (
-    <div className="flex flex-col gap-6">
-      <h2 className="text-5xl font-bold leading-tight text-neutral-50">
+    <div className="flex flex-col gap-1 md:gap-6">
+      <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold leading-tight text-neutral-50">
         {title}
       </h2>
-      <p className="max-w-xl whitespace-pre-line text-lg text-neutral-300">
+      <p className="max-w-xl whitespace-pre-line text-sm sm:text-base md:text-lg text-neutral-300">
         {description}
       </p>
     </div>
@@ -164,36 +164,36 @@ export default function PageRenderer({
   switch (layoutType) {
     case "MediaLeft_TextRight":
       return (
-        <div className="grid items-center gap-10 md:grid-cols-12">
-          <div className={mediaCols}>{media}</div>
-          <div className={textCols}>{text}</div>
+        <div className="flex flex-col md:grid md:items-center gap-3 md:gap-10 md:grid-cols-12">
+          <div className={`order-1 md:order-none ${mediaCols}`}>{media}</div>
+          <div className={`order-2 md:order-none px-4 md:px-0 ${textCols}`}>{text}</div>
         </div>
       );
 
     case "MediaRight_TextLeft":
       return (
-        <div className="grid items-center gap-10 md:grid-cols-12">
-          <div className={textCols}>{text}</div>
-          <div className={mediaCols}>{media}</div>
+        <div className="flex flex-col md:grid md:items-center gap-3 md:gap-10 md:grid-cols-12">
+          <div className={`order-1 md:order-none ${mediaCols}`}>{media}</div>
+          <div className={`order-2 md:order-none px-4 md:px-0 ${textCols}`}>{text}</div>
         </div>
       );
 
     case "TwoColumnMediaOnly":
       return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="max-h-[50vh]">{media}</div>
-          <div className="max-h-[50vh]">{media2}</div>
+        <div className="flex flex-col md:grid grid-cols-1 md:grid-cols-2 gap-8 ">
+          <div className="order-1 md:order-none max-h-[50vh]">{media}</div>
+          <div className="order-2 md:order-none max-h-[50vh]">{media2}</div>
         </div>
       );
 
     case "TwoColumnMediaWithText":
       return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-          <div className="flex flex-col gap-6">
+        <div className="flex flex-col md:grid grid-cols-1 md:grid-cols-2 gap-10">
+          <div className="flex flex-col gap-6 order-1 md:order-none">
             <div className="max-h-[45vh]">{media}</div>
             {text}
           </div>
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-6 order-2 md:order-none">
             <div className="max-h-[45vh]">{media2}</div>
             {text2}
           </div>
@@ -209,9 +209,9 @@ export default function PageRenderer({
     default:
       // Fallback so unknown layout still shows *something*
       return (
-        <div className="flex flex-col gap-8">
-          {media}
-          {text}
+        <div className="flex flex-col gap-8 px-4 md:px-0">
+          <div className="order-1 md:order-none">{media}</div>
+          <div className="order-2 md:order-none">{text}</div>
         </div>
       );
   }

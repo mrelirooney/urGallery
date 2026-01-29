@@ -1,5 +1,4 @@
 // frontend/src/app/[slug]/page.tsx
-
 import type { Metadata } from "next";
 import Container from "@/components/layout/Container";
 import type { ArtistLanding } from "@/lib/types";
@@ -7,7 +6,10 @@ import ArtistHeader from "@/components/artist/ArtistHeader";
 import ArtistLandingMotion from "@/components/artist/ArtistLandingMotion";
 import PortfolioSelector from "@/components/portfolio/PortfolioSelector";
 import CompactContactButtons from "@/components/artist/CompactContactButtons";
+import CompactNavHamburger from "@/components/artist/CompactNavHamburger";
+import CompactNavPortfolioTitle from "@/components/artist/CompactNavPortfolioTitle";
 import { notFound } from "next/navigation";
+import BackArrowButton from "@/components/artist/BackArrowButton";
 
 
 type RouteParams = { slug: string };
@@ -72,6 +74,12 @@ export default async function ArtistPage(
 
   const { profile, portfolios } = data;
   const firstPortfolio = portfolios[0];
+  
+  // Get the selected portfolio title (from URL param or first portfolio)
+  const selectedPortfolio = portfolioSlug 
+    ? portfolios.find(p => p.slug === portfolioSlug) 
+    : firstPortfolio;
+  const initialPortfolioTitle = selectedPortfolio?.title || "";
 
   
   const raw = profile?.avatar_url;
@@ -97,53 +105,69 @@ export default async function ArtistPage(
   }
 
   return (
+
+    
     <main className="flex flex-col">
       <ArtistLandingMotion pagesCount={firstPortfolio?.pages_count ?? 1} />
 
       {/* Artist Header Section */}
-      <section className=" bg-[var(--background)] relative">
+      <section className="bg-[var(--background)] relative">
         {/* Banner Image - Full width, outside container */}
         {profile?.banner_image_url && (
-          <div className="absolute top-0 left-0 right-0 h-[33vh] overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-30 md:h-[33vh] overflow-hidden">
             <img
               src={profile.banner_image_url}
               alt={`${profile?.display_name ?? "Artist"} banner`}
               className="w-full h-full object-cover"
             />
-            {/* Overlay for better text readability */}
           </div>
         )}
         
-        {/* Content Container - stays constrained */}
-        <Container>
-          <div className="mx-auto max-w-6xl py-10 lg:py-10 relative z-10">
+        {/* Content Container - full width on mobile, constrained on larger screens */}
+        <div className="w-full md:mx-auto md:max-w-6xl px-0 md:px-10 lg:px-8">
+          <div className="py-10 lg:py-10 relative z-10 px-4 md:px-0">
             <ArtistHeader profile={profile} />
           </div>
-        </Container>
+        </div>
       </section>
 
       {/* Compact sticky profile (appears in compact mode) */}
       <div
         id="artist-profile-compact"
-        className="sticky top-0 z-20 hidden bg-[var(--background)]  backdrop-blur"
+        className="sticky mt-20 top-0 z-20 hidden bg-[var(--background)] backdrop-blur"
       >
-        <div className="mx-auto max-w-6xl h-16 px-8 flex items-center justify-between">
-          {/* Left: avatar + name */}
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-full overflow-hidden border border-neutral-300">
-              <img
-                src={src}
-                    alt={`${profile?.display_name ?? "Artist"} avatar`}
-                    className="h-full w-full object-cover"
-              />
+        <div className="mx-auto max-w-6xl h-20 md:h-16 px-4 md:px-8 flex flex-col">
+          <div className="pt-4 lg:pt-2 flex items-center justify-between">
+            {/* Left: Back arrow (mobile only) */}
+            <div className="block md:hidden">
+              <BackArrowButton />
             </div>
-            <span className="font-semibold text-[var(--light-brown)]">
-              {profile?.display_name ?? "Loading..."}
-            </span>
-          </div>
+            {/* Left: avatar + name */}
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-full overflow-hidden border border-neutral-300">
+                <img
+                  src={src}
+                      alt={`${profile?.display_name ?? "Artist"} avatar`}
+                      className="h-full w-full object-cover"
+                />
+              </div>
+              <span className="hidden md:block font-semibold text-[var(--light-brown)]">
+                {profile?.display_name ?? "Loading..."}
+              </span>
+            </div>
 
-          {/* Right: contact buttons */}
-          <CompactContactButtons profile={profile} />
+            {/* Right: contact buttons (desktop) OR hamburger (mobile) */}
+            <div className="hidden md:block">
+              <CompactContactButtons profile={profile} />
+            </div>
+            <div className="block md:hidden">
+              <CompactNavHamburger />
+            </div>
+          </div>
+          {/* Portfolio Title - mobile only */}
+          <div className="block md:hidden flex justify-center">
+            <CompactNavPortfolioTitle initialTitle={initialPortfolioTitle} />
+          </div>
         </div>
       </div>
 

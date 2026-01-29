@@ -31,8 +31,8 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: "http",
-        hostname: "backend",
-        port: "8000",
+        hostname: process.env.NEXT_PUBLIC_API_BASE?.split("/")[2],
+        port: process.env.NEXT_PUBLIC_API_BASE?.split("/")[3],
         pathname: "/media/**",
       }
     ]

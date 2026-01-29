@@ -95,8 +95,12 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
   }
 
   return (
-    <div className="relative w-full max-w-3xl">
-      <div className="flex items-center gap-2 rounded-xs ring-1 ring-[var(--foreground)]/10 px-2 py-0 hover:ring-[var(--foreground)]/60 focus-within:ring-[var(--foreground)]/80">
+    <div className="relative w-full max-w-xs sm:max-w-md md:max-w-lg lg:max-w-2xl xl:max-w-3xl">
+      <div className={`flex items-center gap-2 sm:gap-3 rounded-xs ring-1 ring-[var(--foreground)]/10 px-3 sm:px-4 py-1 hover:ring-[var(--light-brown)]/100 focus-within:ring-[var(--light-brown)]/70 transition-all ${
+        variant === "hero" 
+          ? "shadow-lg shadow-[var(--light-brown)]/90 hover:shadow-xl hover:shadow-[var(--light-brown)]/40 focus-within:shadow-xl focus-within:shadow-[var(--light-brown)]/50" 
+          : ""
+      }`}>
         <input
           ref={inputRef}
           value={query}
@@ -104,7 +108,7 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
           onFocus={() => results.length > 0 && setOpen(true)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className="w-full outline-none text-neutral-300"
+          className="w-full outline-none text-neutral-300 text-sm bg-transparent"
           aria-label="Search"
         />
         <button
@@ -117,17 +121,17 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
               if (r) handleSelect(r);
             });
           }}
-          className="shrink-0 rounded-full text-white/60 hover:text-white/90 px-2 py-2 text-sm font-medium"
+          className="shrink-0 rounded-full text-[var(--foreground)] hover:text-[var(--foreground)] px-1.5 py-1.5 text-sm font-medium transition-all active:scale-95"
         >
           <Search size={18} />
         </button>
       </div>
 
-      {/* Results dropdown */}
+      {/* Results dropdown - Responsive */}
       {mounted && open && results.length > 0 && (
         <ul
           ref={listRef}
-          className="absolute z-20 mt-2 w-full rounded-xl bg-white shadow-lg ring-1 ring-black/10 overflow-hidden"
+          className="absolute z-20 mt-1 w-full rounded-xs bg-[var(--light-brown)] shadow-lg ring-1 ring-black/10 overflow-hidden max-h-[60vh] sm:max-h-[70vh] overflow-y-auto"
         >
           {results.map((r, i) => (
             <li
@@ -136,22 +140,23 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
                 e.preventDefault(); // prevent input blur from swallowing click
                 handleSelect(r);
               }}
-              className={`flex items-center gap-3 px-4 py-3 cursor-pointer ${
-                i === active ? "bg-neutral-100" : "bg-white"
-              } hover:bg-neutral-50`}
+              className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 bg-[var(--foreground)] cursor-pointer 
+                ${ i === active ? "bg-[var(--light-brown)]/50" : "bg-[var(--foreground)]"} 
+                hover:bg-[var(--light-brown)]/50 active:bg-[var(--light-brown)] transition-colors`}
             >
               <img
                 src={(r as any).avatar_url || "/avatars/astra-chat-profilepic.jpeg"}
                 alt=""
-                className="h-7 w-7 rounded-full object-cover"
+                className="h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 rounded-full object-cover shrink-0"
               />
-              <div className="flex-1">
-                <div className="text-sm font-medium text-neutral-900">{r.name}</div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm sm:text-base font-medium text-neutral-900 truncate">{r.name}</div>
                 {(r as any).username && (
-                  <div className="text-xs text-neutral-500">@{(r as any).username}</div>
+                  <div className="text-xs sm:text-sm text-neutral-500 truncate">@{(r as any).username}</div>
                 )}
               </div>
-              <div className="text-sm text-neutral-500">
+              {/* Hide location/title on very small screens */}
+              <div className="hidden sm:block text-xs sm:text-sm text-neutral-500 text-right shrink-0">
                 {r.title || "—"}
                 {r.title && r.location ? " • " : ""}
                 {r.location || ""}
@@ -162,7 +167,7 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
       )}
 
       {mounted && open && !loading && results.length === 0 && query.trim() && (
-        <div className="absolute z-20 mt-2 w-full rounded-xl bg-white shadow ring-1 ring-black/10 px-4 py-3 text-sm text-neutral-500">
+        <div className="absolute z-20 mt-2 w-full rounded-xl bg-white shadow ring-1 ring-black/10 px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-neutral-500">
           No artists found.
         </div>
       )}

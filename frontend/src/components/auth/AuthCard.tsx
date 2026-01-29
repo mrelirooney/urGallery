@@ -3,7 +3,7 @@ import { ReactNode } from "react";
 
 export default function AuthCard({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="mx-auto w-full max-w-md rounded-sm bg-[var(--foreground)] p-6 shadow-sm">
+    <div className="mx-auto w-full max-w-md rounded-sm bg-transparent md:bg-[var(--foreground)] p-6 shadow-sm">
       <h1 className="mb-6 text-center text-2xl font-bold text text-[var(--light-brown)]">{title}</h1>
       {children}
     </div>

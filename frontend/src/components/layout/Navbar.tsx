@@ -8,7 +8,7 @@ import AvatarButton from "../menus/AvatarButton";
 import SearchInput from "@/components/search/SearchInput";
 import PortfolioMenu from "@/components/layout/PortfolioMenu";
 import { useAuth } from "@/hooks/useAuth";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ArrowLeft } from "lucide-react";
 
 export default function Navbar() {
   // --- 1. State & refs ---
@@ -16,6 +16,8 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const pathname = usePathname();
+  const router = useRouter();
+  
   // Check if we're on an artist profile page
   // Pattern: /slug (no sub-paths like /edit, /login, etc.)
   const isArtistProfilePage = pathname && 
@@ -35,7 +37,6 @@ export default function Navbar() {
   
   // Where "View Profile" should go
   const profileHref = user?.slug ? `/${user.slug}` : "/login";
-  const router = useRouter();
   const [open, setOpen] = useState(false);
 
   // --- 2. Effects ---
@@ -80,6 +81,21 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [menuOpen]);
 
+  // Listen for portfolio menu toggle from compact navbar (phone view)
+  useEffect(() => {
+    function handlePortfolioMenuToggle() {
+      if (isArtistProfilePage) {
+        setOpen(true);
+      }
+    }
+    
+    window.addEventListener("portfolio-menu-toggle", handlePortfolioMenuToggle);
+    
+    return () => {
+      window.removeEventListener("portfolio-menu-toggle", handlePortfolioMenuToggle);
+    };
+  }, [isArtistProfilePage]);
+
   // --- 3. Handlers ---
   async function handleLogout() {
     try {
@@ -100,119 +116,235 @@ export default function Navbar() {
         <PortfolioMenu isOpen={open} onClose={() => setOpen(false)} />
       )}
 
-      <header id="site-navbar" className="sticky top-0 z-50 bg-[var(--background)]">
-        <div className="mx-auto max-w-6xl px-8 h-14 flex items-center justify-between">
-        {/* Left: Logo */}
-        <div className="flex">
-          {/* Only show hamburger on artist profile pages */}
+      <header id="site-navbar" className="sticky top-0 z-50 bg-[var(--background)] ">
+        <div className="mx-auto max-w-6xl px-4 md:px-8 h-14 flex items-center justify-between">
+        {/* Left: Back arrow (mobile/tablet only) OR Logo + Hamburger (desktop) */}
+        <div className="flex items-center">
+          {/* Mobile/Tablet: Back arrow (only on artist profile pages) */}
+          {isArtistProfilePage && (
+            <button
+              onClick={() => router.push("/")}
+              className="lg:hidden rounded-md text-[var(--light-brown)] transition mr-3"
+              aria-label="Back to home"
+            >
+              <ArrowLeft size={24} />
+            </button>
+          )}
+          
+          {/* Desktop: Hamburger (only on artist profile pages) */}
           {isArtistProfilePage && (
             <button
               onClick={() => setOpen(!open)}
-              className="rounded-md text-[var(--light-brown)] transition"
+              className="hidden lg:block rounded-md text-[var(--light-brown)] transition"
+              aria-label="Portfolio menu"
             >
               {open ? <X size={28} /> : <Menu size={28} />}
             </button>
           )}
 
-          <Link href="/" aria-label="Home" className={isArtistProfilePage ? "ml-3" : ""}>
+          {/* Logo - hidden on mobile/tablet for artist profile pages, shown on desktop */}
+          <Link 
+            href="/" 
+            aria-label="Home" 
+            className={`${isArtistProfilePage ? "lg:ml-3" : ""} ${isArtistProfilePage ? "hidden lg:block" : ""}`}
+          >
             <Logo className="h-5 w-auto" />
           </Link>
         </div>
+        
         {/* Right side */}
         {loading ? (
           // While auth state is loading, show a tiny skeleton to avoid flicker
-          <div className="w-28 h-8 rounded bg-gray-100 animate-pulse" />
+          <div className="w-24 h-8 rounded bg-gray-100 animate-pulse" />
         ) : user ? (
           // --- Signed-in view ---
           <div className="flex items-center gap-3">
-            <SearchInput
-              
-              variant="nav"
-              placeholder="Search…"
-            />
+            {/* Mobile/Tablet: Hamburger on right (only on artist profile pages) */}
+            {isArtistProfilePage && (
+              <button
+                onClick={() => setOpen(!open)}
+                className="lg:hidden rounded-md text-[var(--light-brown)] transition"
+                aria-label="Portfolio menu"
+              >
+                {open ? <X size={24} /> : <Menu size={24} />}
+              </button>
+            )}
+            
+            {/* Desktop: Search + Avatar */}
+            <div className="hidden lg:flex items-center gap-3">
+              <div className="pl-4">
+                <SearchInput
+                  variant="nav"
+                  placeholder="Search…"
+                />
+              </div>
+              <div className="relative " ref={menuRef}>
+                <AvatarButton
+                  size={36}
+                  onClick={() => setMenuOpen((v) => !v)}
+                  aria-haspopup="menu"
+                  aria-expanded={menuOpen}
+                />
 
-            <div className="relative" ref={menuRef}>
-              <AvatarButton
-                size={36}
-                onClick={() => setMenuOpen((v) => !v)}
-                aria-haspopup="menu"
-                aria-expanded={menuOpen}
-              />
-
-              {menuOpen && (
-                <div
-                  role="menu"
-                  aria-label="User menu"
-                  className="absolute right-0 mt-2 w-44 rounded-md border border-gray-200 bg-white shadow-lg z-50"
-                  onKeyDown={(e) => {
-                    if (e.key !== "Tab") return;
-                    const container = menuRef.current;
-                    if (!container) return;
-                    const focusables = container.querySelectorAll<HTMLElement>(
-                      'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
-                    );
-                    if (focusables.length === 0) return;
-                    const first = focusables[0];
-                    const last = focusables[focusables.length - 1];
-                    if (e.shiftKey && document.activeElement === first) {
-                      e.preventDefault();
-                      last.focus();
-                    } else if (!e.shiftKey && document.activeElement === last) {
-                      e.preventDefault();
-                      first.focus();
-                    }
-                  }}
-                >
-                  <ul className="py-1 text-sm text-gray-700">
-                    <li>
-                      <Link
-                        href={profileHref}
-                        className="block px-3 py-2 hover:bg-gray-50"
-                        role="menuitem"
-                        onClick={() => setMenuOpen(false)}
-                      >
-                        View Profile
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        href="/settings"
-                        className="block px-3 py-2 hover:bg-gray-50"
-                        role="menuitem"
-                        onClick={() => setMenuOpen(false)}
-                      >
-                        Settings
-                      </Link>
-                    </li>
-                    <li>
-                      <button
-                        onClick={handleLogout}
-                        className="block w-full text-left px-3 py-2 hover:bg-gray-50"
-                        role="menuitem"
-                      >
-                        Logout
-                      </button>
-                    </li>
-                  </ul>
-                </div>
-              )}
+                {menuOpen && (
+                  <div
+                    role="menu"
+                    aria-label="User menu"
+                    className="absolute right-0 mt-2 w-44 rounded-md border border-gray-200 bg-white shadow-lg z-50"
+                    onKeyDown={(e) => {
+                      if (e.key !== "Tab") return;
+                      const container = menuRef.current;
+                      if (!container) return;
+                      const focusables = container.querySelectorAll<HTMLElement>(
+                        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+                      );
+                      if (focusables.length === 0) return;
+                      const first = focusables[0];
+                      const last = focusables[focusables.length - 1];
+                      if (e.shiftKey && document.activeElement === first) {
+                        e.preventDefault();
+                        last.focus();
+                      } else if (!e.shiftKey && document.activeElement === last) {
+                        e.preventDefault();
+                        first.focus();
+                      }
+                    }}
+                  >
+                    <ul className="py-1 text-sm text-gray-700">
+                      <li>
+                        <Link
+                          href={profileHref}
+                          className="block px-3 py-2 hover:bg-gray-50"
+                          role="menuitem"
+                          onClick={() => setMenuOpen(false)}
+                        >
+                          View Profile
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          href="/settings"
+                          className="block px-3 py-2 hover:bg-gray-50"
+                          role="menuitem"
+                          onClick={() => setMenuOpen(false)}
+                        >
+                          Settings
+                        </Link>
+                      </li>
+                      <li>
+                        <button
+                          onClick={handleLogout}
+                          className="block w-full text-left px-3 py-2 hover:bg-gray-50"
+                          role="menuitem"
+                        >
+                          Logout
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+                )}
+              </div>
             </div>
+            
+            {/* Mobile/Tablet: Avatar only (when not on artist profile page) */}
+            {!isArtistProfilePage && (
+              <div className="lg:hidden relative" ref={menuRef}>
+                <AvatarButton
+                  size={36}
+                  onClick={() => setMenuOpen((v) => !v)}
+                  aria-haspopup="menu"
+                  aria-expanded={menuOpen}
+                />
+
+                {menuOpen && (
+                  <div
+                    role="menu"
+                    aria-label="User menu"
+                    className="absolute right-0 mt-2 w-44 rounded-md border border-gray-200 bg-white shadow-lg z-50"
+                    onKeyDown={(e) => {
+                      if (e.key !== "Tab") return;
+                      const container = menuRef.current;
+                      if (!container) return;
+                      const focusables = container.querySelectorAll<HTMLElement>(
+                        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+                      );
+                      if (focusables.length === 0) return;
+                      const first = focusables[0];
+                      const last = focusables[focusables.length - 1];
+                      if (e.shiftKey && document.activeElement === first) {
+                        e.preventDefault();
+                        last.focus();
+                      } else if (!e.shiftKey && document.activeElement === last) {
+                        e.preventDefault();
+                        first.focus();
+                      }
+                    }}
+                  >
+                    <ul className="py-1 text-sm text-gray-700">
+                      <li>
+                        <Link
+                          href={profileHref}
+                          className="block px-3 py-2 hover:bg-gray-50"
+                          role="menuitem"
+                          onClick={() => setMenuOpen(false)}
+                        >
+                          View Profile
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          href="/settings"
+                          className="block px-3 py-2 hover:bg-gray-50"
+                          role="menuitem"
+                          onClick={() => setMenuOpen(false)}
+                        >
+                          Settings
+                        </Link>
+                      </li>
+                      <li>
+                        <button
+                          onClick={handleLogout}
+                          className="block w-full text-left px-3 py-2 hover:bg-gray-50"
+                          role="menuitem"
+                        >
+                          Logout
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         ) : (
           // --- Logged-out view ---
           <nav className="flex items-center gap-4 text-sm">
-            <Link
-              href="/login"
-              className="px-3 py-1.5 border border-white/60 rounded-xs bg-(--foreground)/0 text-white/60 hover:bg-(--foreground)/90 hover:text-black transition-opacity"
-            >
-              Login
-            </Link>
-            <Link
-              href="/signup"
-              className="px-3 py-1.5 border border-white/60 rounded-xs bg-(--foreground)/0 text-white/60 hover:bg-(--foreground)/90 hover:text-black transition-opacity"
-            >
-              Sign Up
-            </Link>
+            {/* Mobile/Tablet: Hamburger on right (only on artist profile pages) */}
+            {isArtistProfilePage && (
+              <button
+                onClick={() => setOpen(!open)}
+                className="lg:hidden rounded-md text-[var(--light-brown)] transition"
+                aria-label="Portfolio menu"
+              >
+                {open ? <X size={24} /> : <Menu size={24} />}
+              </button>
+            )}
+            
+            {/* Login/SignUp buttons - hidden on mobile/tablet for artist profile pages */}
+            <div className={isArtistProfilePage ? "hidden lg:flex items-center gap-4" : "flex items-center gap-4"}>
+              <Link
+                href="/login"
+                className="px-3 py-1.5 border border-white/60 rounded-xs bg-(--foreground)/0 text-white/60 hover:bg-(--foreground)/90 hover:text-black transition-opacity"
+              >
+                Login
+              </Link>
+              <Link
+                href="/signup"
+                className="px-3 py-1.5 border border-white/60 rounded-xs bg-(--foreground)/0 text-white/60 hover:bg-(--foreground)/90 hover:text-black transition-opacity"
+              >
+                Sign Up
+              </Link>
+            </div>
           </nav>
         )}
       </div>

@@ -11,7 +11,7 @@ const TextField = forwardRef<HTMLInputElement, Props>(
     return (
       <label className="block">
         {label && (
-          <span className="mb-1 block text-sm font-medium text-neutral-800 ">
+          <span className="mb-1 block text-sm font-medium text-[var(--foreground)]/70 md:text-[var(--background)]">
             {label}
           </span>
         )}

@@ -45,9 +45,11 @@ export default function LoginClient() {
         <form onSubmit={handleSubmit} className="space-y-4 ">
           <FormError message={error} />
           <TextField
+            className="text-[var(--light-brown)]"
             label="Email"
             type="email"
             autoComplete="email"
+            placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -56,6 +58,7 @@ export default function LoginClient() {
             label="Password"
             type="password"
             autoComplete="current-password"
+            placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -64,10 +67,10 @@ export default function LoginClient() {
         </form>
 
         <div className="mt-4 flex items-center justify-between text-sm">
-          <a className="text-neutral-600 hover:text-neutral-900" href="/signup">
-            Create account
+          <a className="text-[var(--light-brown)]" href="/signup">
+            Create Account
           </a>
-          <a className="text-neutral-600 hover:text-neutral-900" href="/forgot-password">
+          <a className="text-[var(--light-brown)]" href="/forgot-password">
             Forgot password?
           </a>
         </div>

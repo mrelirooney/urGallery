@@ -10,7 +10,7 @@ import PageRenderer, {
 import EditPortfolioButton from "@/components/portfolio/EditPortfolioButton";
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://backend:8000";
+  process.env.NEXT_PUBLIC_API_BASE ?? "http://backend:8000";
 
 
 type PortfolioWrapperProps = {
@@ -75,6 +75,12 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
         const data: ApiPortfolio = await res.json();
         console.log("📦 API Response:", data); // Debug: see what we're getting
         setPortfolioTitle(data.title ?? "");
+        
+        // Emit portfolio title update for compact navbar
+        const event = new CustomEvent("portfolio-title-update", { 
+          detail: data.title ?? "" 
+        });
+        window.dispatchEvent(event);
 
         
         // Map backend Page → frontend PageRenderer shape
@@ -153,9 +159,9 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
   }
 
   return (
-    <section className="mx-auto max-w-7xl flex-col justify-between text-neutral-100">
-      <div className="min-h-[85vh] w-full max-w-7xl py-8 flex flex-col justify-between gap-6">
-        <div className="flex items-center justify-between">
+    <section className="mx-auto max-w-full md:max-w-7xl flex-col justify-between text-neutral-100">
+      <div className="min-h-[85vh] md:min-h-[85vh] w-full max-w-7xl pt-8 pb-4 md:pt-8 md:pb-8 flex flex-col justify-between gap-6">
+        <div className="flex items-center justify-between hidden md:flex">
           <PortfolioTitle
             text={portfolioTitle}
             align="left"
@@ -167,18 +173,19 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
           <EditPortfolioButton artistSlug={artistSlug} portfolioSlug={slug} />
         </div>
 
-        <div className="max-h-[60vh] flex flex-col justify-center gap-6">
+        <div className="max-h-[60vh] flex flex-col justify-start md:justify-center gap-6">
           <PageRenderer
             pages={pages}
             currentPageIndex={currentPageIndex}
           />
         </div>
-
-        <Pagination
-          totalPages={pages.length}
-          currentPage={currentPageIndex + 1}
-          onChangePage={(newIndex) => setCurrentPageIndex(newIndex)}
-        />
+        <div className="justify-end">
+          <Pagination
+            totalPages={pages.length}
+            currentPage={currentPageIndex + 1}
+            onChangePage={(newIndex) => setCurrentPageIndex(newIndex)}
+          />
+        </div>
       </div>
     </section>
   );

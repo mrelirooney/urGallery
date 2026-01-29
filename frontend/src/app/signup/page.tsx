@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AuthAPI } from "@/lib/auth/client";
 import AuthCard from "@/components/auth/AuthCard";
+import TextField from "@/components/auth/TextField";
 
 export default function SignupPage() {
   const r = useRouter();
@@ -24,19 +25,36 @@ export default function SignupPage() {
 
   return (
     
-    <main className="mx-auto max-w-md py-16">
-      <div className="mx-auto w-full max-w-md rounded-2xl border border-neutral-200 bg-[var(--foreground)] p-6 shadow-sm">
+    <main className="mx-auto max-w-md py-14 ">
+      <div className="mx-auto w-full max-w-md rounded-sm border-0 md:border border-neutral-200 bg-transparent md:bg-[var(--foreground)] p-6 shadow-sm">
         <h1 className="mb-6 text-center text-2xl font-bold text text-[var(--light-brown)]">Create Account</h1>
         {err && <p className="mb-3 text-red-600">{err}</p>}
-        <form onSubmit={onSubmit} className="grid gap-3">
-          <input className="bg-gray-100 border border-neutral-300 rounded-sm px-3 py-2 text-neutral-800" placeholder="Email"
-                value={email} onChange={e => setEmail(e.target.value)} />
-          <input className="bg-gray-100 border border-neutral-300 rounded-sm px-3 py-2 text-neutral-800" type="password" placeholder="Password"
-                value={password} onChange={e => setPassword(e.target.value)} />
-          <button className="px-3 py-2 bg-[var(--light-brown)] text-white rounded disabled:opacity-60">
-            Sign Up
-          </button>
+        <form onSubmit={onSubmit} className="grid gap-3">  
+            <TextField 
+            label="Email"    
+            type="email"    
+            autoComplete="email"    
+            placeholder="Email"    
+            value={email}    
+            onChange={(e) => setEmail(e.target.value)}    
+            required  
+            />  
+            <TextField    
+            label="Password"    
+            type="password"    
+            autoComplete="new-password"   
+            placeholder="Password"    
+            value={password}    
+            onChange={(e) => setPassword(e.target.value)}    
+            required  />  
+          <button className="px-3 py-2 bg-[var(--light-brown)] text-white rounded disabled:opacity-60"> Sign Up </button>
         </form>
+        <div className="mt-4 flex items-center justify-center text-sm text-neutral-600">
+          <span>Already have an account? &nbsp; </span>
+          <a className="text-[var(--light-brown)] hover:text-[var(--light-brown)]" href="/login">
+            Login
+          </a>
+        </div>
       </div>
     </main>
   );
