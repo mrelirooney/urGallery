@@ -5,9 +5,17 @@ import type { ArtistLanding } from "@/lib/types";
 import { parseContacts, copyToClipboard } from "@/lib/contactUtils";
 import { useState } from "react";
 
-type Props = { profile?: ArtistLanding["profile"] };
+type Props = { 
+  profile?: ArtistLanding["profile"];
+  customColors?: {
+    background: string;
+    foreground: string;
+    text: string;
+    accent: string;
+  };
+};
 
-export default function ArtistHeader({ profile }: Props) {
+export default function ArtistHeader({ profile, customColors }: Props) {
   const [copiedEmail, setCopiedEmail] = useState(false);
   if (!profile)
     return (
@@ -65,12 +73,21 @@ export default function ArtistHeader({ profile }: Props) {
         <br></br>
         {/* Bottom: Name / Title / Contacts / Location */}
         <div className="flex flex-col md:justify-center md:text-left -mt-2">
-        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight text-[var(--foreground)]">
+        <h1 
+          className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight"
+          style={{ color: customColors?.text || 'var(--foreground)' }}
+        >
             {profile?.display_name ?? "Unknown Artist"}
           </h1>
-          <p className="mt-1 text-sm sm:text-md md:text-lg text-[var(--foreground)]">{profile?.title ?? ""}</p>
+          <p 
+            className="mt-1 text-sm sm:text-md md:text-lg"
+            style={{ color: customColors?.text || 'var(--foreground)' }}
+          >{profile?.title ?? ""}</p>
 
-        <p className="mt-1 text-xs sm:text-sm md:text-base text-[var(--foreground)]">
+        <p 
+          className="mt-1 text-xs sm:text-sm md:text-base"
+          style={{ color: customColors?.text || 'var(--foreground)' }}
+        >
           {profile?.location ?? ""}
         </p>
         
@@ -81,7 +98,21 @@ export default function ArtistHeader({ profile }: Props) {
               <button
                 key={i}
                 onClick={() => handleContactClick(contact)}
-                className="h-8 w-8 md:h-10 md:w-10 rounded-full bg-neutral-100 hover:bg-neutral-200 border border-neutral-300 flex items-center justify-center transition-colors"
+                className="h-8 w-8 md:h-10 md:w-10 rounded-full border flex items-center justify-center transition-colors"
+                style={{
+                  backgroundColor: customColors?.text || '#11100e',
+                  borderColor: customColors?.text || '#11100e',
+                  color: customColors?.text || '#11100e',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = customColors?.accent || '#c96a4a';
+                  e.currentTarget.style.borderColor = customColors?.accent || '#c96a4a';
+                  e.currentTarget.style.color = customColors?.background || '#faf7f2';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = customColors?.text || '#11100e';
+                  e.currentTarget.style.color = customColors?.text || '#11100e';
+                }}
                 title={contact.platform}
                 aria-label={`Contact via ${contact.platform}`}
               >
@@ -89,7 +120,13 @@ export default function ArtistHeader({ profile }: Props) {
               </button>
             ))}
             {copiedEmail && (
-              <div className="absolute -bottom-8 left-0 text-[var(--foreground)] text-white text-xs px-3 py-1 rounded shadow-lg">
+              <div 
+                className="absolute -bottom-8 left-0 text-xs px-3 py-1 rounded shadow-lg"
+                style={{
+                  backgroundColor: customColors?.foreground || '#11100e',
+                  color: customColors?.background || '#faf7f2',
+                }}
+              >
                 Email copied!
               </div>
             )}
@@ -101,7 +138,10 @@ export default function ArtistHeader({ profile }: Props) {
 
         {/* Row 2: Bio */}
         <div className="md:col-span-2">
-          <p className="mt-1 max-w-3xl text-sm sm:text-md md:text-lg text-[var(--foreground)] leading-relaxed">
+          <p 
+            className="mt-1 max-w-3xl text-sm sm:text-md md:text-lg leading-relaxed"
+            style={{ color: customColors?.text || 'var(--foreground)' }}
+          >
             {profile.bio || "This artist hasn't added a bio yet."}
           </p>
         </div>

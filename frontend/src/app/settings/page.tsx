@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import SettingsNav from "@/components/settings/SettingsNav";
 import ProfileInformation from "@/components/settings/ProfileInformation";
 import ContactInformation from "@/components/settings/ContactInformation";
+import CustomizationSection from "@/components/settings/CustomizationSection";
 import AboutSection from "@/components/settings/AboutSection";
 import TermsSection from "@/components/settings/TermsSection";
 import PrivacySection from "@/components/settings/PrivacySection";
@@ -25,6 +26,7 @@ export default function SettingsPage() {
   const [activeSection, setActiveSection] = useState<SettingsSection>("profile");
   const profileSaveRef = useRef<(() => Promise<void>) | null>(null);
   const contactSaveRef = useRef<(() => Promise<void>) | null>(null);
+  const customizationSaveRef = useRef<(() => Promise<void>) | null>(null);
 
   // Redirect to login if not authenticated
   if (!loading && !user) {
@@ -53,6 +55,16 @@ export default function SettingsPage() {
       }
     } else if (activeSection === "contact" && contactSaveRef.current) {
       await contactSaveRef.current();
+      if (user?.slug) {
+        router.push(`/${user.slug}`);
+        setTimeout(() => {
+          router.refresh();
+        }, 200);
+      } else {
+        router.back();
+      }
+    } else if (activeSection === "customization" && customizationSaveRef.current) {
+      await customizationSaveRef.current();
       if (user?.slug) {
         router.push(`/${user.slug}`);
         setTimeout(() => {
@@ -115,9 +127,11 @@ export default function SettingsPage() {
             />
           )}
           {activeSection === "customization" && (
-            <div className="p-8">
-              <p className="text-neutral-500">Coming soon lol...</p>
-            </div>
+            <CustomizationSection
+              onSaveRef={(saveFn) => {
+                customizationSaveRef.current = saveFn;
+              }}
+            />
           )}
           {activeSection === "about" && <AboutSection />}
           {activeSection === "terms" && <TermsSection />}

@@ -113,6 +113,32 @@ class Profile(models.Model):
         help_text="Order of contact fields, e.g. ['instagram_url', 'youtube_url', 'email_contact']"
     )
 
+    # Customization - color theme fields (hex codes)
+    background_color = models.CharField(
+        max_length=7,
+        blank=True,
+        null=True,
+        help_text="Background color in hex format (e.g., #faf7f2)"
+    )
+    foreground_color = models.CharField(
+        max_length=7,
+        blank=True,
+        null=True,
+        help_text="Foreground/UI elements color in hex format (e.g., #11100e)"
+    )
+    text_color = models.CharField(
+        max_length=7,
+        blank=True,
+        null=True,
+        help_text="Text color in hex format (e.g., #11100e)"
+    )
+    accent_color = models.CharField(
+        max_length=7,
+        blank=True,
+        null=True,
+        help_text="Accent/highlight color in hex format (e.g., #c96a4a)"
+    )
+
     theme_id_hint = models.IntegerField(null=True, blank=True)
     theme = models.ForeignKey("themes.Theme", on_delete=models.SET_NULL, null=True, blank=True, related_name="profiles")
     created_at = models.DateTimeField(auto_now_add=True)

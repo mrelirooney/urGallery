@@ -175,8 +175,8 @@ CSRF_TRUSTED_ORIGINS = [
 CSRF_COOKIE_SECURE = False
 SESSION_COOKIE_SECURE = False
 SECURE_SSL_REDIRECT = False
-SESSION_COOKIE_SAMESITE = "None" 
-CSRF_COOKIE_SAMESITE = "None"       
+SESSION_COOKIE_SAMESITE = "Lax"   
+CSRF_COOKIE_SAMESITE = "Lax"  # Changed from "None" to "Lax" for local development   
 
 # ============================================================
 # Switching Environments Step 7: SECURITY + HTTPS + PROXY SETTINGS (Edit above)
@@ -337,7 +337,26 @@ MEDIA_ROOT = BASE_DIR / "media"
 # This step must be completed BEFORE production launch.
 # ============================================================
 
-DATABASES = {"default": dj_database_url.parse(os.getenv("DATABASE_URL"))}
+# ============================================================
+# LOCAL DEVELOPMENT DATABASE (Active)
+# This configuration is for local development only
+# ============================================================
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'urgallery_dev',
+        'USER': 'postgres',
+        'PASSWORD': 'LittleIsland052121',
+        'HOST': 'localhost',
+        'PORT': '5432',
+    }
+}
+
+# ============================================================
+# DOCKER ENVIRONMENT DATABASE (Commented out for local dev)
+# Uncomment this and comment out the above for Docker environment
+# ============================================================
+# DATABASES = {"default": dj_database_url.parse(os.getenv("DATABASE_URL"))}
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

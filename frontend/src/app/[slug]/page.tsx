@@ -2,6 +2,7 @@
 import type { Metadata } from "next";
 import Container from "@/components/layout/Container";
 import type { ArtistLanding } from "@/lib/types";
+import { getArtistLanding } from "@/lib/api/artistLanding";
 import ArtistHeader from "@/components/artist/ArtistHeader";
 import ArtistLandingMotion from "@/components/artist/ArtistLandingMotion";
 import PortfolioSelector from "@/components/portfolio/PortfolioSelector";
@@ -10,6 +11,7 @@ import CompactNavHamburger from "@/components/artist/CompactNavHamburger";
 import CompactNavPortfolioTitle from "@/components/artist/CompactNavPortfolioTitle";
 import { notFound } from "next/navigation";
 import BackArrowButton from "@/components/artist/BackArrowButton";
+import ColorThemeSetter from "@/components/artist/ColorThemeSetter";
 
 
 type RouteParams = { slug: string };
@@ -20,24 +22,6 @@ type ArtistPageProps = {
   artistName: string;
   artistAvatarUrl: string | null;
 };
-
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE || "http://backend:8000";
-
-// Fetch artist profile + portfolios for the landing page
-async function getArtistLanding(slug: string): Promise<ArtistLanding | null> {
-  const res = await fetch(`${API_BASE}/api/artists/${slug}/`, {
-    credentials: "include",   // send cookies
-    cache: "no-store",        // always fresh
-  });
-
-  if (res.status === 404) return null;
-  if (!res.ok) {
-    throw new Error(`Failed to load artist: ${res.status}`);
-  }
-
-  return res.json();
-}
 
 // --- metadata for SEO / sharing ---
 export async function generateMetadata(
@@ -104,14 +88,22 @@ export default async function ArtistPage(
       (raw.startsWith("/") ? raw : `/${raw}`);
   }
 
+  // Get custom colors or use defaults
+  const customColors = {
+    background: profile.background_color || '#faf7f2',
+    foreground: profile.foreground_color || '#11100e',
+    text: profile.text_color || '#11100e',
+    accent: profile.accent_color || '#c96a4a',
+  };
+
   return (
+    <>
+      <ColorThemeSetter colors={customColors} />
+      <main className="flex flex-col">
+        <ArtistLandingMotion pagesCount={firstPortfolio?.pages_count ?? 1} />
 
-    
-    <main className="flex flex-col">
-      <ArtistLandingMotion pagesCount={firstPortfolio?.pages_count ?? 1} />
-
-      {/* Artist Header Section */}
-      <section className="bg-[var(--background)] relative">
+        {/* Artist Header Section */}
+        <section style={{ backgroundColor: customColors.background }} className="relative">
         {/* Banner Image - Full width, outside container */}
         {profile?.banner_image_url && (
           <div className="absolute top-0 left-0 right-0 h-30 md:h-[33vh] overflow-hidden">
@@ -126,7 +118,7 @@ export default async function ArtistPage(
         {/* Content Container - full width on mobile, constrained on larger screens */}
         <div className="w-full md:mx-auto md:max-w-6xl px-0 md:px-10 lg:px-8">
           <div className="py-10 lg:py-10 relative z-10 px-4 md:px-0">
-            <ArtistHeader profile={profile} />
+            <ArtistHeader profile={profile} customColors={customColors} />
           </div>
         </div>
       </section>
@@ -134,7 +126,8 @@ export default async function ArtistPage(
       {/* Compact sticky profile (appears in compact mode) */}
       <div
         id="artist-profile-compact"
-        className="sticky mt-20 top-0 z-20 hidden bg-[var(--background)] backdrop-blur"
+        style={{ backgroundColor: customColors.background }}
+        className="sticky mt-20 top-0 z-20 hidden backdrop-blur"
       >
         <div className="mx-auto max-w-6xl h-20 md:h-16 px-4 md:px-8 flex flex-col">
           <div className="pt-4 lg:pt-2 flex items-center justify-between">
@@ -151,7 +144,10 @@ export default async function ArtistPage(
                       className="h-full w-full object-cover"
                 />
               </div>
-              <span className="hidden md:block font-semibold text-[var(--light-brown)]">
+              <span 
+                className="hidden md:block font-semibold"
+                style={{ color: customColors.text }}
+              >
                 {profile?.display_name ?? "Loading..."}
               </span>
             </div>
@@ -174,7 +170,13 @@ export default async function ArtistPage(
       {/* Portfolio Section */}
       <div id="portfolio-sentinel" />
 
-      <section id="portfolio-shell" className="bg-neutral-900 text-white">
+      <section 
+        id="portfolio-shell" 
+        style={{ 
+          backgroundColor: customColors.foreground,
+          color: customColors.background 
+        }}
+      >
         <Container className="text-white">
           {portfolios.length > 0 ? (
             <PortfolioSelector
@@ -182,6 +184,7 @@ export default async function ArtistPage(
               portfolios={portfolios}
               profile={profile}
               initialPortfolioSlug={portfolioSlug}
+              customColors={customColors}
             />
           ) : (
             <div className="py-16 px-4 text-center">
@@ -193,6 +196,7 @@ export default async function ArtistPage(
         </Container>
       </section>
     </main>
+    </>
   );
 }
 

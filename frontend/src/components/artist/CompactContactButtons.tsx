@@ -35,7 +35,7 @@ export default function CompactContactButtons({ profile }: Props) {
         <button
           key={i}
           onClick={() => handleContactClick(contact)}
-          className="h-8 w-8 rounded-full bg-neutral-100 hover:bg-neutral-200 border border-neutral-300 flex items-center justify-center transition-colors"
+          className="h-8 w-8 rounded-full bg-[var(--artist-text)] hover:bg-[var(--artist-accent)] flex items-center justify-center transition-colors"
           title={contact.platform}
           aria-label={`Contact via ${contact.platform}`}
         >

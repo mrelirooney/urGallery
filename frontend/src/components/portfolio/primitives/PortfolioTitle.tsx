@@ -18,8 +18,15 @@ export default function PortfolioTitle({ text, align = "left", size = "lg", colo
     align === "center" ? "text-center" :
     align === "right" ? "text-right" :
     "text-left";
+  
+  // Check if color is a hex code or Tailwind class
+  const isHexColor = color?.startsWith('#');
+  
   return (
-    <p className={`${sizeClass} ${alignClass} ${color}`}>
+    <p 
+      className={`${sizeClass} ${alignClass} ${isHexColor ? '' : color}`}
+      style={isHexColor ? { color } : undefined}
+    >
         {text}
     </p>
   )

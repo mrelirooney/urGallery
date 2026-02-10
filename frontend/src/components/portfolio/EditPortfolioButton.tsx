@@ -18,7 +18,7 @@ export default function EditPortfolioButton({ artistSlug, portfolioSlug }: EditP
     <div className="mb-6 flex justify-end">
       <Link
         href={`/${artistSlug}/${portfolioSlug}/edit`}
-        className="rounded-full bg-white px-4 py-2 text-sm font-medium text-black shadow hover:bg-neutral-100 transition"
+        className="rounded-xs bg-[var(--artist-background)] px-4 py-2 text-sm font-medium text-[var(--artist-text)] hover:bg-[var(--artist-accent)] transition"
       >
         Edit
       </Link>

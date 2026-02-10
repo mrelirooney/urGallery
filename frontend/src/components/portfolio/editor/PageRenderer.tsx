@@ -225,9 +225,9 @@ export default function PageRenderer({
   const mediaOnRight = layoutType === "MediaRight_TextLeft";
 
   return (
-    <div className="w-full h-full bg-neutral-800">
+    <div className="w-full h-full bg-[var(--background)]">
       <div className="
-        max-w-6xl mx-auto flex items-center
+        flex items-center
         h-[50vh]        /* laptop canvas height */
         md:h-[55vh]     /* medium screens */
         lg:h-[60vh]     /* large screens */

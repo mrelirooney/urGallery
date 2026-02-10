@@ -19,6 +19,10 @@ export interface ArtistProfile {
   twitch_url?: string;
   email_contact?: string;
   contact_order?: string[];
+  background_color?: string | null;
+  foreground_color?: string | null;
+  text_color?: string | null;
+  accent_color?: string | null;
 }
 
 export interface PortfolioPage {

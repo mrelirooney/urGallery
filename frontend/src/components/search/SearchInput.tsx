@@ -10,9 +10,10 @@ type Props = {
   placeholder?: string;
   onSelect?: (r: SearchResult) => void;
   variant?: "hero" | "navbar" | string; // optional, ignored for now
+  accentColor?: string; // when set (e.g. on profile page), use for hover/focus ring
 };
 
-export default function SearchInput({ placeholder = "Search artists...", onSelect, variant }: Props) {
+export default function SearchInput({ placeholder = "Search artists...", onSelect, variant, accentColor }: Props) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
@@ -23,6 +24,9 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
     const [active, setActive] = useState(-1);
     const [query, setQuery] = useState("");
     const [mounted, setMounted] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
+    const [isFocused, setIsFocused] = useState(false);
+    const useAccent = Boolean(accentColor) && (isHovered || isFocused);
   
     const { run, results, loading, clear } = useSearch();
   
@@ -96,16 +100,27 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
 
   return (
     <div className="relative w-full max-w-xs sm:max-w-md md:max-w-lg lg:max-w-2xl xl:max-w-3xl">
-      <div className={`flex items-center gap-2 sm:gap-3 rounded-xs ring-1 ring-[var(--foreground)]/10 px-3 sm:px-4 py-1 hover:ring-[var(--light-brown)]/100 focus-within:ring-[var(--light-brown)]/70 transition-all ${
-        variant === "hero" 
-          ? "shadow-lg shadow-[var(--light-brown)]/90 hover:shadow-xl hover:shadow-[var(--light-brown)]/40 focus-within:shadow-xl focus-within:shadow-[var(--light-brown)]/50" 
-          : ""
-      }`}>
+      <div
+        className={`flex items-center gap-2 sm:gap-3 rounded-xs ring-1 ring-[var(--foreground)]/10 px-3 sm:px-4 py-1 transition-all ${
+          !accentColor ? "hover:ring-[var(--light-brown)]/100 focus-within:ring-[var(--light-brown)]/70" : ""
+        } ${
+          variant === "hero"
+            ? "shadow-lg shadow-[var(--light-brown)]/90 hover:shadow-xl hover:shadow-[var(--light-brown)]/40 focus-within:shadow-xl focus-within:shadow-[var(--light-brown)]/50"
+            : ""
+        }`}
+        style={useAccent && accentColor ? { boxShadow: `0 0 0 1px ${accentColor}` } : undefined}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
         <input
           ref={inputRef}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          onFocus={() => results.length > 0 && setOpen(true)}
+          onFocus={() => {
+            results.length > 0 && setOpen(true);
+            setIsFocused(true);
+          }}
+          onBlur={() => setIsFocused(false)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           className="w-full outline-none text-neutral-300 text-sm bg-transparent"
@@ -121,7 +136,8 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
               if (r) handleSelect(r);
             });
           }}
-          className="shrink-0 rounded-full text-[var(--foreground)] hover:text-[var(--foreground)] px-1.5 py-1.5 text-sm font-medium transition-all active:scale-95"
+          className="shrink-0 rounded-full text-[var(--foreground)] px-1.5 py-1.5 text-sm font-medium transition-all active:scale-95"
+          style={useAccent && accentColor ? { color: accentColor } : undefined}
         >
           <Search size={18} />
         </button>

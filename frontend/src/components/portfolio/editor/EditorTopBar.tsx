@@ -58,7 +58,7 @@ export default function EditorTopBar({
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   return (
-    <div className="w-full text-neutral-100 bg-neutral-800 flex flex-col gap-3">
+    <div className="w-full text-neutral-100 bg-[var(--light-brown)] flex flex-col gap-0">
       {/* --- Top row buttons --- */}
       <div className="flex items-center justify-between">
         <button onClick={onCancel} className="text-sm opacity-80 hover:opacity-100">
@@ -94,7 +94,7 @@ export default function EditorTopBar({
       </div>
 
       {/* --- Thumbnails row --- */}
-      <div className="flex gap-2 overflow-x-auto py-2">
+      <div className="flex gap-2 overflow-x-auto pt-2 pb-8">
         {pages.map((page, index) => {
           const isActive = index === currentPageIndex;
           const isDragged = index === dragIndex;

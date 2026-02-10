@@ -18,6 +18,12 @@ type PortfolioWrapperProps = {
   artistSlug: string;  // owner’s profile slug
   artistName?: string;
   artistAvatarUrl?: string | null;
+  customColors?: {
+    background: string;
+    foreground: string;
+    text: string;
+    accent: string;
+  };
 };
 
 type ApiPage = {
@@ -41,7 +47,7 @@ type ApiPortfolio = {
   pages: ApiPage[];
 };
 
-export default function PortfolioWrapper({ slug, artistSlug, artistName, artistAvatarUrl, }: PortfolioWrapperProps) {
+export default function PortfolioWrapper({ slug, artistSlug, artistName, artistAvatarUrl, customColors }: PortfolioWrapperProps) {
   const [portfolioTitle, setPortfolioTitle] = useState<string>("");
   const [pages, setPages] = useState<PortfolioPageData[]>([]);
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
@@ -159,14 +165,17 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
   }
 
   return (
-    <section className="mx-auto max-w-full md:max-w-7xl flex-col justify-between text-neutral-100">
+    <section 
+      className="mx-auto max-w-full md:max-w-7xl flex-col justify-between"
+      style={{ color: customColors?.background || '#faf7f2' }}
+    >
       <div className="min-h-[85vh] md:min-h-[85vh] w-full max-w-7xl pt-8 pb-4 md:pt-8 md:pb-8 flex flex-col justify-between gap-6">
         <div className="flex items-center justify-between hidden md:flex">
           <PortfolioTitle
             text={portfolioTitle}
             align="left"
             size="xs"
-            color="text-[var(--light-brown)]"
+            color={customColors?.background}
           />
 
           {/* Only shows for the owner (logic is inside EditPortfolioButton) */}
@@ -184,6 +193,7 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
             totalPages={pages.length}
             currentPage={currentPageIndex + 1}
             onChangePage={(newIndex) => setCurrentPageIndex(newIndex)}
+            customColors={customColors}
           />
         </div>
       </div>

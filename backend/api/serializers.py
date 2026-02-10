@@ -25,6 +25,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             "website_url","instagram_url","twitter_url","behance_url","dribbble_url","youtube_url","tiktok_url",
             "linkedin_url","twitch_url","email_contact",
             "contact_order",
+            "background_color","foreground_color","text_color","accent_color",
             "theme",
         )
 
@@ -41,12 +42,13 @@ class ProfileWriteSerializer(serializers.ModelSerializer):
             "website_url","instagram_url","twitter_url","behance_url","dribbble_url","youtube_url","tiktok_url",
             "linkedin_url","twitch_url","email_contact",
             "contact_order",
+            "background_color","foreground_color","text_color","accent_color",
             "theme",
             "first_name","last_name",  # User fields
         )
     
     def validate(self, data):
-        """Validate that contact fields don't contain phone numbers"""
+        """Validate that contact fields don't contain phone numbers and color fields are valid hex codes"""
         # Phone number patterns to block
         phone_pattern = re.compile(r'(\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}|\+\d{10,15}')
         
@@ -61,6 +63,17 @@ class ProfileWriteSerializer(serializers.ModelSerializer):
             if value and phone_pattern.search(value):
                 raise serializers.ValidationError({
                     field: "Phone numbers are not allowed in contact fields. Please use a URL or email."
+                })
+        
+        # Validate color fields are valid hex codes
+        hex_pattern = re.compile(r'^#[0-9A-Fa-f]{6}$')
+        color_fields = ['background_color', 'foreground_color', 'text_color', 'accent_color']
+        
+        for field in color_fields:
+            value = data.get(field, '')
+            if value and not hex_pattern.match(value):
+                raise serializers.ValidationError({
+                    field: "Color must be a valid hex code (e.g., #faf7f2)"
                 })
         
         return data

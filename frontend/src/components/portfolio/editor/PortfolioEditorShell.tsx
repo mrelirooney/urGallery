@@ -694,7 +694,7 @@ export default function PortfolioEditorShell({
 
   // -------- Render --------
   return (
-    <div className="w-full mx-auto pt-5">
+    <div className="w-full mx-auto pt-5 bg-[var(--light-brown)]">
       {/* Top bar with thumbnails + actions */}
       <EditorTopBar
         pages={pages}
@@ -717,7 +717,7 @@ export default function PortfolioEditorShell({
       />
 
       {/* Canvas area */}
-      <section className="text-neutral-50 bg-neutral-800 shadow-lg">
+      <section className="text-neutral-50 shadow-lg">
         {/* Title + controls strip */}
         <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
           <input
@@ -748,7 +748,7 @@ export default function PortfolioEditorShell({
 
         {/* Actual page canvas */}
         <div className="flex justify-center">
-          <div className="w-full max-w-6xl">
+          <div className="w-full">
             <PageRenderer
               pages={pages}
               currentPageIndex={currentPageIndex}

@@ -77,10 +77,10 @@ function TextColumn({
   // VIEW MODE – plain text
   return (
     <div className="flex flex-col gap-1 md:gap-6">
-      <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold leading-tight text-neutral-50">
+      <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold leading-tight text-(var(--artist-text))">
         {title}
       </h2>
-      <p className="max-w-xl whitespace-pre-line text-sm sm:text-base md:text-lg text-neutral-300">
+      <p className="max-w-xl whitespace-pre-line text-sm sm:text-base md:text-lg text-(var(--artist-text))">
         {description}
       </p>
     </div>

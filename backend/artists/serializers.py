@@ -31,6 +31,10 @@ class ArtistProfileSerializer(serializers.ModelSerializer):
             "twitch_url",
             "email_contact",
             "contact_order",
+            "background_color",
+            "foreground_color",
+            "text_color",
+            "accent_color",
         )
 
     def get_avatar_url(self, obj):

@@ -10,6 +10,12 @@ type Props = {
   portfolios: ArtistLanding["portfolios"];
   profile: ArtistLanding["profile"];
   initialPortfolioSlug?: string;
+  customColors?: {
+    background: string;
+    foreground: string;
+    text: string;
+    accent: string;
+  };
 };
 
 export default function PortfolioSelector({
@@ -17,6 +23,7 @@ export default function PortfolioSelector({
   portfolios,
   profile,
   initialPortfolioSlug,
+  customColors,
 }: Props) {
   const router = useRouter();
   const pathname = usePathname();
@@ -70,6 +77,7 @@ export default function PortfolioSelector({
       artistSlug={artistSlug}
       artistName={profile.display_name}
       artistAvatarUrl={profile.avatar_url}
+      customColors={customColors}
     />
   );
 }

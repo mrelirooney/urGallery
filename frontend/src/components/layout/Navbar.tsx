@@ -11,11 +11,51 @@ import { useAuth } from "@/hooks/useAuth";
 import { Menu, X, ArrowLeft } from "lucide-react";
 
 export default function Navbar() {
+  const [customColors, setCustomColors] = useState<{
+    background: string;
+    foreground: string;
+    text: string;
+    accent: string;
+  } | null>(null);
+
+  const pathname = usePathname();
+
+  useEffect(() => {
+    const checkColors = () => {
+      const htmlElement = document.documentElement;
+      const bgColor = htmlElement.style.getPropertyValue('--artist-background');
+      const fgColor = htmlElement.style.getPropertyValue('--artist-foreground');
+      const textColor = htmlElement.style.getPropertyValue('--artist-text');
+      const accentColor = htmlElement.style.getPropertyValue('--artist-accent');
+
+      if (bgColor && fgColor && textColor && accentColor) {
+        setCustomColors({
+          background: bgColor.trim(),
+          foreground: fgColor.trim(),
+          text: textColor.trim(),
+          accent: accentColor.trim(),
+        });
+      } else {
+        setCustomColors(null);
+      }
+    };
+
+    checkColors(); // Initial check
+
+    // Watch for style changes on html element (when ColorThemeSetter applies vars)
+    const observer = new MutationObserver(checkColors);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['style'],
+    });
+
+    return () => observer.disconnect();
+  }, [pathname]);
+
   // --- 1. State & refs ---
   const { user, loading, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
-  const pathname = usePathname();
   const router = useRouter();
   
   // Check if we're on an artist profile page
@@ -43,8 +83,11 @@ export default function Navbar() {
   // outside click + Esc
   useEffect(() => {
     function onDocMouseDown(e: MouseEvent) {
+      const target = e.target as HTMLElement;
+      // Don't close when clicking inside the menu (links, buttons) - let navigation happen first
+      if (target.closest('[role="menu"]')) return;
       if (!menuRef.current) return;
-      if (!menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+      if (!menuRef.current.contains(target)) setMenuOpen(false);
     }
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") setMenuOpen(false);
@@ -116,7 +159,11 @@ export default function Navbar() {
         <PortfolioMenu isOpen={open} onClose={() => setOpen(false)} />
       )}
 
-      <header id="site-navbar" className="sticky top-0 z-50 bg-[var(--background)] ">
+      <header 
+        id="site-navbar" 
+        className="sticky top-0 z-50"
+        style={{ backgroundColor: customColors?.background || 'var(--background)' }}
+      >
         <div className="mx-auto max-w-6xl px-4 md:px-8 h-14 flex items-center justify-between">
         {/* Left: Back arrow (mobile/tablet only) OR Logo + Hamburger (desktop) */}
         <div className="flex items-center">
@@ -124,7 +171,8 @@ export default function Navbar() {
           {isArtistProfilePage && (
             <button
               onClick={() => router.push("/")}
-              className="lg:hidden rounded-md text-[var(--light-brown)] transition mr-3"
+              className="lg:hidden rounded-md transition mr-3"
+              style={{ color: customColors?.accent || '#c96a4a' }}
               aria-label="Back to home"
             >
               <ArrowLeft size={24} />
@@ -135,7 +183,8 @@ export default function Navbar() {
           {isArtistProfilePage && (
             <button
               onClick={() => setOpen(!open)}
-              className="hidden lg:block rounded-md text-[var(--light-brown)] transition"
+              className="hidden lg:block rounded-md transition"
+              style={{ color: customColors?.text || '#c96a4a' }}
               aria-label="Portfolio menu"
             >
               {open ? <X size={28} /> : <Menu size={28} />}
@@ -176,6 +225,7 @@ export default function Navbar() {
                 <SearchInput
                   variant="nav"
                   placeholder="Search…"
+                  accentColor={isArtistProfilePage ? customColors?.text : undefined}
                 />
               </div>
               <div className="relative " ref={menuRef}>

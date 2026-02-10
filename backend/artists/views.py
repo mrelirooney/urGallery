@@ -96,7 +96,8 @@ class ArtistLandingView(APIView):
 class ArtistPortfolioDetailView(RetrieveAPIView):
     serializer_class = PublicPortfolioSerializer
     lookup_field = "slug"  # portfolio slug
-
+    permission_classes = [AllowAny]  # Allow unauthenticated users to view public portfolios
+    
     def get_queryset(self):
         artist_slug = self.kwargs["artist_slug"]
 
