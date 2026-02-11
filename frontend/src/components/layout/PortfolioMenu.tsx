@@ -26,9 +26,20 @@ interface ArtistData {
 type Props = {
   isOpen: boolean;
   onClose: () => void;
+  customColors?: {
+    background: string;
+    foreground: string;
+    text: string;
+    accent: string;
+  };
 };
 
-export default function PortfolioMenu({ isOpen, onClose }: Props) {
+const DEFAULT_BG = "#faf7f2";
+const DEFAULT_TEXT = "#11100e";
+
+export default function PortfolioMenu({ isOpen, onClose, customColors }: Props) {
+  const bg = customColors?.background || DEFAULT_BG;
+  const text = customColors?.text || DEFAULT_TEXT;
   const pathname = usePathname();
   const router = useRouter();
   const { user } = useAuth();
@@ -204,7 +215,8 @@ export default function PortfolioMenu({ isOpen, onClose }: Props) {
       {/* Backdrop */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 transition-opacity"
+          className="fixed inset-0 z-40 transition-opacity"
+          style={{ backgroundColor: bg, opacity: 0.8 }}
           onClick={onClose}
         />
       )}
@@ -212,16 +224,22 @@ export default function PortfolioMenu({ isOpen, onClose }: Props) {
       {/* Slide-in menu */}
       <div
         ref={menuRef}
-        className={`fixed left-0 top-0 bottom-0 w-80 bg-white shadow-xl z-60 transform transition-transform duration-300 ease-in-out ${
+        className={`fixed left-0 top-0 bottom-0 w-80 shadow-xl z-60 transform transition-transform duration-300 ease-in-out flex flex-col ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
+        style={{ backgroundColor: text }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
+        <div
+          className="flex items-center justify-between p-4 border-b"
+          style={{ borderColor: `${bg}20` }}
+        >
           {/* Profile section */}
-        
           <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-full overflow-hidden border border-gray-300 bg-gray-100">
+            <div
+              className="h-12 w-12 rounded-full overflow-hidden border"
+              style={{ borderColor: `${bg}40`, backgroundColor: `${bg}10` }}
+            >
               <img
                 src={avatarUrl}
                 alt={artistData?.profile?.display_name || "Profile"}
@@ -229,10 +247,10 @@ export default function PortfolioMenu({ isOpen, onClose }: Props) {
               />
             </div>
             <div>
-              <div className="font-medium text-gray-900">
+              <div className="font-medium truncate" style={{ color: bg }}>
                 {artistData?.profile?.display_name || "Loading..."}
               </div>
-              <div className="text-sm text-gray-500">
+              <div className="text-sm" style={{ color: `${bg}99` }}>
                 {artistData?.portfolios?.length || 0} portfolio
                 {artistData?.portfolios?.length !== 1 ? "s" : ""}
               </div>
@@ -241,10 +259,17 @@ export default function PortfolioMenu({ isOpen, onClose }: Props) {
 
           <button
             onClick={onClose}
-            className="p-1 rounded-md hover:bg-gray-100 transition"
+            className="p-1 rounded-md transition"
+            style={{ color: bg }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = `${bg}15`;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "transparent";
+            }}
             aria-label="Close menu"
           >
-            <X size={20} className="text-gray-600" />
+            <X size={20} />
           </button>
         </div>
 
@@ -253,20 +278,30 @@ export default function PortfolioMenu({ isOpen, onClose }: Props) {
         {/* Portfolios list */}
         <div className="flex-1 overflow-y-auto">
           {loading ? (
-            <div className="p-4 text-center text-gray-500">Loading...</div>
+            <div className="p-4 text-center" style={{ color: `${bg}99` }}>
+              Loading...
+            </div>
           ) : error ? (
-            <div className="p-4 text-center text-red-500">{error}</div>
+            <div className="p-4 text-center" style={{ color: `${bg}99` }}>
+              {error}
+            </div>
           ) : artistData?.portfolios && artistData.portfolios.length > 0 ? (
-            <ul className="divide-y divide-gray-100">
+            <ul>
               {artistData.portfolios.map((portfolio) => (
                 <li
                   key={portfolio.id}
-                  className="p-4 hover:bg-gray-50 transition-colors"
+                  className="p-4 transition-colors border-b last:border-b-0"
+                  style={{ borderColor: `${bg}15` }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = `${bg}50`;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                  }}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <button
                       onClick={() => {
-                        // Dispatch custom event to select portfolio
                         const event = new CustomEvent("portfolio-select", {
                           detail: portfolio.slug,
                         });
@@ -274,12 +309,13 @@ export default function PortfolioMenu({ isOpen, onClose }: Props) {
                         onClose();
                       }}
                       className="flex-1 min-w-0 text-left"
+                      style={{ color: bg }}
                     >
-                      <div className="font-medium text-gray-900 truncate">
+                      <div className="font-medium truncate">
                         {portfolio.title || "Untitled Portfolio"}
                       </div>
                       {portfolio.privacy_status && (
-                        <div className="text-xs text-gray-500 mt-1">
+                        <div className="text-xs mt-1" style={{ color: `${bg}99` }}>
                           {portfolio.privacy_status}
                         </div>
                       )}
@@ -289,19 +325,33 @@ export default function PortfolioMenu({ isOpen, onClose }: Props) {
                         <>
                           <button
                             onClick={() => handleEdit(portfolio.slug)}
-                            className="p-2 rounded-md hover:bg-gray-200 transition"
+                            className="p-2 rounded-md transition"
+                            style={{ color: bg }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = `${bg}50`;
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = "transparent";
+                            }}
                             aria-label={`Edit ${portfolio.title}`}
                             title="Edit"
                           >
-                            <Edit2 size={16} className="text-gray-600" />
+                            <Edit2 size={16} />
                           </button>
                           <button
                             onClick={() => handleDelete(portfolio.id, portfolio.slug)}
-                            className="p-2 rounded-md hover:bg-red-50 transition"
+                            className="p-2 rounded-md transition"
+                            style={{ color: bg }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = `${bg}50`;
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = "transparent";
+                            }}
                             aria-label={`Delete ${portfolio.title}`}
                             title="Delete"
                           >
-                            <Trash2 size={16} className="text-red-600" />
+                            <Trash2 size={16} />
                           </button>
                         </>
                       )}
@@ -311,7 +361,7 @@ export default function PortfolioMenu({ isOpen, onClose }: Props) {
               ))}
             </ul>
           ) : (
-            <div className="p-4 text-center text-gray-500">
+            <div className="p-4 text-center" style={{ color: `${bg}99` }}>
               No portfolios yet
             </div>
           )}
@@ -319,17 +369,25 @@ export default function PortfolioMenu({ isOpen, onClose }: Props) {
 
         {/* Add Portfolio button */}
         <div className="p-4">
-            {isOwner && (
-            <div >
-                <button
-                onClick={handleAddPortfolio}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition font-medium"
-                >
-                <Plus size={18} />
-                Add Portfolio
-                </button>
-            </div>
-            )}
+          {isOwner && (
+            <button
+              onClick={handleAddPortfolio}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-md transition font-medium"
+              style={{
+                backgroundColor: bg,
+                color: text,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = `${bg}dd`;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = bg;
+              }}
+            >
+              <Plus size={18} />
+              Add Portfolio
+            </button>
+          )}
         </div>
       </div>
     </>

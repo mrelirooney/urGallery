@@ -62,7 +62,9 @@ export default function ArtistHeader({ profile, customColors }: Props) {
       <div className="relative">
         {/* Top: Avatar - left aligned on mobile */}
         <div className="flex justify-start">
-          <div className="h-25 w-25 md:h-56 md:w-56 rounded-full overflow-hidden border-3 border-[var(--background)] shadow-sm bg-white">
+          <div className="h-25 w-25 md:h-56 md:w-56 rounded-full overflow-hidden border-3"
+            style={{ borderColor: customColors?.background || '#11100e' }}
+          >
             <img
               src={src}
               alt={`${profile?.display_name ?? "Artist"} avatar`}
@@ -98,20 +100,18 @@ export default function ArtistHeader({ profile, customColors }: Props) {
               <button
                 key={i}
                 onClick={() => handleContactClick(contact)}
-                className="h-8 w-8 md:h-10 md:w-10 rounded-full border flex items-center justify-center transition-colors"
+                className="h-8 w-8 md:h-10 md:w-10 rounded-full flex items-center justify-center transition-colors"
                 style={{
                   backgroundColor: customColors?.text || '#11100e',
-                  borderColor: customColors?.text || '#11100e',
-                  color: customColors?.text || '#11100e',
+                  color: customColors?.background || '#faf7f2',
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = customColors?.accent || '#c96a4a';
-                  e.currentTarget.style.borderColor = customColors?.accent || '#c96a4a';
-                  e.currentTarget.style.color = customColors?.background || '#faf7f2';
+                  e.currentTarget.style.color = customColors?.text || '#11100e';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = customColors?.text || '#11100e';
-                  e.currentTarget.style.color = customColors?.text || '#11100e';
+                  e.currentTarget.style.color = customColors?.background || '#faf7f2';
                 }}
                 title={contact.platform}
                 aria-label={`Contact via ${contact.platform}`}

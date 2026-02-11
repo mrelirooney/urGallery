@@ -6,9 +6,15 @@ import { parseContacts, copyToClipboard } from "@/lib/contactUtils";
 
 type Props = {
   profile: ArtistLanding["profile"];
+  customColors?: {
+    background: string;
+    foreground: string;
+    text: string;
+    accent: string;
+  };
 };
 
-export default function CompactContactButtons({ profile }: Props) {
+export default function CompactContactButtons({ profile, customColors }: Props) {
   const [copiedEmail, setCopiedEmail] = useState(false);
   const contacts = parseContacts(profile);
 
@@ -29,13 +35,30 @@ export default function CompactContactButtons({ profile }: Props) {
 
   if (contacts.length === 0) return null;
 
+  const bg = customColors?.text || '#11100e';
+  const iconColor = customColors?.background || '#faf7f2';
+  const accent = customColors?.accent || '#c96a4a';
+  const textColor = customColors?.text || '#11100e';
+
   return (
     <div className="flex items-center gap-2 relative">
       {contacts.map((contact, i) => (
         <button
           key={i}
           onClick={() => handleContactClick(contact)}
-          className="h-8 w-8 rounded-full bg-[var(--artist-text)] hover:bg-[var(--artist-accent)] flex items-center justify-center transition-colors"
+          className="h-8 w-8 rounded-full flex items-center justify-center transition-colors"
+          style={{
+            backgroundColor: bg,
+            color: iconColor,
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = accent;
+            e.currentTarget.style.color = textColor;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = bg;
+            e.currentTarget.style.color = iconColor;
+          }}
           title={contact.platform}
           aria-label={`Contact via ${contact.platform}`}
         >

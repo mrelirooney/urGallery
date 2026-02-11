@@ -116,7 +116,7 @@ export default async function ArtistPage(
         )}
         
         {/* Content Container - full width on mobile, constrained on larger screens */}
-        <div className="w-full md:mx-auto md:max-w-6xl px-0 md:px-10 lg:px-8">
+        <div className="w-full md:mx-auto md:max-w-6xl px-0 md:px-10 lg:px-0">
           <div className="py-10 lg:py-10 relative z-10 px-4 md:px-0">
             <ArtistHeader profile={profile} customColors={customColors} />
           </div>
@@ -129,8 +129,8 @@ export default async function ArtistPage(
         style={{ backgroundColor: customColors.background }}
         className="sticky mt-20 top-0 z-20 hidden backdrop-blur"
       >
-        <div className="mx-auto max-w-6xl h-20 md:h-16 px-4 md:px-8 flex flex-col">
-          <div className="pt-4 lg:pt-2 flex items-center justify-between">
+        <div className="mx-auto max-w-6xl h-20 md:h-16 px-4 md:px-8 lg:px-0 flex flex-col">
+          <div className="pt-4 lg:pt-3 flex items-center justify-between">
             {/* Left: Back arrow (mobile only) */}
             <div className="block md:hidden">
               <BackArrowButton />
@@ -154,7 +154,7 @@ export default async function ArtistPage(
 
             {/* Right: contact buttons (desktop) OR hamburger (mobile) */}
             <div className="hidden md:block">
-              <CompactContactButtons profile={profile} />
+              <CompactContactButtons profile={profile} customColors={customColors} />
             </div>
             <div className="block md:hidden">
               <CompactNavHamburger />
@@ -162,7 +162,7 @@ export default async function ArtistPage(
           </div>
           {/* Portfolio Title - mobile only */}
           <div className="block md:hidden flex justify-center">
-            <CompactNavPortfolioTitle initialTitle={initialPortfolioTitle} />
+            <CompactNavPortfolioTitle initialTitle={initialPortfolioTitle} customColors={customColors} />
           </div>
         </div>
       </div>
@@ -173,7 +173,7 @@ export default async function ArtistPage(
       <section 
         id="portfolio-shell" 
         style={{ 
-          backgroundColor: customColors.foreground,
+          backgroundColor: customColors.text,
           color: customColors.background 
         }}
       >

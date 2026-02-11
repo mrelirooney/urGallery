@@ -54,7 +54,7 @@ export default function Pagination({ totalPages, currentPage, onChangePage, cust
             return (
               <button
                 key={idx}
-                className="w-10 h-10 text-sm rounded-xs border border-[var(--artist-background)] transition-colors"
+                className="w-10 h-10 text-sm rounded-xs transition-colors"
                 style={{
                   backgroundColor: isActive ? bg : fg,
                   color: isActive ? fg : bg,

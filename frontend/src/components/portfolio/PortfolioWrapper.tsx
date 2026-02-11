@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { MoreVertical } from "lucide-react";
 import PortfolioTitle from "./primitives/PortfolioTitle";
 import Pagination from "./primitives/Pagination";
 import PageRenderer, {
@@ -167,16 +168,38 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
   return (
     <section 
       className="mx-auto max-w-full md:max-w-7xl flex-col justify-between"
-      style={{ color: customColors?.background || '#faf7f2' }}
+      style={{ 
+        backgroundColor: customColors?.text || '#11100e',
+        color: customColors?.background || '#faf7f2',
+       }}
     >
       <div className="min-h-[85vh] md:min-h-[85vh] w-full max-w-7xl pt-8 pb-4 md:pt-8 md:pb-8 flex flex-col justify-between gap-6">
         <div className="flex items-center justify-between hidden md:flex">
-          <PortfolioTitle
-            text={portfolioTitle}
-            align="left"
-            size="xs"
-            color={customColors?.background}
-          />
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => {
+              const event = new CustomEvent("portfolio-menu-toggle");
+              window.dispatchEvent(event);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                const event = new CustomEvent("portfolio-menu-toggle");
+                window.dispatchEvent(event);
+              }
+            }}
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer"
+            aria-label="Open portfolio menu"
+          >
+            <MoreVertical size={20} style={{ color: customColors?.background }} />
+            <PortfolioTitle
+              text={portfolioTitle}
+              align="left"
+              size="xs"
+              color={customColors?.background}
+            />
+          </div>
 
           {/* Only shows for the owner (logic is inside EditPortfolioButton) */}
           <EditPortfolioButton artistSlug={artistSlug} portfolioSlug={slug} />

@@ -58,15 +58,14 @@ export default function Navbar() {
   const menuRef = useRef<HTMLDivElement | null>(null);
   const router = useRouter();
   
-  // Check if we're on an artist profile page
-  // Pattern: /slug (no sub-paths like /edit, /login, etc.)
-  const isArtistProfilePage = pathname && 
-  /^\/[^\/]+$/.test(pathname) && 
+  // Check if we're on any artist page (profile, portfolio, or portfolio/edit)
+  const isArtistPage = pathname && 
+  pathname !== '/' &&
   !pathname.startsWith('/login') &&
   !pathname.startsWith('/signup') &&
   !pathname.startsWith('/settings') &&
   !pathname.startsWith('/sandbox') &&
-  pathname !== '/';
+  /^\/[^\/]+(\/[^\/]+)*$/.test(pathname);
   const hideNavbar =
   pathname?.startsWith("/portfolio-test") ||      // dev editor route
   pathname?.includes("/editor");                  // future real editor routes
@@ -124,10 +123,10 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [menuOpen]);
 
-  // Listen for portfolio menu toggle from compact navbar (phone view)
+  // Listen for portfolio menu toggle from compact navbar / portfolio title click
   useEffect(() => {
     function handlePortfolioMenuToggle() {
-      if (isArtistProfilePage) {
+      if (isArtistPage) {
         setOpen(true);
       }
     }
@@ -137,7 +136,7 @@ export default function Navbar() {
     return () => {
       window.removeEventListener("portfolio-menu-toggle", handlePortfolioMenuToggle);
     };
-  }, [isArtistProfilePage]);
+  }, [isArtistPage]);
 
   // --- 3. Handlers ---
   async function handleLogout() {
@@ -155,8 +154,8 @@ export default function Navbar() {
   return (
     <>
       {/* Portfolio Menu */}
-      {isArtistProfilePage && (
-        <PortfolioMenu isOpen={open} onClose={() => setOpen(false)} />
+      {isArtistPage && (
+        <PortfolioMenu isOpen={open} onClose={() => setOpen(false)} customColors={customColors ?? undefined} />
       )}
 
       <header 
@@ -164,11 +163,11 @@ export default function Navbar() {
         className="sticky top-0 z-50"
         style={{ backgroundColor: customColors?.background || 'var(--background)' }}
       >
-        <div className="mx-auto max-w-6xl px-4 md:px-8 h-14 flex items-center justify-between">
+        <div className="mx-auto max-w-6xl px-4 md:px-0 lg:px-0 h-14 flex items-center justify-between">
         {/* Left: Back arrow (mobile/tablet only) OR Logo + Hamburger (desktop) */}
         <div className="flex items-center">
-          {/* Mobile/Tablet: Back arrow (only on artist profile pages) */}
-          {isArtistProfilePage && (
+          {/* Mobile/Tablet: Back arrow (only on artist pages) */}
+          {isArtistPage && (
             <button
               onClick={() => router.push("/")}
               className="lg:hidden rounded-md transition mr-3"
@@ -179,8 +178,8 @@ export default function Navbar() {
             </button>
           )}
           
-          {/* Desktop: Hamburger (only on artist profile pages) */}
-          {isArtistProfilePage && (
+          {/* Desktop: Hamburger (only on artist pages) */}
+          {isArtistPage && (
             <button
               onClick={() => setOpen(!open)}
               className="hidden lg:block rounded-md transition"
@@ -195,7 +194,7 @@ export default function Navbar() {
           <Link 
             href="/" 
             aria-label="Home" 
-            className={`${isArtistProfilePage ? "lg:ml-3" : ""} ${isArtistProfilePage ? "hidden lg:block" : ""}`}
+            className={`${isArtistPage ? "lg:ml-3" : ""} ${isArtistPage ? "hidden lg:block" : ""}`}
           >
             <Logo className="h-5 w-auto" />
           </Link>
@@ -208,8 +207,8 @@ export default function Navbar() {
         ) : user ? (
           // --- Signed-in view ---
           <div className="flex items-center gap-3">
-            {/* Mobile/Tablet: Hamburger on right (only on artist profile pages) */}
-            {isArtistProfilePage && (
+            {/* Mobile/Tablet: Hamburger on right (only on artist pages) */}
+            {isArtistPage && (
               <button
                 onClick={() => setOpen(!open)}
                 className="lg:hidden rounded-md text-[var(--light-brown)] transition"
@@ -225,7 +224,7 @@ export default function Navbar() {
                 <SearchInput
                   variant="nav"
                   placeholder="Search…"
-                  accentColor={isArtistProfilePage ? customColors?.text : undefined}
+                  accentColor={isArtistPage ? customColors?.text : undefined}
                 />
               </div>
               <div className="relative " ref={menuRef}>
@@ -297,7 +296,7 @@ export default function Navbar() {
             </div>
             
             {/* Mobile/Tablet: Avatar only (when not on artist profile page) */}
-            {!isArtistProfilePage && (
+            {!isArtistPage && (
               <div className="lg:hidden relative" ref={menuRef}>
                 <AvatarButton
                   size={36}
@@ -370,7 +369,7 @@ export default function Navbar() {
           // --- Logged-out view ---
           <nav className="flex items-center gap-4 text-sm">
             {/* Mobile/Tablet: Hamburger on right (only on artist profile pages) */}
-            {isArtistProfilePage && (
+            {isArtistPage && (
               <button
                 onClick={() => setOpen(!open)}
                 className="lg:hidden rounded-md text-[var(--light-brown)] transition"
@@ -380,8 +379,8 @@ export default function Navbar() {
               </button>
             )}
             
-            {/* Login/SignUp buttons - hidden on mobile/tablet for artist profile pages */}
-            <div className={isArtistProfilePage ? "hidden lg:flex items-center gap-4" : "flex items-center gap-4"}>
+            {/* Login/SignUp buttons - hidden on mobile/tablet for artist pages */}
+            <div className={isArtistPage ? "hidden lg:flex items-center gap-4" : "flex items-center gap-4"}>
               <Link
                 href="/login"
                 className="px-3 py-1.5 border border-white/60 rounded-xs bg-(--foreground)/0 text-white/60 hover:bg-(--foreground)/90 hover:text-black transition-opacity"

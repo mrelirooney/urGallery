@@ -33,11 +33,16 @@ export default async function PortfolioPage({ params }: ArtistPortfolioPageProps
   return (
     <>
       <ColorThemeSetter colors={customColors} />
-      <PortfolioWrapper
-        slug={portfolioSlug}
-        artistSlug={artistSlug}
-        customColors={customColors}
-      />
+      <div
+        className="min-h-full"
+        style={{ backgroundColor: customColors.text }}
+      >
+        <PortfolioWrapper
+          slug={portfolioSlug}
+          artistSlug={artistSlug}
+          customColors={customColors}
+        />
+      </div>
     </>
   );
 }

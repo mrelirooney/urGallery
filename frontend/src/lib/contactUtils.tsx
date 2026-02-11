@@ -54,8 +54,10 @@ export function detectPlatform(url: string): PlatformType | null {
   return null;
 }
 
-export function getPlatformIcon(platform: PlatformType, size: number = 20): React.ReactNode {
-  const iconProps = { size, className: "text-neutral-700" };
+export function getPlatformIcon(platform: PlatformType, size: number = 20, iconColor?: string): React.ReactNode {
+  const iconProps = iconColor
+    ? { size, style: { color: iconColor } }
+    : { size };
   
   switch (platform) {
     case 'instagram':
@@ -85,7 +87,7 @@ export function getPlatformIcon(platform: PlatformType, size: number = 20): Reac
   }
 }
 
-export function parseContacts(profile: any): ContactItem[] {
+export function parseContacts(profile: any, iconColor?: string): ContactItem[] {
   const contacts: ContactItem[] = [];
   
   // Use contact_order if available to preserve user's drag-and-drop order
@@ -113,7 +115,7 @@ export function parseContacts(profile: any): ContactItem[] {
         contacts.push({
           platform,
           url,
-          icon: getPlatformIcon(platform),
+          icon: getPlatformIcon(platform, 20, iconColor),
         });
       }
     }
