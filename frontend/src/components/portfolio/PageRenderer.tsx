@@ -1,6 +1,12 @@
 // frontend/src/components/portfolio/PageRenderer.tsx
 import React from "react";
 import MediaSlot from "./primitives/MediaSlot";
+import {
+  HeroLayoutSquare00Template,
+  HeroLayoutSquare01Template,
+  TextOnlyTemplate,
+  MediaOnlyTemplate,
+} from "./templates";
 
 /** All supported layouts – must match Django choices exactly */
 export type LayoutType =
@@ -9,7 +15,9 @@ export type LayoutType =
   | "TwoColumnMediaOnly"
   | "TwoColumnMediaWithText"
   | "TextOnly"
-  | "MediaOnly";
+  | "MediaOnly"
+  | "HeroLayoutSquare00"
+  | "HeroLayoutSquare01";
 
 export type MediaShapeType = "1:1" | "9:16" | "16:9" | "4:5" | "5:4" | "21:9";
 
@@ -201,10 +209,166 @@ export default function PageRenderer({
       );
 
     case "MediaOnly":
-      return <div className="w-full">{media}</div>;
+      return (
+        <div className="relative w-full min-h-[40vh]">
+          <MediaOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none" />
+          <div className="relative z-10 w-full">{media}</div>
+        </div>
+      );
 
     case "TextOnly":
-      return <div className="w-full">{text}</div>;
+      return (
+        <div className="relative w-full min-h-[40vh]">
+          <TextOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none" />
+          <div className="relative z-10 w-full">{text}</div>
+        </div>
+      );
+
+    case "HeroLayoutSquare01":
+      return (
+        <div
+          className="relative w-full min-h-[50vh]">
+          <div className="absolute inset-0 flex justify-center items-start z-0">
+            <HeroLayoutSquare01Template className="w-full h-full max-w-7xl pointer-events-none" />
+          </div>
+          <div className="relative z-10 w-full max-w-7xl mx-auto px-0">
+          <div className="grid grid-cols-[1fr_1fr] gap-8 md:gap-12 items-stretch min-h-[50vh] py-8 ">
+              {/* Col A: image (left) – matches editor */}
+              <div
+                className="shrink-0 self-center w-[425px] aspect-square overflow-hidden flex items-center justify-center"
+                style={{ boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)" }}
+              >
+                {page.mediaSrc ? (
+                  <img
+                    src={page.mediaSrc}
+                    alt="Portfolio media"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div
+                    className="flex h-full w-full items-center justify-center text-sm"
+                    style={{
+                      color: "var(--artist-text, #faf7f2)",
+                      opacity: 0.6,
+                      boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)",
+                    }}
+                  >
+                    No media
+                  </div>
+                )}
+              </div>
+              {/* Col B: text (right) – vertically centered, matches editor */}
+              <div className="flex flex-col gap-4 min-w-0 self-stretch flex-1 min-h-0">
+                <div className="flex-1 min-h-[2rem]" aria-hidden />
+                <div className="flex flex-col gap-4">
+                  <h2
+                    className="text-4xl md:text-5xl font-bold leading-tight"
+                    style={{ color: "var(--artist-background, #11100e)" }}
+                  >
+                    {page.title || "Header"}
+                  </h2>
+                  <p
+                    className="text-xl whitespace-pre-line"
+                    style={{ color: "var(--artist-background, #11100e)", opacity: 0.8 }}
+                  >
+                    {page.title2 || "Subheader"}
+                  </p>
+                </div>
+                <div className="flex-1 min-h-[2rem]" aria-hidden />
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+
+    case "HeroLayoutSquare00":
+      return (
+        <div
+          className="relative w-full"
+          style={{ backgroundColor: "var(--artist-background, #11100e)" }}
+        >
+          <HeroLayoutSquare00Template className="absolute inset-0 w-full h-full z-0 pointer-events-none" />
+          <div className="relative z-10 max-w-6xl mx-auto px-6 md:px-10 py-12 md:py-16 grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+            {/* Left column: headline + paragraph */}
+            <div className="md:col-span-5 flex flex-col gap-4">
+              <div className="flex items-center gap-2">
+                <div
+                  className="h-0.5 w-12"
+                  style={{ backgroundColor: "var(--artist-text, #faf7f2)" }}
+                />
+                <div
+                  className="h-1 w-8"
+                  style={{ backgroundColor: "var(--artist-accent, #c96a4a)" }}
+                />
+              </div>
+              <h2
+                className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight"
+                style={{
+                  color: "transparent",
+                  WebkitTextStroke: "2px var(--artist-text, #faf7f2)",
+                  textShadow: "-1px -1px 0 var(--artist-text, #faf7f2), 1px -1px 0 var(--artist-text, #faf7f2), -1px 1px 0 var(--artist-text, #faf7f2), 1px 1px 0 var(--artist-text, #faf7f2)",
+                }}
+              >
+                {page.title}
+              </h2>
+              <p
+                className="max-w-xl whitespace-pre-line text-lg"
+                style={{ color: "var(--artist-text, #faf7f2)", opacity: 0.9 }}
+              >
+                {page.description}
+              </p>
+            </div>
+            {/* Center: large centered square image with overlay */}
+            <div className="md:col-span-7 flex justify-center items-center">
+              <div className="relative w-full max-w-lg">
+                <div
+                  className="relative aspect-square w-full max-w-lg mx-auto overflow-hidden border-4"
+                  style={{ borderColor: "var(--artist-accent, #c96a4a)" }}
+                >
+                  {page.mediaSrc ? (
+                    <img
+                      src={page.mediaSrc}
+                      alt="Portfolio media"
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div
+                      className="flex h-full w-full items-center justify-center text-sm"
+                      style={{ color: "var(--artist-text, #faf7f2)", opacity: 0.6 }}
+                    >
+                      No media
+                    </div>
+                  )}
+                  <div
+                    className="absolute bottom-4 right-4 z-20 px-4 py-2 border"
+                    style={{
+                      backgroundColor: "var(--artist-background, #11100e)",
+                      borderColor: "var(--artist-text, #faf7f2)",
+                    }}
+                  >
+                    <span
+                      className="text-sm uppercase tracking-wide"
+                      style={{ color: "var(--artist-text, #faf7f2)" }}
+                    >
+                      {page.title2 || ""}
+                    </span>
+                  </div>
+                </div>
+                <div className="mt-4 flex flex-col items-end">
+                  <div
+                    className="h-1.5 w-16"
+                    style={{ backgroundColor: "var(--artist-accent, #c96a4a)" }}
+                  />
+                  <div
+                    className="h-0.5 w-full mt-1"
+                    style={{ backgroundColor: "var(--artist-text, #faf7f2)", opacity: 0.5 }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
 
     default:
       // Fallback so unknown layout still shows *something*

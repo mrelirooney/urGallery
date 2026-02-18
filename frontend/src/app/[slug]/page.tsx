@@ -68,7 +68,7 @@ export default async function ArtistPage(
   
   const raw = profile?.avatar_url;
   const base =
-    process.env.NEXT_PUBLIC_API_BASE || "http://backend:8000";
+    process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
 
   let src: string;
 
@@ -99,11 +99,11 @@ export default async function ArtistPage(
   return (
     <>
       <ColorThemeSetter colors={customColors} />
-      <main className="flex flex-col">
+      <main className="flex flex-col relative z-50">
         <ArtistLandingMotion pagesCount={firstPortfolio?.pages_count ?? 1} />
 
         {/* Artist Header Section */}
-        <section style={{ backgroundColor: customColors.background }} className="relative">
+        <section style={{ backgroundColor: customColors.background }} className="relative z-50">
         {/* Banner Image - Full width, outside container */}
         {profile?.banner_image_url && (
           <div className="absolute top-0 left-0 right-0 h-30 md:h-[33vh] overflow-hidden">
@@ -116,8 +116,8 @@ export default async function ArtistPage(
         )}
         
         {/* Content Container - full width on mobile, constrained on larger screens */}
-        <div className="w-full md:mx-auto md:max-w-6xl px-0 md:px-10 lg:px-0">
-          <div className="py-10 lg:py-10 relative z-10 px-4 md:px-0">
+        <div className="w-full md:mx-auto md:max-w-6xl px-0 md:px-10 lg:px-0 relative z-50">
+          <div className="py-10 lg:py-10 relative z-50 px-4 md:px-0 ">
             <ArtistHeader profile={profile} customColors={customColors} />
           </div>
         </div>
@@ -127,7 +127,7 @@ export default async function ArtistPage(
       <div
         id="artist-profile-compact"
         style={{ backgroundColor: customColors.background }}
-        className="sticky mt-20 top-0 z-20 hidden backdrop-blur"
+        className="sticky mt-20 top-0 z-50 hidden backdrop-blur"
       >
         <div className="mx-auto max-w-6xl h-20 md:h-16 px-4 md:px-8 lg:px-0 flex flex-col">
           <div className="pt-4 lg:pt-3 flex items-center justify-between">

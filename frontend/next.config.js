@@ -25,18 +25,36 @@
 // - Production should run a full build before deploy.
 // ============================================================
 
+// Parse API base URL for Next.js image domains (hostname + port)
+const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+let apiHostname = "localhost";
+let apiPort = "8000";
+try {
+  const url = new URL(apiBase);
+  apiHostname = url.hostname;
+  apiPort = url.port || (url.protocol === "https:" ? "443" : "80");
+} catch (_) {
+  // fallback to defaults
+}
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
     remotePatterns: [
       {
         protocol: "http",
-        hostname: process.env.NEXT_PUBLIC_API_BASE?.split("/")[2],
-        port: process.env.NEXT_PUBLIC_API_BASE?.split("/")[3],
+        hostname: apiHostname,
+        port: apiPort,
         pathname: "/media/**",
-      }
-    ]
-  }
+      },
+      {
+        protocol: "https",
+        hostname: apiHostname,
+        port: apiPort,
+        pathname: "/media/**",
+      },
+    ],
+  },
 };
 
 module.exports = nextConfig;

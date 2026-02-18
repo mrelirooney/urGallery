@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { EditorAPI } from "@/lib/auth/client";
 import Container from "@/components/layout/Container";
 import PortfolioEditorShell from "@/components/portfolio/editor/PortfolioEditorShell";
+import ColorThemeSetter from "@/components/artist/ColorThemeSetter";
 import type {
   PortfolioPageData,
   MediaShapeType,
@@ -11,10 +12,17 @@ import type {
 } from "@/components/portfolio/editor/PageRenderer";
 import { useParams } from "next/navigation";
 
+const DEFAULT_COLORS = {
+  background: "#11100e",
+  foreground: "#11100e",
+  text: "#faf7f2",
+  accent: "#c96a4a",
+};
+
 export const dynamic = "force-dynamic";
 
 // Base URL for turning /media/... paths into full URLs
-const API_BASE = (process.env.NEXT_PUBLIC_API_BASE ?? "http://backend:8000")
+const API_BASE = (process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8000")
   .replace(/\/+$/, "")
   .replace(/\/api$/, "");
 
@@ -54,6 +62,35 @@ export default function EditPortfolioPage() {
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [customColors, setCustomColors] = useState<{
+    background: string;
+    foreground: string;
+    text: string;
+    accent: string;
+  }>(DEFAULT_COLORS);
+
+  // Fetch artist profile for custom colors (portfolio editor uses these)
+  useEffect(() => {
+    if (!slug || typeof slug !== "string") return;
+    let cancelled = false;
+    const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8000";
+    fetch(`${API_BASE}/api/artists/${slug}/`, { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (cancelled || !data?.profile) return;
+        const p = data.profile;
+        setCustomColors({
+          background: p.background_color || DEFAULT_COLORS.background,
+          foreground: p.foreground_color || DEFAULT_COLORS.foreground,
+          text: p.text_color || DEFAULT_COLORS.text,
+          accent: p.accent_color || DEFAULT_COLORS.accent,
+        });
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [slug]);
 
   useEffect(() => {
   let cancelled = false;
@@ -121,7 +158,7 @@ export default function EditPortfolioPage() {
     .sort((a, b) => a.order - b.order)
     .map((page) => ({
       id: page.id,
-      layoutType: page.layout,
+      layoutType: (page.layout || "HeroLayoutSquare00") as LayoutType,
       title: page.title,
       description: page.description,
       mediaSrc: page.media_image
@@ -147,8 +184,9 @@ export default function EditPortfolioPage() {
     apiPortfolio.privacy === "public" ? "public" : "private";
 
   return (
-    <main className="py-0">
-      <Container className="max-w-none px-0">
+    <main className="flex-1 flex flex-col min-h-0 py-0">
+      <ColorThemeSetter colors={customColors} />
+      <div className="w-full min-w-0 flex-1 flex flex-col min-h-0">
         <PortfolioEditorShell
           portfolioTitle={apiPortfolio.title}
           portfolioSlug={apiPortfolio.slug}
@@ -160,7 +198,7 @@ export default function EditPortfolioPage() {
           // initialDescription={apiPortfolio.description}
           // hasUnpublishedChanges={apiPortfolio.has_unpublished_changes}
         />
-      </Container>
+      </div>
     </main>
   );
 }

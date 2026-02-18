@@ -8,14 +8,13 @@ import PageRenderer, {
   PortfolioPageData,
 } from "./PageRenderer";
 import LayoutPickerModal from "./LayoutPickerModal";
-import ShapePickerModal from "./ShapePickerModal";
 import PrivacyModal from "./PrivacyModal";
 import useHistory from "@/hooks/useHistory";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://backend:8000";
+  process.env.NEXT_PUBLIC_API_BASE ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 const getCsrfToken = (): string => {
   if (typeof document === "undefined") return "";
@@ -49,7 +48,7 @@ export interface PortfolioEditorShellProps {
 
 const createEmptyPage = (): PortfolioPageData => ({
   id: `page-${crypto.randomUUID?.() ?? Math.random().toString(36).slice(2)}`,
-  layoutType: "MediaLeft_TextRight",
+  layoutType: "HeroLayoutSquare00",
   title: "",
   description: "",
   mediaSrc: null,
@@ -116,7 +115,6 @@ export default function PortfolioEditorShell({
 
   // -------- Modals --------
   const [isLayoutModalOpen, setIsLayoutModalOpen] = useState(false);
-  const [isShapeModalOpen, setIsShapeModalOpen] = useState(false);
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
 
   // -------- Derived values --------
@@ -372,11 +370,8 @@ export default function PortfolioEditorShell({
 
   const handleOpenPrivacy = () => setIsPrivacyModalOpen(true);
   const handleOpenLayout = () => setIsLayoutModalOpen(true);
-  const handleOpenShape = () => setIsShapeModalOpen(true);
-
   const handleClosePrivacy = () => setIsPrivacyModalOpen(false);
   const handleCloseLayout = () => setIsLayoutModalOpen(false);
-  const handleCloseShape = () => setIsShapeModalOpen(false);
 
   const savePortfolio = async (
     nextPrivacy?: PrivacyState,
@@ -694,7 +689,10 @@ export default function PortfolioEditorShell({
 
   // -------- Render --------
   return (
-    <div className="w-full mx-auto pt-5 bg-[var(--light-brown)]">
+    <div
+      className="w-full min-w-0 flex-1 flex flex-col min-h-0 pt-5"
+      style={{ backgroundColor: "var(--artist-background, #11100e)" }}
+    >
       {/* Top bar with thumbnails + actions */}
       <EditorTopBar
         pages={pages}
@@ -714,38 +712,19 @@ export default function PortfolioEditorShell({
         onPublish={handlePublish}
         onChangeLayout={handleOpenLayout}
         disableDelete={pages.length <= 1}
+        portfolioTitle={title}
+        onChangePortfolioTitle={handleChangePortfolioTitle}
       />
 
       {/* Canvas area */}
-      <section className="text-neutral-50 shadow-lg">
-        {/* Title + controls strip */}
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => handleChangePortfolioTitle(e.target.value)}
-            placeholder="Portfolio title"
-            className="min-w-[220px] rounded border border-neutral-600 bg-transparent px-3 py-1 text-sm uppercase tracking-wide text-neutral-100 focus:border-neutral-300 focus:outline-none"
-          />
-
-          <div className="flex items-center gap-4 text-sm">
-            <button
-              type="button"
-              onClick={handleOpenShape}
-              className="rounded-full border border-neutral-500 px-3 py-1 text-neutral-200 hover:border-neutral-300 hover:text-white"
-            >
-              Frames {/* Media Shapes */}
-            </button>
-            <button
-              type="button"
-              onClick={handleOpenLayout}
-              className="rounded-full border border-neutral-500 px-3 py-1 text-neutral-200 hover:border-neutral-300 hover:text-white"
-            >
-              Layouts
-            </button>
-          </div>
-        </div>
-
+      <section
+        className="flex-1 justify-center items-center min-w-0 min-h-0 shadow-lg flex flex-col -mt-14"
+        style={{
+          backgroundColor: "var(--artist-text, #faf7f2)",
+          color: "var(--artist-background, #11100e)",
+        }}
+      >
+        <div className="w-full max-w-6xl mx-auto shrink-0">
         {/* Actual page canvas */}
         <div className="flex justify-center">
           <div className="w-full">
@@ -756,13 +735,12 @@ export default function PortfolioEditorShell({
               onChangeTitle={handleChangePageTitle}
               onChangeDescription={handleChangePageDescription}
               onChangeImage={handleChangeImage}
-              onChangeImage2={handleChangeImage2}
               onChangeTitle2={handleChangeTitle2}
-              onChangeDescription2={handleChangeDescription2}
               onChangeLayout={handleChangeLayout}
               onChangeMediaShape={handleChangeMediaShape}
             />
           </div>
+        </div>
         </div>
       </section>
 
@@ -775,15 +753,6 @@ export default function PortfolioEditorShell({
             currentLayout={currentPage.layoutType}
             onSelectLayout={(layout) =>
               handleChangeLayout(currentPageIndex, layout)
-            }
-          />
-
-          <ShapePickerModal
-            isOpen={isShapeModalOpen}
-            onClose={handleCloseShape}
-            currentShape={currentPage.mediaShape2 ?? "1:1"}
-            onSelectShape={(shape) =>
-              handleChangeMediaShape(currentPageIndex, shape)
             }
           />
 

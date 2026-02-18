@@ -2,6 +2,12 @@
 
 import React from "react";
 import { LayoutType } from "./PageRenderer";
+import {
+  HeroLayoutSquare00Template,
+  HeroLayoutSquare01Template,
+  TextOnlyTemplate,
+  MediaOnlyTemplate,
+} from "../templates";
 
 interface LayoutPickerModalProps {
   isOpen: boolean;
@@ -10,13 +16,15 @@ interface LayoutPickerModalProps {
   onSelectLayout: (layout: LayoutType) => void;
 }
 
-const LAYOUT_OPTIONS: { value: LayoutType; label: string; icon: string; disabled?: boolean }[] = [
-  { value: "MediaLeft_TextRight", label: "Media Left • Text Right", icon: "◧" },
-  { value: "MediaRight_TextLeft", label: "Media Right • Text Left", icon: "◨" },
-  { value: "TwoColumnMediaOnly", label: "Two Column Media Only", icon: "▐▐", disabled: true },
-  { value: "TwoColumnMediaWithText", label: "Two Column Media With Text", icon: "⫸", disabled: true },
-  { value: "TextOnly", label: "Text Only", icon: "≡" },
-  { value: "MediaOnly", label: "Media Only", icon: "▭" },
+const LAYOUT_OPTIONS: {
+  value: LayoutType;
+  label: string;
+  Icon: React.ComponentType<{ className?: string }>;
+}[] = [
+  { value: "HeroLayoutSquare00", label: "Title Page 1", Icon: HeroLayoutSquare00Template },
+  { value: "HeroLayoutSquare01", label: "Title Page 2 – Image Right", Icon: HeroLayoutSquare01Template },
+  { value: "TextOnly", label: "Text Only", Icon: TextOnlyTemplate },
+  { value: "MediaOnly", label: "Media Only", Icon: MediaOnlyTemplate },
 ];
 
 export default function LayoutPickerModal({
@@ -52,32 +60,26 @@ export default function LayoutPickerModal({
           </button>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        {LAYOUT_OPTIONS.map((option) => (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {LAYOUT_OPTIONS.map((option) => (
             <button
               key={option.value}
-              onClick={() => !option.disabled && handleSelect(option.value)}
-              disabled={option.disabled}
+              onClick={() => handleSelect(option.value)}
               className={`
-                p-6 rounded-lg border-2 transition-all relative
+                p-6 rounded-lg border-2 transition-all
                 ${
-                  option.disabled
-                    ? "border-neutral-800 bg-neutral-900/50 cursor-not-allowed opacity-50"
-                    : currentLayout === option.value
-                      ? "border-white bg-neutral-800"
-                      : "border-neutral-700 hover:border-neutral-500 bg-neutral-800/50"
+                  currentLayout === option.value
+                    ? "border-white bg-neutral-800"
+                    : "border-neutral-700 hover:border-neutral-500 bg-neutral-800/50"
                 }
               `}
             >
-              <div className="text-5xl mb-3">{option.icon}</div>
+              <div className="w-full h-24 mb-3 flex items-center justify-center [&_svg]:w-full [&_svg]:h-full [&_svg]:max-w-[120px] [&_svg]:max-h-[80px]">
+                <option.Icon className="text-neutral-100" />
+              </div>
               <div className="text-sm text-neutral-200 font-medium">
                 {option.label}
               </div>
-              {option.disabled && (
-                <div className="text-xs text-neutral-500 mt-2 font-normal">
-                  Coming Soon
-                </div>
-              )}
             </button>
           ))}
         </div>

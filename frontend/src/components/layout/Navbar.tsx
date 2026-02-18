@@ -160,7 +160,7 @@ export default function Navbar() {
 
       <header 
         id="site-navbar" 
-        className="sticky top-0 z-50"
+        className="sticky top-0 z-55"
         style={{ backgroundColor: customColors?.background || 'var(--background)' }}
       >
         <div className="mx-auto max-w-6xl px-4 md:px-0 lg:px-0 h-14 flex items-center justify-between">
@@ -239,7 +239,7 @@ export default function Navbar() {
                   <div
                     role="menu"
                     aria-label="User menu"
-                    className="absolute right-0 mt-2 w-44 rounded-md border border-gray-200 bg-white shadow-lg z-50"
+                    className="absolute right-0 mt-2 w-44 rounded-md border border-gray-200 bg-white shadow-lg z-55"
                     onKeyDown={(e) => {
                       if (e.key !== "Tab") return;
                       const container = menuRef.current;

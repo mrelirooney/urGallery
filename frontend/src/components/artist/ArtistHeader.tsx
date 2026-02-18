@@ -27,7 +27,7 @@ export default function ArtistHeader({ profile, customColors }: Props) {
   const origin =
     (process.env.NEXT_PUBLIC_API_BASE ?? "")
       .replace(/\/+$/, "")
-      .replace(/\/api$/, "") || "http://backend:8000";
+      .replace(/\/api$/, "") || "http://localhost:8000";
 
   const src =
   profile?.avatar_url && profile.avatar_url.length > 0

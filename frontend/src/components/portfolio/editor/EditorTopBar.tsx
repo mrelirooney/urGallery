@@ -30,6 +30,10 @@ export type EditorTopBarProps = {
 
   // open the layout picker for the current page
   onChangeLayout: () => void;
+
+  // portfolio title (in bar below thumbnails)
+  portfolioTitle: string;
+  onChangePortfolioTitle: (value: string) => void;
 };
 
 export default function EditorTopBar({
@@ -52,13 +56,24 @@ export default function EditorTopBar({
 
   onSelectPage,
   onReorder,
+  onChangeLayout,
+  portfolioTitle,
+  onChangePortfolioTitle,
 }: EditorTopBarProps) {
   // index of the thumbnail currently being dragged
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   return (
-    <div className="w-full text-neutral-100 bg-[var(--light-brown)] flex flex-col gap-0">
+    <>
+    <div
+      className="w-full px-0 text-neutral-100 flex flex-col gap-0 relative z-50"
+      style={{
+        backgroundColor: "var(--artist-background, #11100e)",
+        color: "var(--artist-text, #faf7f2)",
+      }}
+    >
+      <div className="max-w-6xl mx-auto px-6 w-full flex flex-col gap-0">
       {/* --- Top row buttons --- */}
       <div className="flex items-center justify-between">
         <button onClick={onCancel} className="text-sm opacity-80 hover:opacity-100">
@@ -66,35 +81,35 @@ export default function EditorTopBar({
         </button>
 
         <div className="flex gap-3">
-          <button disabled={!canUndo} onClick={onUndo} className="btn-small">
+          <button disabled={!canUndo} onClick={onUndo} className="btn-small text-sm">
             Undo
           </button>
-          <button disabled={!canRedo} onClick={onRedo} className="btn-small">
+          <button disabled={!canRedo} onClick={onRedo} className="btn-small text-sm">
             Redo
           </button>
 
-          <button onClick={onAdd} className="btn-small">
+          <button onClick={onAdd} className="btn-small text-sm">
             Add
           </button>
-          <button disabled={disableDelete} onClick={onDeletePage} className="btn-small">
+          <button disabled={disableDelete} onClick={onDeletePage} className="btn-small text-sm">
             Delete
           </button>
 
-          <button onClick={onOpenPrivacy} className="btn-small">
+          <button onClick={onOpenPrivacy} className="btn-small text-sm">
             Privacy
           </button>
 
-          <button onClick={onSaveDraft} className="btn-small">
+          <button onClick={onSaveDraft} className="btn-small text-sm">
             Save
           </button>
-          <button onClick={onPublish} className="btn-primary">
+          <button onClick={onPublish} className="btn-primary text-sm">
             Publish
           </button>
         </div>
       </div>
-
+      </div>
       {/* --- Thumbnails row --- */}
-      <div className="flex gap-2 overflow-x-auto pt-2 pb-8">
+      <div className="flex gap-2 overflow-x-auto pt-2 pb-2 px-45">
         {pages.map((page, index) => {
           const isActive = index === currentPageIndex;
           const isDragged = index === dragIndex;
@@ -153,6 +168,44 @@ export default function EditorTopBar({
           );
         })}
       </div>
+      </div>
+      
+      <div
+        className="w-full text-neutral-100 flex flex-col gap-0 relative z-50"
+      >
+      {/* --- Portfolio title + Layouts (full-width strip, canvas background) --- */}
+      <div
+        className="w-full flex flex-wrap items-center justify-between gap-4 py-3.5 px-6 relative z-10"
+        style={{ backgroundColor: "transparent" }}
+      >
+        <div className="max-w-6xl px-6 mx-auto w-full flex flex-wrap items-center justify-between gap-4 relative z-7">
+          <input
+            type="text"
+            value={portfolioTitle}
+            onChange={(e) => onChangePortfolioTitle(e.target.value)}
+            placeholder="Portfolio title"
+            className="min-w-[220px] rounded border bg-transparent px-3 py-1 text-sm uppercase tracking-wide focus:border-neutral-500 focus:outline-none"
+            style={{
+              color: "var(--artist-background, #11100e)",
+              borderColor: "var(--artist-background, #11100e)",
+            }}
+          />
+          <button
+            type="button"
+            onClick={onChangeLayout}
+            className="rounded-full border px-3 py-1 text-sm"
+            style={{
+              color: "var(--artist-background, #11100e)",
+              borderColor: "var(--artist-background, #11100e)",
+            }}
+          >
+            Layouts
+          </button>
+        </div>
+      </div>
     </div>
+    </>
   );
+  
 }
+

@@ -56,14 +56,13 @@ export default function Pagination({ totalPages, currentPage, onChangePage, cust
                 key={idx}
                 className="w-10 h-10 text-sm rounded-xs transition-colors"
                 style={{
-                  backgroundColor: isActive ? bg : fg,
-                  color: isActive ? fg : bg,
+                  backgroundColor: "transparent",
+                  color: isActive ? bg : bg,
+                  opacity: isActive ? 1 : 0.5,
                 }}
                 onMouseEnter={(e) => {
                   if (!isActive) {
-                    e.currentTarget.style.backgroundColor = accent;
-                    e.currentTarget.style.color = bg;
-                    e.currentTarget.style.borderColor = accent;
+                 
                   }
                 }}
                 onMouseLeave={(e) => {
@@ -86,10 +85,10 @@ export default function Pagination({ totalPages, currentPage, onChangePage, cust
             color: customColors?.background || '#faf7f2',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = customColors?.accent || '#c96a4a';
+            
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'transparent';
+            
           }}
           onClick={goPrev}
           disabled={currentIndex === 0}
@@ -103,10 +102,10 @@ export default function Pagination({ totalPages, currentPage, onChangePage, cust
             color: customColors?.background || '#faf7f2',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = customColors?.accent || '#c96a4a';
+            
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'transparent';
+            
           }}
           onClick={goNext}
           disabled={currentIndex === totalPages - 1}

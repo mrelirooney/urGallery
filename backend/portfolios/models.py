@@ -95,6 +95,8 @@ class Portfolio(models.Model):
 class PortfolioPageLayout(models.TextChoices):
     MEDIA_LEFT_TEXT_RIGHT = "MediaLeft_TextRight", "Media Left • Text Right"
     MEDIA_RIGHT_TEXT_LEFT = "MediaRight_TextLeft", "Media Right • Text Left"
+    HERO_LAYOUT_SQUARE_00 = "HeroLayoutSquare00", "Title Page 1"
+    HERO_LAYOUT_SQUARE_01 = "HeroLayoutSquare01", "Title Page 2"
     TWO_COLUMN_MEDIA_ONLY = "TwoColumnMediaOnly", "Two Column Media Only"
     TWO_COLUMN_MEDIA_WITH_TEXT = "TwoColumnMediaWithText", "Two Column Media With Text"
     TEXT_ONLY = "TextOnly", "Text Only"
@@ -127,7 +129,7 @@ class Page(models.Model):
     layout = models.CharField(
         max_length=50,
         choices=PortfolioPageLayout.choices,
-        default=PortfolioPageLayout.MEDIA_LEFT_TEXT_RIGHT,
+        default=PortfolioPageLayout.HERO_LAYOUT_SQUARE_00,
     )
 
     # First column/media
@@ -273,7 +275,7 @@ class DraftPage(models.Model):
     layout = models.CharField(
         max_length=50,
         choices=PortfolioPageLayout.choices,
-        default=PortfolioPageLayout.MEDIA_LEFT_TEXT_RIGHT,
+        default=PortfolioPageLayout.HERO_LAYOUT_SQUARE_00,
     )
 
     # First column/media

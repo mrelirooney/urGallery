@@ -59,8 +59,8 @@ export default function Footer() {
   const footerAccent = customColors?.accent || '#c96a4a';
 
   return (
-    <footer style={{ backgroundColor: footerBg }}>
-      <Container className="h-auto md:h-14 flex flex-col md:flex-row items-center justify-space-between md:justify-between text-xs max-w-6xl py-3 md:py-0 gap-1 md:gap-0 opacity-70">
+    <footer style={{ backgroundColor: footerBg, position: 'relative', zIndex: 50 }}>
+      <Container className="h-auto md:h-14 flex flex-col md:flex-row items-center justify-space-between md:justify-between text-xs max-w-6xl px-16 py-3 md:py-0 gap-1 md:gap-0 opacity-70">
         {/* Mobile: Links first, Desktop: Links on right */}
         <nav className="flex items-center gap-12 order-1 md:order-2">
           {footerLinks.map((l) => (

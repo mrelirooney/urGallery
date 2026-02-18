@@ -163,15 +163,21 @@ MIDDLEWARE = [
 # - Domains MUST match exactly (https + www if used)
 # ============================================================
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-]
+# CORS: read from env (comma-separated), default includes both localhost variants
+# Browser treats localhost and 127.0.0.1 as different origins
+_CORS_ORIGINS_RAW = os.getenv(
+    "CORS_ALLOWED_ORIGINS",
+    "http://localhost:3000,http://127.0.0.1:3000",
+)
+CORS_ALLOWED_ORIGINS = [o.strip() for o in _CORS_ORIGINS_RAW.split(",") if o.strip()]
 CORS_ALLOW_CREDENTIALS = True
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-]
+
+# CSRF: same origins as CORS for consistency
+_CSRF_ORIGINS_RAW = os.getenv(
+    "CSRF_TRUSTED_ORIGINS",
+    _CORS_ORIGINS_RAW,
+)
+CSRF_TRUSTED_ORIGINS = [o.strip() for o in _CSRF_ORIGINS_RAW.split(",") if o.strip()]
 CSRF_COOKIE_SECURE = False
 SESSION_COOKIE_SECURE = False
 SECURE_SSL_REDIRECT = False

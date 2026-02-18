@@ -11,7 +11,7 @@ import PageRenderer, {
 import EditPortfolioButton from "@/components/portfolio/EditPortfolioButton";
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE ?? "http://backend:8000";
+  process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8000";
 
 
 type PortfolioWrapperProps = {
@@ -167,14 +167,14 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
 
   return (
     <section 
-      className="mx-auto max-w-full md:max-w-7xl flex-col justify-between"
+      className="mx-auto max-w-full md:max-w-6xl flex-col justify-between"
       style={{ 
         backgroundColor: customColors?.text || '#11100e',
         color: customColors?.background || '#faf7f2',
        }}
     >
-      <div className="min-h-[85vh] md:min-h-[85vh] w-full max-w-7xl pt-8 pb-4 md:pt-8 md:pb-8 flex flex-col justify-between gap-6">
-        <div className="flex items-center justify-between hidden md:flex">
+      <div className="min-h-[85vh] md:min-h-[85vh] w-full max-w-7xl pt-8 pb-4 md:pt-8 md:pb-8 flex flex-col justify-between relative z-20">
+        <div className="flex items-center justify-between hidden md:flex relative z-20">
           <div
             role="button"
             tabIndex={0}
@@ -189,7 +189,7 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
                 window.dispatchEvent(event);
               }
             }}
-            className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer"
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer relative z-20"
             aria-label="Open portfolio menu"
           >
             <MoreVertical size={20} style={{ color: customColors?.background }} />
@@ -205,13 +205,13 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
           <EditPortfolioButton artistSlug={artistSlug} portfolioSlug={slug} />
         </div>
 
-        <div className="max-h-[60vh] flex flex-col justify-start md:justify-center gap-6">
+        <div className="max-h-[60vh] flex flex-col justify-start md:justify-center gap-6 relative z-10">
           <PageRenderer
             pages={pages}
             currentPageIndex={currentPageIndex}
           />
         </div>
-        <div className="justify-end">
+        <div className="justify-end relative z-20">
           <Pagination
             totalPages={pages.length}
             currentPage={currentPageIndex + 1}
