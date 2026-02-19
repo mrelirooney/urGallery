@@ -365,7 +365,6 @@ export default function PageRenderer({
     return (
       <div
         className="relative w-full min-h-[50vh] "
-        style={{ backgroundColor: "var(--artist-text, #faf7f2)" }}
       >
         <div className="absolute inset-0 flex justify-center items-start z-0">
           <HeroLayoutSquare01Template className="w-full h-full max-w-7xl pointer-events-none" />

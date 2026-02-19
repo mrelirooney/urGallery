@@ -35,6 +35,7 @@ class ArtistProfileSerializer(serializers.ModelSerializer):
             "foreground_color",
             "text_color",
             "accent_color",
+            "font_family",
         )
 
     def get_avatar_url(self, obj):

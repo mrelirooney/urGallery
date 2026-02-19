@@ -2,6 +2,7 @@
 
 import React, { useCallback, useMemo, useState } from "react";
 import EditorTopBar from "./EditorTopBar";
+import ThemePatternLayer from "../../artist/ThemePatternLayer";
 import PageRenderer, {
   LayoutType,
   MediaShapeType,
@@ -44,6 +45,15 @@ export interface PortfolioEditorShellProps {
   artistSlug: string;
   /** Optional – used for the privacy modal link */
   portfolioSlug?: string;
+  /** Custom colors from artist profile */
+  customColors?: {
+    background: string;
+    foreground: string;
+    text: string;
+    accent: string;
+  };
+  /** Theme SVG URL for pattern background */
+  themeSvgUrl?: string | null;
 }
 
 const createEmptyPage = (): PortfolioPageData => ({
@@ -81,6 +91,8 @@ export default function PortfolioEditorShell({
   initialPageIndex = 0,
   initialPrivacy,
   portfolioSlug,
+  customColors,
+  themeSvgUrl,
 }: PortfolioEditorShellProps) {
 
   const router = useRouter();
@@ -718,13 +730,23 @@ export default function PortfolioEditorShell({
 
       {/* Canvas area */}
       <section
-        className="flex-1 justify-center items-center min-w-0 min-h-0 shadow-lg flex flex-col -mt-14"
+        className="flex-1 justify-center items-center min-w-0 min-h-0 shadow-lg flex flex-col -mt-14 relative overflow-hidden"
         style={{
           backgroundColor: "var(--artist-text, #faf7f2)",
           color: "var(--artist-background, #11100e)",
         }}
       >
-        <div className="w-full max-w-6xl mx-auto shrink-0">
+        {themeSvgUrl && customColors && (
+          <ThemePatternLayer
+            svgUrl={themeSvgUrl}
+            colorOverrides={{
+              "--artist-background": customColors.background,
+              "--artist-accent": customColors.accent,
+              "--artist-text": customColors.text,
+            }}
+          />
+        )}
+        <div className="w-full max-w-6xl mx-auto shrink-0 relative z-10">
         {/* Actual page canvas */}
         <div className="flex justify-center">
           <div className="w-full">

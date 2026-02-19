@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Raleway } from "next/font/google";
 import "./globals.css";
 import Footer from "@/components/layout/Footer";
 import ConditionalNavbar from "@/components/layout/ConditionalNavbar";
@@ -15,6 +15,12 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const raleway = Raleway({
+  variable: "--font-raleway",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
 export const metadata: Metadata = {
   title: "urGallery",
   description: "Made By Creatives, Made For Creatives.",
@@ -22,7 +28,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={raleway.variable}>
       <body className="min-h-dvh flex flex-col bg-[var(--background)] text-neutral-900">
         <ColorThemeGuard />
         {/* header is sticky already */}

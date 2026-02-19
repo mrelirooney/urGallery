@@ -139,6 +139,13 @@ class Profile(models.Model):
         help_text="Accent/highlight color in hex format (e.g., #c96a4a)"
     )
 
+    font_family = models.CharField(
+        max_length=64,
+        blank=True,
+        null=True,
+        help_text="Google Font name for profile and portfolio sections (default: Raleway)"
+    )
+
     theme_id_hint = models.IntegerField(null=True, blank=True)
     theme = models.ForeignKey("themes.Theme", on_delete=models.SET_NULL, null=True, blank=True, related_name="profiles")
     created_at = models.DateTimeField(auto_now_add=True)

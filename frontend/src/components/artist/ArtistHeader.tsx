@@ -76,7 +76,7 @@ export default function ArtistHeader({ profile, customColors }: Props) {
         {/* Bottom: Name / Title / Contacts / Location */}
         <div className="flex flex-col md:justify-center md:text-left -mt-2">
         <h1 
-          className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight"
+          className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-wide"
           style={{ color: customColors?.text || 'var(--foreground)' }}
         >
             {profile?.display_name ?? "Unknown Artist"}

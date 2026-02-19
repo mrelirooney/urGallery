@@ -5,6 +5,7 @@ import { EditorAPI } from "@/lib/auth/client";
 import Container from "@/components/layout/Container";
 import PortfolioEditorShell from "@/components/portfolio/editor/PortfolioEditorShell";
 import ColorThemeSetter from "@/components/artist/ColorThemeSetter";
+import GoogleFontsLoader from "@/components/artist/GoogleFontsLoader";
 import type {
   PortfolioPageData,
   MediaShapeType,
@@ -68,13 +69,17 @@ export default function EditPortfolioPage() {
     text: string;
     accent: string;
   }>(DEFAULT_COLORS);
+  const [fontFamily, setFontFamily] = useState<string | null>(null);
+  const [themeSvgUrl, setThemeSvgUrl] = useState<string | null>(null);
 
-  // Fetch artist profile for custom colors (portfolio editor uses these)
+  // Fetch artist profile for custom colors + theme + font (portfolio editor uses these)
   useEffect(() => {
     if (!slug || typeof slug !== "string") return;
     let cancelled = false;
-    const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8000";
-    fetch(`${API_BASE}/api/artists/${slug}/`, { credentials: "include" })
+    const base = (process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8000")
+      .replace(/\/+$/, "")
+      .replace(/\/api$/, "");
+    fetch(`${base}/api/artists/${slug}/`, { credentials: "include", cache: "no-store" })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (cancelled || !data?.profile) return;
@@ -85,6 +90,14 @@ export default function EditPortfolioPage() {
           text: p.text_color || DEFAULT_COLORS.text,
           accent: p.accent_color || DEFAULT_COLORS.accent,
         });
+        setFontFamily(p.font_family?.trim() || null);
+        const raw = p?.theme?.svg_url;
+        if (raw) {
+          const url = raw.startsWith("http") ? raw : `${base}${raw.startsWith("/") ? "" : "/"}${raw}`;
+          setThemeSvgUrl(url);
+        } else {
+          setThemeSvgUrl(null);
+        }
       })
       .catch(() => {});
     return () => {
@@ -184,8 +197,9 @@ export default function EditPortfolioPage() {
     apiPortfolio.privacy === "public" ? "public" : "private";
 
   return (
-    <main className="flex-1 flex flex-col min-h-0 py-0">
-      <ColorThemeSetter colors={customColors} />
+    <main className="flex-1 flex flex-col min-h-0 py-0" style={{ fontFamily: "var(--artist-font, 'Raleway'), sans-serif" }}>
+      <GoogleFontsLoader fontFamily={fontFamily} />
+      <ColorThemeSetter colors={customColors} fontFamily={fontFamily} />
       <div className="w-full min-w-0 flex-1 flex flex-col min-h-0">
         <PortfolioEditorShell
           portfolioTitle={apiPortfolio.title}
@@ -194,9 +208,8 @@ export default function EditPortfolioPage() {
           initialPages={pages}
           initialPageIndex={0}
           initialPrivacy={initialPrivacy}
-          // If PortfolioEditorShell takes these, you can wire them up too:
-          // initialDescription={apiPortfolio.description}
-          // hasUnpublishedChanges={apiPortfolio.has_unpublished_changes}
+          customColors={customColors}
+          themeSvgUrl={themeSvgUrl}
         />
       </div>
     </main>

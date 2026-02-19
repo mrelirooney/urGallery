@@ -1,5 +1,7 @@
 import PortfolioWrapper from "@/components/portfolio/PortfolioWrapper";
 import ColorThemeSetter from "@/components/artist/ColorThemeSetter";
+import GoogleFontsLoader from "@/components/artist/GoogleFontsLoader";
+import ThemePatternLayer from "../../../components/artist/ThemePatternLayer";
 import { getArtistLanding } from "@/lib/api/artistLanding";
 import { notFound } from "next/navigation";
 
@@ -30,13 +32,26 @@ export default async function PortfolioPage({ params }: ArtistPortfolioPageProps
     accent: profile.accent_color || DEFAULT_COLORS.accent,
   };
 
+  const fontFamily = profile.font_family?.trim() || null;
+
   return (
     <>
-      <ColorThemeSetter colors={customColors} />
+      <GoogleFontsLoader fontFamily={fontFamily} />
+      <ColorThemeSetter colors={customColors} fontFamily={fontFamily} />
       <div
-        className="min-h-full"
-        style={{ backgroundColor: customColors.text }}
+        className="min-h-full relative overflow-hidden"
+        style={{ backgroundColor: customColors.text, fontFamily: "var(--artist-font, 'Raleway'), sans-serif" }}
       >
+        {profile?.theme?.svg_url && (
+          <ThemePatternLayer
+            svgUrl={profile.theme.svg_url}
+            colorOverrides={{
+              "--artist-background": customColors.background,
+              "--artist-accent": customColors.accent,
+              "--artist-text": customColors.text,
+            }}
+          />
+        )}
         <PortfolioWrapper
           slug={portfolioSlug}
           artistSlug={artistSlug}

@@ -26,6 +26,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             "linkedin_url","twitch_url","email_contact",
             "contact_order",
             "background_color","foreground_color","text_color","accent_color",
+            "font_family",
             "theme",
         )
 
@@ -43,6 +44,7 @@ class ProfileWriteSerializer(serializers.ModelSerializer):
             "linkedin_url","twitch_url","email_contact",
             "contact_order",
             "background_color","foreground_color","text_color","accent_color",
+            "font_family",
             "theme",
             "first_name","last_name",  # User fields
         )
@@ -75,7 +77,20 @@ class ProfileWriteSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({
                     field: "Color must be a valid hex code (e.g., #faf7f2)"
                 })
-        
+
+        # Validate font_family is in allowed list
+        ALLOWED_FONTS = frozenset({
+            "Inter", "DM Sans", "Space Grotesk", "Plus Jakarta Sans", "Space Mono",
+            "Chakra Petch", "Sora", "Poppins", "Bebas Neue", "Orbitron",
+            "Playfair Display", "Fraunces", "Exo", "Unbounded", "IBM Plex Mono",
+            "Raleway",
+        })
+        font_family = data.get("font_family")
+        if font_family and font_family.strip() and font_family not in ALLOWED_FONTS:
+            raise serializers.ValidationError({
+                "font_family": f"Font must be one of: {', '.join(sorted(ALLOWED_FONTS))}"
+            })
+
         return data
     
     def update(self, instance, validated_data):

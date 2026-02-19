@@ -28,8 +28,11 @@ class ArtistLandingView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, slug: str):
-        # 1) Find the profile for this slug
-        profile = get_object_or_404(Profile, slug=slug)
+        # 1) Find the profile for this slug (select_related theme for serializer)
+        profile = get_object_or_404(
+            Profile.objects.select_related("theme"),
+            slug=slug,
+        )
 
         # 2) Serialize profile exactly like before
         profile_data = ArtistProfileSerializer(

@@ -23,6 +23,14 @@ export interface ArtistProfile {
   foreground_color?: string | null;
   text_color?: string | null;
   accent_color?: string | null;
+  font_family?: string | null;
+  theme?: {
+    id?: number;
+    key?: string;
+    name?: string;
+    svg_url?: string | null;
+    preview_url?: string | null;
+  } | null;
 }
 
 export interface PortfolioPage {

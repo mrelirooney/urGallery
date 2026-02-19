@@ -67,9 +67,7 @@ export default function Pagination({ totalPages, currentPage, onChangePage, cust
                 }}
                 onMouseLeave={(e) => {
                   if (!isActive) {
-                    e.currentTarget.style.backgroundColor = fg;
-                    e.currentTarget.style.color = bg;
-                    e.currentTarget.style.borderColor = bg;
+                   
                   }
                 }}
                 onClick={() => onChangePage(idx)}
