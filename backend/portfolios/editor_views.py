@@ -156,7 +156,7 @@ def editor_create_page(request, slug):
         "title": request.data.get("title") or "Untitled Page",
         "description": request.data.get("description") or "",
         # Use the PortfolioPageLayout enum for the default layout
-        "layout": request.data.get("layout") or PortfolioPageLayout.HERO_LAYOUT_SQUARE_00,
+        "layout": request.data.get("layout") or PortfolioPageLayout.HERO_LAYOUT_SQUARE_01,
         "order": next_order,
     }
 

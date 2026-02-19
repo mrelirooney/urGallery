@@ -215,8 +215,8 @@ export default function PortfolioMenu({ isOpen, onClose, customColors }: Props) 
       {/* Backdrop */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-40 transition-opacity"
-          style={{ backgroundColor: bg, opacity: 0.8 }}
+          className="fixed inset-0 z-60 transition-opacity"
+          style={{ backgroundColor: bg, opacity: 0.85 }}
           onClick={onClose}
         />
       )}

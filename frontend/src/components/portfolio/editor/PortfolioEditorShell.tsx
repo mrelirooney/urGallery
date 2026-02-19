@@ -58,7 +58,7 @@ export interface PortfolioEditorShellProps {
 
 const createEmptyPage = (): PortfolioPageData => ({
   id: `page-${crypto.randomUUID?.() ?? Math.random().toString(36).slice(2)}`,
-  layoutType: "HeroLayoutSquare00",
+  layoutType: "HeroLayoutSquare01",
   title: "",
   description: "",
   mediaSrc: null,

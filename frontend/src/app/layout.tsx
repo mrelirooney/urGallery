@@ -29,7 +29,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={raleway.variable}>
-      <body className="min-h-dvh flex flex-col bg-[var(--background)] text-neutral-900">
+      <body className="min-h-dvh flex flex-col bg-[var(--artist-background,var(--background))] text-neutral-900">
         <ColorThemeGuard />
         {/* header is sticky already */}
         <ConditionalNavbar />

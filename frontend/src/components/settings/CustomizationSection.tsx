@@ -101,19 +101,28 @@ export default function CustomizationSection({ onSaveRef }: CustomizationSection
             text: data.text_color || DEFAULT_COLORS.text,
             accent: data.accent_color || DEFAULT_COLORS.accent,
           });
-          const themeId = data.theme ?? null;
-          setSelectedThemeId(themeId != null ? Number(themeId) : null);
+          const rawTheme = data.theme ?? null;
+          const themeId =
+            rawTheme != null
+              ? typeof rawTheme === "object"
+                ? (rawTheme as { id?: number })?.id ?? null
+                : Number(rawTheme)
+              : null;
+          setSelectedThemeId(themeId != null ? themeId : null);
           setSelectedFont(data.font_family?.trim() || DEFAULT_FONT_FAMILY);
         }
 
         if (themesRes.ok) {
           const themes: { id: number; key: string; name: string; preview_url: string | null; svg_url: string | null }[] = await themesRes.json();
           const blank: ThemeOption = { id: null, key: "blank", name: "Blank", previewUrl: null, svgUrl: null };
-          const squares = themes.find((t) => t.key === "1" || t.key?.toLowerCase() === "square" || t.key?.toLowerCase() === "squares");
-          const square: ThemeOption = squares
-            ? { id: squares.id, key: squares.key, name: squares.name, previewUrl: squares.preview_url, svgUrl: squares.svg_url ?? null }
-            : { id: 1, key: "1", name: "Square", previewUrl: null, svgUrl: null };
-          setThemeOptions([blank, square]);
+          const rest: ThemeOption[] = themes.map((t) => ({
+            id: t.id,
+            key: t.key,
+            name: t.name,
+            previewUrl: t.preview_url ?? null,
+            svgUrl: t.svg_url ?? null,
+          }));
+          setThemeOptions([blank, ...rest]);
         }
       } catch (err) {
         console.error("Error fetching profile/themes:", err);
@@ -416,7 +425,7 @@ export default function CustomizationSection({ onSaveRef }: CustomizationSection
               <ThemePatternLayer
                 svgUrl={absoluteSvgUrl}
                 colorOverrides={profileThemeOverrides}
-                opacity={0.2}
+                opacity={0.15}
               />
             )}
             <div className="relative z-10 p-6 pr-5 pl-5" style={{ fontFamily: previewFontFamily }}>
@@ -490,17 +499,14 @@ export default function CustomizationSection({ onSaveRef }: CustomizationSection
                     This is how your portfolio will look with these colors. 
                   </p>
                   <p 
-                    className="text-sm mb-4 text-right"
+                    className="text-sm text-right"
                     style={{ color: colors.background }}
                   >
                     1 2 3 4 5 6 7 8 9 10 
                   </p>          
                 </div>
-                
               </div>
-              
             </div>
-            
           </div>
 
           <p className="text-xs text-neutral-500 mt-4">

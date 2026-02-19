@@ -6,14 +6,30 @@ import { useSearch } from "@/hooks/useSearch";
 import { Search } from "lucide-react";
 import type { SearchResult } from "@/lib/search/types";
 
+/** Append 50% opacity to a hex color (#rgb or #rrggbb) */
+function withOpacity50(hex: string): string {
+  const normalized = hex.trim();
+  if (/^#[0-9a-fA-F]{3}$/.test(normalized)) {
+    const r = normalized[1] + normalized[1];
+    const g = normalized[2] + normalized[2];
+    const b = normalized[3] + normalized[3];
+    return `#${r}${g}${b}80`;
+  }
+  if (/^#[0-9a-fA-F]{6}$/.test(normalized)) {
+    return `${normalized}80`;
+  }
+  return hex;
+}
+
 type Props = {
   placeholder?: string;
   onSelect?: (r: SearchResult) => void;
   variant?: "hero" | "navbar" | string; // optional, ignored for now
-  accentColor?: string; // when set (e.g. on profile page), use for hover/focus ring
+  textColor?: string; // default ring/icon color (used at 50% opacity)
+  accentColor?: string; // hover/focus ring/icon color (used at 100%)
 };
 
-export default function SearchInput({ placeholder = "Search artists...", onSelect, variant, accentColor }: Props) {
+export default function SearchInput({ placeholder = "Search artists...", onSelect, variant, textColor, accentColor }: Props) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
@@ -26,7 +42,8 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
     const [mounted, setMounted] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
-    const useAccent = Boolean(accentColor) && (isHovered || isFocused);
+    const hasTheme = Boolean(textColor && accentColor);
+    const useAccent = hasTheme && (isHovered || isFocused);
   
     const { run, results, loading, clear } = useSearch();
   
@@ -102,13 +119,13 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
     <div className="relative w-full max-w-xs sm:max-w-md md:max-w-lg lg:max-w-2xl xl:max-w-3xl">
       <div
         className={`flex items-center gap-2 sm:gap-3 rounded-xs ring-1 ring-[var(--foreground)]/10 px-3 sm:px-4 py-1 transition-all ${
-          !accentColor ? "hover:ring-[var(--light-brown)]/100 focus-within:ring-[var(--light-brown)]/70" : ""
+          !hasTheme ? "hover:ring-[var(--light-brown)]/100 focus-within:ring-[var(--light-brown)]/70" : ""
         } ${
           variant === "hero"
             ? "shadow-lg shadow-[var(--light-brown)]/90 hover:shadow-xl hover:shadow-[var(--light-brown)]/40 focus-within:shadow-xl focus-within:shadow-[var(--light-brown)]/50"
             : ""
         }`}
-        style={useAccent && accentColor ? { boxShadow: `0 0 0 1px ${accentColor}` } : undefined}
+        style={hasTheme ? { boxShadow: `0 0 0 1px ${useAccent ? accentColor : withOpacity50(textColor!)}` } : undefined}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -137,7 +154,7 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
             });
           }}
           className="shrink-0 rounded-full text-[var(--foreground)] px-1.5 py-1.5 text-sm font-medium transition-all active:scale-95"
-          style={useAccent && accentColor ? { color: accentColor } : undefined}
+          style={hasTheme ? { color: useAccent ? accentColor : withOpacity50(textColor!) } : undefined}
         >
           <Search size={18} />
         </button>

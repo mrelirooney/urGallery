@@ -184,7 +184,7 @@ export default function EditorTopBar({
             value={portfolioTitle}
             onChange={(e) => onChangePortfolioTitle(e.target.value)}
             placeholder="Portfolio title"
-            className="min-w-[220px] rounded border bg-transparent px-3 py-1 text-sm uppercase tracking-wide focus:border-neutral-500 focus:outline-none"
+            className="min-w-[220px] rounded-xs border bg-transparent px-3 py-1 text-sm uppercase tracking-wide focus:border-neutral-500 focus:outline-none"
             style={{
               color: "var(--artist-background, #11100e)",
               borderColor: "var(--artist-background, #11100e)",
@@ -193,7 +193,7 @@ export default function EditorTopBar({
           <button
             type="button"
             onClick={onChangeLayout}
-            className="rounded-full border px-3 py-1 text-sm"
+            className="rounded-xs border px-3 py-1 text-sm"
             style={{
               color: "var(--artist-background, #11100e)",
               borderColor: "var(--artist-background, #11100e)",

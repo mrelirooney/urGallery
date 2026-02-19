@@ -13,37 +13,18 @@ export default function MediaOnlyTemplate({
   className?: string;
 }) {
   return (
-    <svg
-      className={className}
-      viewBox="0 0 1152 600"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      preserveAspectRatio="xMidYMid meet"
-    >
-      {/* Placeholder: media frame (replace with your Figma SVG) */}
-      <rect
-        x="276"
-        y="100"
-        width="600"
-        height="400"
-        rx="8"
+    <div>
+      <svg
+        width="110vw"
+        height="100vh"
+        viewBox="0 0 5000 1000"
         fill="none"
-        stroke="var(--artist-accent, #c96a4a)"
-        strokeWidth="4"
-        opacity="0.7"
-      />
-      {/* Placeholder: inner accent line */}
-      <rect
-        x="296"
-        y="120"
-        width="560"
-        height="360"
-        rx="4"
-        fill="none"
-        stroke="var(--artist-accent, #c96a4a)"
-        strokeWidth="1"
-        opacity="0.3"
-      />
-    </svg>
+        xmlns="http://www.w3.org/2000/svg"
+        style={{ opacity: 0.8, zIndex: 6, position: "absolute", top: -50, left: -160, right: 0, bottom: 0 }}
+      >
+        <rect width="100%" height="50%" fill="var(--artist-background, #C96A4A)" />
+        
+      </svg>
+    </div>
   );
 }

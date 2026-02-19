@@ -5,6 +5,8 @@ import MediaSlot from "../primitives/MediaSlot";
 import {
   HeroLayoutSquare00Template,
   HeroLayoutSquare01Template,
+  HeroLayoutVertical01Template,
+  HeroLayoutHorizontal01Template,
   TextOnlyTemplate,
   MediaOnlyTemplate,
 } from "../templates";
@@ -12,8 +14,14 @@ import {
 export type LayoutType =
   | "HeroLayoutSquare00"
   | "HeroLayoutSquare01"
+  | "HeroLayoutVertical01"
+  | "HeroLayoutHorizontal01"
   | "TextOnly"
-  | "MediaOnly";
+  | "TextOnlyCenter"
+  | "MediaOnly"
+  | "MediaOnlyVertical"
+  | "MediaOnlyHorizontal"
+  | "MediaOnlyWide";
 
 export type MediaShapeType =
   | "1:1"
@@ -56,6 +64,7 @@ type TextColumnProps = {
   isEditor?: boolean;
   onChangeTitle?: (pageIndex: number, newTitle: string) => void;
   onChangeDescription?: (pageIndex: number, newDesc: string) => void;
+  variant?: "default" | "textOnly" | "textOnlyCenter";
 };
 
 function TextColumn({
@@ -65,17 +74,44 @@ function TextColumn({
   isEditor,
   onChangeTitle,
   onChangeDescription,
+  variant = "default",
 }: TextColumnProps) {
   if (isEditor) {
+    if (variant === "textOnlyCenter") {
+      return (
+        <div className="flex flex-col gap-2 w-full text-center">
+          <input
+            className="w-full text-2xl md:text-4xl font-bold leading-tight text-center border border-neutral-500/60 rounded-md px-4 py-1 outline-none focus:border-neutral-200"
+            style={{ color: "var(--artist-text, #faf7f2)", backgroundColor: "var(--artist-background, #11100e)" }}
+            value={title}
+            onChange={(e) => onChangeTitle?.(pageIndex, e.target.value)}
+          />
+          <input
+            className="w-full text-base text-center border border-neutral-500/60 rounded-md px-4 py-1 outline-none focus:border-neutral-200"
+            style={{ color: "var(--artist-text, #faf7f2)", backgroundColor: "var(--artist-background, #11100e)" }}
+            value={description}
+            onChange={(e) => onChangeDescription?.(pageIndex, e.target.value)}
+          />
+        </div>
+      );
+    }
     return (
-      <div className="flex flex-col">
+      <div className="flex flex-col gap-4">
         <input
-          className="w-full text-5xl font-bold leading-tight text-neutral-50 bg-transparent border border-neutral-500/60 rounded-md px-4 py-3 outline-none focus:border-neutral-200"
+          className="w-full text-5xl font-bold leading-tight border border-neutral-500/60 px-6 py-3 outline-none focus:border-neutral-200"
+          style={{
+            color: "var(--artist-text, #faf7f2)",
+            background: "linear-gradient(to right, var(--artist-accent, #c96a4a) .5%, var(--artist-background, #11100e) .5%)",
+          }}
           value={title}
           onChange={(e) => onChangeTitle?.(pageIndex, e.target.value)}
         />
         <textarea
-          className="w-full text-lg text-neutral-100 bg-transparent border border-neutral-500/60 rounded-md px-4 py-3 outline-none focus:border-neutral-200 min-h-[200px] overflow-hidden resize-none"
+          className="w-full text-lg border border-neutral-500/60 px-6 py-3 outline-none focus:border-neutral-200 min-h-[300px] overflow-hidden resize-none"
+          style={{
+            color: "var(--artist-background, #faf7f2)",
+            background: "linear-gradient(to right, var(--artist-accent, #c96a4a) .5%, var(--artist-background, #11100e) .5%, transparent 0%)",
+          }}
           value={description}
           onChange={(e) =>
             onChangeDescription?.(pageIndex, e.target.value)
@@ -86,11 +122,23 @@ function TextColumn({
   }
 
   return (
-    <div className="flex flex-col">
-      <h2 className="text-5xl font-bold leading-tight text-neutral-50">
+    <div className="flex flex-col gap-4">
+      <h2
+        className="text-5xl font-bold leading-tight px-4 py-3 rounded-md"
+        style={{
+          color: "var(--artist-text, #faf7f2)",
+          background: "linear-gradient(to right, var(--artist-accent, #c96a4a) 50%, var(--artist-background, #11100e) 50%)",
+        }}
+      >
         {title}
       </h2>
-      <p className="max-w-xl whitespace-pre-line text-lg text-neutral-300">
+      <p
+        className="max-w-xl whitespace-pre-line text-lg px-4 py-3 rounded-md"
+        style={{
+          color: "var(--artist-text, #faf7f2)",
+          background: "linear-gradient(to right, var(--artist-accent, #c96a4a) 50%, var(--artist-background, #11100e) 50%)",
+        }}
+      >
         {description}
       </p>
     </div>
@@ -158,14 +206,18 @@ export default function PageRenderer({
   };
 
   useEffect(() => {
-    if (layoutType === "HeroLayoutSquare01") {
+    if (layoutType === "HeroLayoutSquare01" || layoutType === "HeroLayoutVertical01" || layoutType === "HeroLayoutHorizontal01") {
       adjustHeaderTextareaHeight();
       adjustSubheaderTextareaHeight();
     }
   }, [layoutType, page.title, page.title2]);
 
   const isTextOnly = layoutType === "TextOnly";
+  const isTextOnlyCenter = layoutType === "TextOnlyCenter";
   const isMediaOnly = layoutType === "MediaOnly";
+  const isMediaOnlyVertical = layoutType === "MediaOnlyVertical";
+  const isMediaOnlyHorizontal = layoutType === "MediaOnlyHorizontal";
+  const isMediaOnlyWide = layoutType === "MediaOnlyWide";
 
   const textContent = (
     <TextColumn
@@ -175,6 +227,7 @@ export default function PageRenderer({
       isEditor={isEditor}
       onChangeTitle={onChangeTitle}
       onChangeDescription={onChangeDescription}
+      variant={layoutType === "TextOnly" ? "textOnly" : layoutType === "TextOnlyCenter" ? "textOnlyCenter" : "default"}
     />
   );
 
@@ -205,12 +258,21 @@ export default function PageRenderer({
   // Layout rendering
   if (isTextOnly) {
     return (
-      <div className="relative w-full min-h-[40vh]">
+      <div className="relative w-full min-h-[50vh]">
         <TextOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none" />
-        <div className="relative z-10 flex justify-center w-full">
-          <div className="w-full max-w-4xl">
-            {textContent}
-          </div>
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-6">
+          {textContent}
+        </div>
+      </div>
+    );
+  }
+
+  if (isTextOnlyCenter) {
+    return (
+      <div className="relative w-full min-h-[50vh]">
+        <TextOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none" />
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-6">
+          {textContent}
         </div>
       </div>
     );
@@ -218,11 +280,170 @@ export default function PageRenderer({
 
   if (isMediaOnly) {
     return (
-      <div className="relative w-full min-h-[40vh]">
+      <div className="relative w-full min-h-[50vh]">
         <MediaOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none" />
-        <div className="relative z-10 flex justify-center w-full">
-          <div className="w-full max-w-5xl">
-            {mediaContent}
+        <div className="relative z-10 w-full max-w-7xl mx-auto flex justify-center items-center min-h-[50vh] py-8">
+          <div
+            className={`shrink-0 w-[425px] aspect-square overflow-hidden flex items-center justify-center ${isEditor ? "cursor-pointer" : ""}`}
+            style={{ boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)" }}
+            onClick={handleMediaClick}
+          >
+            {page.mediaSrc ? (
+              <img
+                src={page.mediaSrc}
+                alt="Portfolio media"
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div
+                className="flex h-full w-full items-center justify-center text-sm"
+                style={{
+                  color: "var(--artist-text, #faf7f2)",
+                  backgroundColor: "rgb(130, 130, 130)",
+                  opacity: 0.9,
+                }}
+              >
+                No image
+              </div>
+            )}
+            {isEditor && onChangeImage && (
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isMediaOnlyVertical) {
+    return (
+      <div className="relative w-full min-h-[50vh]">
+        <MediaOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none" />
+        <div className="relative z-10 w-full max-w-7xl mx-auto flex justify-center items-center min-h-[50vh] py-8">
+          <div
+            className={`shrink-0 h-[425px] w-[340px] overflow-hidden flex items-center justify-center ${isEditor ? "cursor-pointer" : ""}`}
+            style={{ boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)" }}
+            onClick={handleMediaClick}
+          >
+            {page.mediaSrc ? (
+              <img
+                src={page.mediaSrc}
+                alt="Portfolio media"
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div
+                className="flex h-full w-full items-center justify-center text-sm"
+                style={{
+                  color: "var(--artist-text, #faf7f2)",
+                  backgroundColor: "rgb(130, 130, 130)",
+                  opacity: 0.9,
+                }}
+              >
+                No image
+              </div>
+            )}
+            {isEditor && onChangeImage && (
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isMediaOnlyHorizontal) {
+    return (
+      <div className="relative w-full min-h-[50vh]">
+        <MediaOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none" />
+        <div className="relative z-10 w-full max-w-7xl mx-auto flex justify-center items-center min-h-[50vh] py-8">
+          <div
+            className={`shrink-0 w-[756px] h-[425px] overflow-hidden flex items-center justify-center ${isEditor ? "cursor-pointer" : ""}`}
+            style={{ boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)" }}
+            onClick={handleMediaClick}
+          >
+            {page.mediaSrc ? (
+              <img
+                src={page.mediaSrc}
+                alt="Portfolio media"
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div
+                className="flex h-full w-full items-center justify-center text-sm"
+                style={{
+                  color: "var(--artist-text, #faf7f2)",
+                  backgroundColor: "rgb(130, 130, 130)",
+                  opacity: 0.9,
+                }}
+              >
+                No image
+              </div>
+            )}
+            {isEditor && onChangeImage && (
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isMediaOnlyWide) {
+    return (
+      <div className="relative w-full min-h-[50vh]">
+        <MediaOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none" />
+        <div className="relative z-10 w-full max-w-7xl mx-auto flex justify-center items-center min-h-[50vh] py-8">
+          <div
+            className={`shrink-0 w-[756px] h-[425px] overflow-hidden flex items-center justify-center ${isEditor ? "cursor-pointer" : ""}`}
+            style={{ boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)" }}
+            onClick={handleMediaClick}
+          >
+            {page.mediaSrc ? (
+              <img
+                src={page.mediaSrc}
+                alt="Portfolio media"
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div
+                className="flex h-full w-full items-center justify-center text-sm"
+                style={{
+                  color: "var(--artist-text, #faf7f2)",
+                  backgroundColor: "rgb(130, 130, 130)",
+                  opacity: 0.9,
+                }}
+              >
+                No image
+              </div>
+            )}
+            {isEditor && onChangeImage && (
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+            )}
           </div>
         </div>
       </div>
@@ -370,7 +591,7 @@ export default function PageRenderer({
           <HeroLayoutSquare01Template className="w-full h-full max-w-7xl pointer-events-none" />
         </div>
         <div className="relative z-10 w-full max-w-7xl mx-auto px-6">
-        <div className="grid grid-cols-[auto_1fr] gap-8 md:gap-24 items-stretch min-h-[50vh] py-8">
+        <div className="grid grid-cols-[auto_1fr] gap-8 md:gap-24 items-stretch min-h-[50vh] px-4 py-8">
             {/* Col A: image (left) – fixed size via SQ_HERO01_IMAGE_SIZE */}
             <div
               className={`shrink-0 self-center ${SQ_HERO01_IMAGE_SIZE} aspect-square overflow-hidden flex items-center justify-center ${isEditor ? "cursor-pointer" : ""}`}
@@ -406,16 +627,16 @@ export default function PageRenderer({
                 />
               )}
             </div>
-            {/* Col B: text (right) – header grows upward; text boxes centered vertically */}
-            <div className="flex flex-col gap-4 min-w-0 self-stretch flex-1 min-h-0">
+            {/* Col B: text (right) – max-h matches image (425px), scrollbars hidden */}
+            <div className="flex flex-col gap-4 min-w-0 self-center flex-1 min-h-0 max-h-[425px] overflow-hidden">
               {isEditor ? (
                 <>
                   {/* Top spacer: header grows upward into this; equal to bottom for vertical centering */}
-                  <div className="flex-1 min-h-[2rem]" aria-hidden />
-                  <div className="flex flex-col gap-4">
+                  <div className="flex-1 min-h-[2rem] shrink-0" aria-hidden />
+                  <div className="flex flex-col gap-4 flex-1 min-h-0">
                     <textarea
                       ref={headerTextareaRef}
-                      className="w-full text-4xl md:text-5xl font-bold leading-tight bg-transparent border border-neutral-500/60 rounded-md px-4 py-3 outline-none focus:border-neutral-200 resize-none overflow-hidden"
+                      className="w-full flex-1 min-h-0 text-4xl md:text-5xl font-bold leading-tight bg-transparent border border-neutral-500/60 rounded-md px-4 py-3 outline-none focus:border-neutral-200 resize-none overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
                       value={page.title}
                       onChange={(e) => onChangeTitle?.(safeIndex, e.target.value)}
                       onInput={adjustHeaderTextareaHeight}
@@ -425,7 +646,7 @@ export default function PageRenderer({
                     />
                     <textarea
                       ref={subheaderTextareaRef}
-                      className="w-full text-xl text-neutral-600 bg-transparent border border-neutral-500/60 rounded-md px-4 py-2 outline-none focus:border-neutral-200 resize-none overflow-hidden"
+                      className="w-full flex-1 min-h-0 text-xl text-neutral-600 bg-transparent border border-neutral-500/60 rounded-md px-4 py-2 outline-none focus:border-neutral-200 resize-none overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
                       value={page.title2 || ""}
                       onChange={(e) => onChangeTitle2?.(safeIndex, e.target.value)}
                       onInput={adjustSubheaderTextareaHeight}
@@ -435,7 +656,201 @@ export default function PageRenderer({
                     />
                   </div>
                   {/* Bottom spacer: equal to top for vertical centering */}
-                  <div className="flex-1 min-h-[2rem]" aria-hidden />
+                  <div className="flex-1 min-h-[2rem] shrink-0" aria-hidden />
+                </>
+              ) : (
+                <>
+                  <h2
+                    className="text-4xl md:text-5xl font-bold leading-tight"
+                    style={{ color: "var(--artist-background, #11100e)" }}
+                  >
+                    {page.title || "Header"}
+                  </h2>
+                  <p
+                    className="text-xl"
+                    style={{ color: "var(--artist-background, #11100e)", opacity: 0.8 }}
+                  >
+                    {page.title2 || "Subheader"}
+                  </p>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // HeroLayoutVertical01: Same as HeroLayoutSquare01 but vertical image (4:5, 425px height).
+  const VERT_HERO01_IMAGE = "h-[425px] w-[340px]"; // 4:5 portrait, same height as square
+  if (layoutType === "HeroLayoutVertical01") {
+    return (
+      <div className="relative w-full min-h-[50vh]">
+        <div className="absolute inset-0 flex justify-center items-start z-0">
+          <HeroLayoutVertical01Template className="w-full h-full max-w-7xl pointer-events-none" />
+        </div>
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-[auto_1fr] gap-8 md:gap-24 items-stretch min-h-[50vh] px-4 py-8">
+            {/* Col A: vertical image (left) – 425px height, 4:5 aspect */}
+            <div
+              className={`shrink-0 self-center ${VERT_HERO01_IMAGE} overflow-hidden flex items-center justify-center ${isEditor ? "cursor-pointer" : ""}`}
+              style={{ boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)" }}
+              onClick={handleMediaClick}
+            >
+              {page.mediaSrc ? (
+                <img
+                  src={page.mediaSrc}
+                  alt="Portfolio media"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div
+                  className="flex h-full w-full items-center justify-center text-sm"
+                  style={{
+                    color: "var(--artist-text, #faf7f2)",
+                    backgroundColor: "rgb(130, 130, 130)",
+                    opacity: 1,
+                    boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)",
+                  }}
+                >
+                  No image
+                </div>
+              )}
+              {isEditor && onChangeImage && (
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+              )}
+            </div>
+            {/* Col B: text (right) – max-h matches image (425px), scrollbars hidden */}
+            <div className="flex flex-col gap-4 min-w-0 self-center flex-1 min-h-0 max-h-[425px] overflow-hidden">
+              {isEditor ? (
+                <>
+                  <div className="flex-1 min-h-[2rem] shrink-0" aria-hidden />
+                  <div className="flex flex-col gap-4 flex-1 min-h-0">
+                    <textarea
+                      ref={headerTextareaRef}
+                      className="w-full flex-1 min-h-0 text-4xl md:text-5xl font-bold leading-tight bg-transparent border border-neutral-500/60 rounded-md px-4 py-3 outline-none focus:border-neutral-200 resize-none overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                      value={page.title}
+                      onChange={(e) => onChangeTitle?.(safeIndex, e.target.value)}
+                      onInput={adjustHeaderTextareaHeight}
+                      placeholder="Header"
+                      rows={1}
+                      style={{ color: "var(--artist-background, #11100e)" }}
+                    />
+                    <textarea
+                      ref={subheaderTextareaRef}
+                      className="w-full flex-1 min-h-0 text-xl text-neutral-600 bg-transparent border border-neutral-500/60 rounded-md px-4 py-2 outline-none focus:border-neutral-200 resize-none overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                      value={page.title2 || ""}
+                      onChange={(e) => onChangeTitle2?.(safeIndex, e.target.value)}
+                      onInput={adjustSubheaderTextareaHeight}
+                      placeholder="Subheader"
+                      rows={1}
+                      style={{ color: "var(--artist-background, #11100e)", opacity: 0.8 }}
+                    />
+                  </div>
+                  <div className="flex-1 min-h-[2rem] shrink-0" aria-hidden />
+                </>
+              ) : (
+                <>
+                  <h2
+                    className="text-4xl md:text-5xl font-bold leading-tight"
+                    style={{ color: "var(--artist-background, #11100e)" }}
+                  >
+                    {page.title || "Header"}
+                  </h2>
+                  <p
+                    className="text-xl"
+                    style={{ color: "var(--artist-background, #11100e)", opacity: 0.8 }}
+                  >
+                    {page.title2 || "Subheader"}
+                  </p>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // HeroLayoutHorizontal01: Same as HeroLayoutSquare01 but horizontal image (5:4, 425px height, 531px width).
+  const HORIZ_HERO01_IMAGE = "h-[425px] w-[531px] min-h-[425px] min-w-[531px]"; // 5:4 landscape, enforce dimensions
+  if (layoutType === "HeroLayoutHorizontal01") {
+    return (
+      <div className="relative w-full min-h-[50vh]">
+        <div className="absolute inset-0 flex justify-center items-start z-0">
+          <HeroLayoutHorizontal01Template className="w-full h-full max-w-7xl pointer-events-none" />
+        </div>
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-[auto_1fr] gap-8 md:gap-24 items-stretch min-h-[50vh] px-4 py-8">
+            {/* Col A: horizontal image (left) – 425px height, 5:4 aspect */}
+            <div
+              className={`shrink-0 self-center ${HORIZ_HERO01_IMAGE} overflow-hidden flex items-center justify-center ${isEditor ? "cursor-pointer" : ""}`}
+              style={{ boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)" }}
+              onClick={handleMediaClick}
+            >
+              {page.mediaSrc ? (
+                <img
+                  src={page.mediaSrc}
+                  alt="Portfolio media"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div
+                  className="flex h-full w-full items-center justify-center text-sm"
+                  style={{
+                    color: "var(--artist-text, #faf7f2)",
+                    backgroundColor: "rgb(130, 130, 130)",
+                    opacity: 1,
+                    boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)",
+                  }}
+                >
+                  No image
+                </div>
+              )}
+              {isEditor && onChangeImage && (
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+              )}
+            </div>
+            {/* Col B: text (right) – same as HeroLayoutSquare01 */}
+            <div className="flex flex-col gap-4 min-w-0 self-center flex-1 min-h-0 max-h-[425px] overflow-hidden">
+              {isEditor ? (
+                <>
+                  <div className="flex-1 min-h-[2rem] shrink-0" aria-hidden />
+                  <div className="flex flex-col gap-4 flex-1 min-h-0">
+                    <textarea
+                      ref={headerTextareaRef}
+                      className="w-full flex-1 min-h-0 text-4xl md:text-5xl font-bold leading-tight bg-transparent border border-neutral-500/60 rounded-md px-4 py-3 outline-none focus:border-neutral-200 resize-none overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                      value={page.title}
+                      onChange={(e) => onChangeTitle?.(safeIndex, e.target.value)}
+                      onInput={adjustHeaderTextareaHeight}
+                      placeholder="Header"
+                      rows={1}
+                      style={{ color: "var(--artist-background, #11100e)" }}
+                    />
+                    <textarea
+                      ref={subheaderTextareaRef}
+                      className="w-full flex-1 min-h-0 text-xl text-neutral-600 bg-transparent border border-neutral-500/60 rounded-md px-4 py-2 outline-none focus:border-neutral-200 resize-none overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                      value={page.title2 || ""}
+                      onChange={(e) => onChangeTitle2?.(safeIndex, e.target.value)}
+                      onInput={adjustSubheaderTextareaHeight}
+                      placeholder="Subheader"
+                      rows={1}
+                      style={{ color: "var(--artist-background, #11100e)", opacity: 0.8 }}
+                    />
+                  </div>
+                  <div className="flex-1 min-h-[2rem] shrink-0" aria-hidden />
                 </>
               ) : (
                 <>

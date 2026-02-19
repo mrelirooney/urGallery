@@ -224,7 +224,8 @@ export default function Navbar() {
                 <SearchInput
                   variant="nav"
                   placeholder="Search…"
-                  accentColor={isArtistPage ? customColors?.text : undefined}
+                  textColor={isArtistPage ? customColors?.text : undefined}
+                  accentColor={isArtistPage ? customColors?.accent : undefined}
                 />
               </div>
               <div className="relative " ref={menuRef}>
@@ -239,7 +240,7 @@ export default function Navbar() {
                   <div
                     role="menu"
                     aria-label="User menu"
-                    className="absolute right-0 mt-2 w-44 rounded-md border border-gray-200 bg-white shadow-lg z-55"
+                    className="absolute right-0 mt-2 w-44 rounded-md border border-neutral-200 bg-white shadow-lg z-55"
                     onKeyDown={(e) => {
                       if (e.key !== "Tab") return;
                       const container = menuRef.current;

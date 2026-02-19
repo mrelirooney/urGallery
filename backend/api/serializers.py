@@ -6,9 +6,26 @@ from portfolios.models import Portfolio, Page
 import re
 
 class ThemeSerializer(serializers.ModelSerializer):
+    svg_url = serializers.SerializerMethodField()
+    preview_url = serializers.SerializerMethodField()
+
     class Meta:
         model = Theme
-        fields = ("id", "key", "name", "version", "is_active", "css_vars_json", "assets_manifest", "preview_s3_key")
+        fields = ("id", "key", "name", "version", "is_active", "css_vars_json", "assets_manifest", "preview_s3_key", "svg_url", "preview_url")
+
+    def get_svg_url(self, obj):
+        if not obj.svg_file:
+            return None
+        request = self.context.get("request")
+        url = obj.svg_file.url
+        return request.build_absolute_uri(url) if request else url
+
+    def get_preview_url(self, obj):
+        if not obj.preview_image:
+            return None
+        request = self.context.get("request")
+        url = obj.preview_image.url
+        return request.build_absolute_uri(url) if request else url
 
 class HashtagSerializer(serializers.ModelSerializer):
     class Meta:

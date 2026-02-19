@@ -182,7 +182,7 @@ class PortfolioEditorSaveSerializer(serializers.ModelSerializer):
                     valid_layouts = [choice[0] for choice in PortfolioPageLayout.choices]
                     if layout_value not in valid_layouts:
                         # Default to a valid layout if invalid
-                        layout_value = PortfolioPageLayout.HERO_LAYOUT_SQUARE_00
+                        layout_value = PortfolioPageLayout.HERO_LAYOUT_SQUARE_01
                 
                 # Validate media_shape if provided
                 media_shape_value = page_data.get("media_shape", "1:1")
@@ -217,7 +217,7 @@ class PortfolioEditorSaveSerializer(serializers.ModelSerializer):
                         draft_portfolio=instance,
                         title=page_data.get("title", "Untitled Page"),
                         description=page_data.get("description", ""),
-                        layout=layout_value or "HeroLayoutSquare00",
+                        layout=layout_value or "HeroLayoutSquare01",
                         media_shape=media_shape_value,
                         media_shape_2=page_data.get("media_shape_2", "1:1"),
                         title_2=page_data.get("title_2", ""),

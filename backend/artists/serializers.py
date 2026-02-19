@@ -9,6 +9,7 @@ class ArtistProfileSerializer(serializers.ModelSerializer):
     """
     avatar_url = serializers.SerializerMethodField()
     banner_image_url = serializers.SerializerMethodField()
+    theme = serializers.SerializerMethodField()
 
     class Meta:
         model = Profile
@@ -36,7 +37,27 @@ class ArtistProfileSerializer(serializers.ModelSerializer):
             "text_color",
             "accent_color",
             "font_family",
+            "theme",
         )
+
+    def get_theme(self, obj):
+        """Return theme with svg_url and preview_url for frontend."""
+        theme = getattr(obj, "theme", None)
+        if not theme:
+            return None
+        request = self.context.get("request")
+        result = {"id": theme.id, "key": theme.key, "name": theme.name}
+        if theme.svg_file:
+            url = theme.svg_file.url
+            result["svg_url"] = request.build_absolute_uri(url) if request else url
+        else:
+            result["svg_url"] = None
+        if theme.preview_image:
+            url = theme.preview_image.url
+            result["preview_url"] = request.build_absolute_uri(url) if request else url
+        else:
+            result["preview_url"] = None
+        return result
 
     def get_avatar_url(self, obj):
         """

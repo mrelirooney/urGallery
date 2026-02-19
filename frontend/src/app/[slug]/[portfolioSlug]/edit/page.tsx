@@ -171,7 +171,7 @@ export default function EditPortfolioPage() {
     .sort((a, b) => a.order - b.order)
     .map((page) => ({
       id: page.id,
-      layoutType: (page.layout || "HeroLayoutSquare00") as LayoutType,
+      layoutType: (page.layout || "HeroLayoutSquare01") as LayoutType,
       title: page.title,
       description: page.description,
       mediaSrc: page.media_image

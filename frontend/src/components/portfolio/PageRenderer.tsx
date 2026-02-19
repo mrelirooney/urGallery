@@ -4,6 +4,8 @@ import MediaSlot from "./primitives/MediaSlot";
 import {
   HeroLayoutSquare00Template,
   HeroLayoutSquare01Template,
+  HeroLayoutVertical01Template,
+  HeroLayoutHorizontal01Template,
   TextOnlyTemplate,
   MediaOnlyTemplate,
 } from "./templates";
@@ -15,9 +17,15 @@ export type LayoutType =
   | "TwoColumnMediaOnly"
   | "TwoColumnMediaWithText"
   | "TextOnly"
+  | "TextOnlyCenter"
   | "MediaOnly"
+  | "MediaOnlyVertical"
+  | "MediaOnlyHorizontal"
+  | "MediaOnlyWide"
   | "HeroLayoutSquare00"
-  | "HeroLayoutSquare01";
+  | "HeroLayoutSquare01"
+  | "HeroLayoutVertical01"
+  | "HeroLayoutHorizontal01";
 
 export type MediaShapeType = "1:1" | "9:16" | "16:9" | "4:5" | "5:4" | "21:9";
 
@@ -54,6 +62,9 @@ type TextColumnProps = {
   isEditor?: boolean;
   onChangeTitle?: (pageIndex: number, newTitle: string) => void;
   onChangeDescription?: (pageIndex: number, newDesc: string) => void;
+  /** When "textOnly", uses gradient backgrounds and full width (for Text Only layout) */
+  /** When "textOnlyCenter", centered text, single-line height, no accent bands */
+  variant?: "default" | "textOnly" | "textOnlyCenter";
 };
 
 function TextColumn({
@@ -63,9 +74,28 @@ function TextColumn({
   isEditor,
   onChangeTitle,
   onChangeDescription,
+  variant = "default",
 }: TextColumnProps) {
   if (isEditor) {
     // EDITOR MODE – input + textarea
+    if (variant === "textOnlyCenter") {
+      return (
+        <div className="flex flex-col gap-2 w-full text-center">
+          <input
+            className="w-full text-2xl md:text-4xl font-bold leading-tight text-center bg-transparent border border-neutral-500/60 rounded-md px-4 py-1 outline-none focus:border-neutral-200"
+            style={{ color: "var(--artist-text, #faf7f2)", backgroundColor: "var(--artist-background, #11100e)" }}
+            value={title}
+            onChange={(e) => onChangeTitle?.(pageIndex, e.target.value)}
+          />
+          <input
+            className="w-full text-base text-center bg-transparent border border-neutral-500/60 rounded-md px-4 py-1 outline-none focus:border-neutral-200"
+            style={{ color: "var(--artist-text, #faf7f2)", backgroundColor: "var(--artist-background, #11100e)" }}
+            value={description}
+            onChange={(e) => onChangeDescription?.(pageIndex, e.target.value)}
+          />
+        </div>
+      );
+    }
     return (
       <div className="flex flex-col gap-6">
         <input
@@ -83,6 +113,56 @@ function TextColumn({
   }
 
   // VIEW MODE – plain text
+  if (variant === "textOnlyCenter") {
+    return (
+      <div className="flex flex-col gap-2 w-full text-center">
+        <h2
+          className="w-full text-2xl md:text-4xl font-bold leading-tight px-4 py-1"
+          style={{
+            color: "var(--artist-text, #faf7f2)",
+            backgroundColor: "var(--artist-background, #11100e)",
+          }}
+        >
+          {title}
+        </h2>
+        <p
+          className="w-full whitespace-pre-line text-sm md:text-base px-4 py-1"
+          style={{
+            color: "var(--artist-text, #faf7f2)",
+            backgroundColor: "var(--artist-background, #11100e)",
+          }}
+        >
+          {description}
+        </p>
+      </div>
+    );
+  }
+
+  if (variant === "textOnly") {
+    return (
+      <div className="flex flex-col gap-4 w-full">
+        <h2
+          className="w-full text-2xl md:text-4xl lg:text-5xl font-bold leading-tight px-6 py-3"
+          style={{
+            color: "var(--artist-text, #faf7f2)",
+            background: "linear-gradient(to right, var(--artist-accent, #c96a4a) .5%, var(--artist-background, #11100e) .5%)",
+          }}
+        >
+          {title}
+        </h2>
+        <p
+          className="w-full whitespace-pre-line text-sm sm:text-base md:text-lg px-6 py-3"
+          style={{
+            color: "var(--artist-background, #faf7f2)",
+            background: "linear-gradient(to right, var(--artist-accent, #c96a4a) .5%, var(--artist-background, #11100e) .5%, transparent 0%)",
+          }}
+        >
+          {description}
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-1 md:gap-6">
       <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold leading-tight text-(var(--artist-text))">
@@ -118,6 +198,7 @@ export default function PageRenderer({
       isEditor={isEditor}
       onChangeTitle={onChangeTitle}
       onChangeDescription={onChangeDescription}
+      variant={layoutType === "TextOnly" ? "textOnly" : layoutType === "TextOnlyCenter" ? "textOnlyCenter" : "default"}
     />
   );
 
@@ -210,17 +291,145 @@ export default function PageRenderer({
 
     case "MediaOnly":
       return (
-        <div className="relative w-full min-h-[40vh]">
+        <div className="relative w-full min-h-[50vh]">
           <MediaOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none" />
-          <div className="relative z-10 w-full">{media}</div>
+          <div className="relative z-10 w-full max-w-7xl mx-auto flex justify-center items-center min-h-[50vh] py-8">
+            <div
+              className="shrink-0 w-[425px] aspect-square overflow-hidden flex items-center justify-center"
+              style={{ boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)" }}
+            >
+              {mediaSrc ? (
+                <img
+                  src={mediaSrc}
+                  alt="Portfolio media"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div
+                  className="flex h-full w-full items-center justify-center text-sm"
+                  style={{
+                    color: "var(--artist-text, #faf7f2)",
+                    backgroundColor: "rgb(130, 130, 130)",
+                    opacity: 0.8,
+                  }}
+                >
+                  No media
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+
+    case "MediaOnlyVertical":
+      return (
+        <div className="relative w-full min-h-[50vh]">
+          <MediaOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none" />
+          <div className="relative z-10 w-full max-w-7xl mx-auto flex justify-center items-center min-h-[50vh] py-8">
+            <div
+              className="shrink-0 h-[425px] w-[340px] overflow-hidden flex items-center justify-center"
+              style={{ boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)" }}
+            >
+              {mediaSrc ? (
+                <img
+                  src={mediaSrc}
+                  alt="Portfolio media"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div
+                  className="flex h-full w-full items-center justify-center text-sm"
+                  style={{
+                    color: "var(--artist-text, #faf7f2)",
+                    backgroundColor: "rgb(130, 130, 130)",
+                    opacity: 0.8,
+                  }}
+                >
+                  No media
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+
+    case "MediaOnlyHorizontal":
+      return (
+        <div className="relative w-full min-h-[50vh]">
+          <MediaOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none" />
+          <div className="relative z-10 w-full max-w-7xl mx-auto flex justify-center items-center min-h-[50vh] py-8">
+            <div
+              className="shrink-0 w-[756px] h-[425px] overflow-hidden flex items-center justify-center"
+              style={{ boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)" }}
+            >
+              {mediaSrc ? (
+                <img
+                  src={mediaSrc}
+                  alt="Portfolio media"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div
+                  className="flex h-full w-full items-center justify-center text-sm"
+                  style={{
+                    color: "var(--artist-text, #faf7f2)",
+                    backgroundColor: "rgb(130, 130, 130)",
+                    opacity: 0.8,
+                  }}
+                >
+                  No media
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+
+    case "MediaOnlyWide":
+      return (
+        <div className="relative w-full min-h-[50vh]">
+          <MediaOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none" />
+          <div className="relative z-10 w-full max-w-7xl mx-auto flex justify-center items-center min-h-[50vh] py-8">
+            <div
+              className="shrink-0 w-[756px] h-[425px] overflow-hidden flex items-center justify-center"
+              style={{ boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)" }}
+            >
+              {mediaSrc ? (
+                <img
+                  src={mediaSrc}
+                  alt="Portfolio media"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div
+                  className="flex h-full w-full items-center justify-center text-sm"
+                  style={{
+                    color: "var(--artist-text, #faf7f2)",
+                    backgroundColor: "rgb(130, 130, 130)",
+                    opacity: 0.8,
+                  }}
+                >
+                  No media
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       );
 
     case "TextOnly":
       return (
-        <div className="relative w-full min-h-[40vh]">
+        <div className="relative w-full min-h-[50vh]">
           <TextOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none" />
-          <div className="relative z-10 w-full">{text}</div>
+          <div className="relative z-10 w-full max-w-7xl mx-auto">{text}</div>
+        </div>
+      );
+
+    case "TextOnlyCenter":
+      return (
+        <div className="relative w-full min-h-[50vh]">
+          <TextOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none" />
+          <div className="relative z-10 w-full max-w-7xl mx-auto px-6">{text}</div>
         </div>
       );
 
@@ -232,7 +441,7 @@ export default function PageRenderer({
             <HeroLayoutSquare01Template className="w-full h-full max-w-7xl pointer-events-none" />
           </div>
           <div className="relative z-10 w-full max-w-7xl mx-auto px-0">
-          <div className="grid grid-cols-[1fr_1fr] gap-8 md:gap-12 items-stretch min-h-[50vh] py-8 ">
+          <div className="grid grid-cols-[1fr_1fr] gap-8 md:gap-4 items-stretch min-h-[50vh] px-4 py-8 ">
               {/* Col A: image (left) – matches editor */}
               <div
                 className="shrink-0 self-center w-[425px] aspect-square overflow-hidden flex items-center justify-center"
@@ -258,6 +467,118 @@ export default function PageRenderer({
                 )}
               </div>
               {/* Col B: text (right) – vertically centered, matches editor */}
+              <div className="flex flex-col gap-4 min-w-0 self-stretch flex-1 min-h-0">
+                <div className="flex-1 min-h-[2rem]" aria-hidden />
+                <div className="flex flex-col gap-4">
+                  <h2
+                    className="text-4xl md:text-5xl font-bold leading-tight"
+                    style={{ color: "var(--artist-background, #11100e)" }}
+                  >
+                    {page.title || "Header"}
+                  </h2>
+                  <p
+                    className="text-xl whitespace-pre-line"
+                    style={{ color: "var(--artist-background, #11100e)", opacity: 0.8 }}
+                  >
+                    {page.title2 || "Subheader"}
+                  </p>
+                </div>
+                <div className="flex-1 min-h-[2rem]" aria-hidden />
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+
+    case "HeroLayoutVertical01":
+      return (
+        <div className="relative w-full min-h-[50vh]">
+          <div className="absolute inset-0 flex justify-center items-start z-0">
+            <HeroLayoutVertical01Template className="w-full h-full max-w-7xl pointer-events-none" />
+          </div>
+          <div className="relative z-10 w-full max-w-7xl mx-auto px-0">
+            <div className="grid grid-cols-[auto_1fr] gap-4 md:gap-16 items-stretch min-h-[50vh] px-4 py-8">
+              {/* Col A: vertical image (left) – auto width fits 340px image, text closer */}
+              <div
+                className="shrink-0 self-center h-[425px] w-[340px] overflow-hidden flex items-center justify-center"
+                style={{ boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)" }}
+              >
+                {page.mediaSrc ? (
+                  <img
+                    src={page.mediaSrc}
+                    alt="Portfolio media"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div
+                    className="flex h-full w-full items-center justify-center text-sm"
+                    style={{
+                      color: "var(--artist-text, #faf7f2)",
+                      opacity: 0.6,
+                      boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)",
+                    }}
+                  >
+                    No media
+                  </div>
+                )}
+              </div>
+              {/* Col B: text (right) – same as HeroLayoutSquare01 */}
+              <div className="flex flex-col min-w-0 self-stretch flex-1 min-h-0">
+                <div className="flex-1 min-h-[2rem]" aria-hidden />
+                <div className="flex flex-col gap-4">
+                  <h2
+                    className="text-4xl md:text-5xl font-bold leading-tight"
+                    style={{ color: "var(--artist-background, #11100e)" }}
+                  >
+                    {page.title || "Header"}
+                  </h2>
+                  <p
+                    className="text-xl whitespace-pre-line"
+                    style={{ color: "var(--artist-background, #11100e)", opacity: 0.8 }}
+                  >
+                    {page.title2 || "Subheader"}
+                  </p>
+                </div>
+                <div className="flex-1 min-h-[2rem]" aria-hidden />
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+
+    case "HeroLayoutHorizontal01":
+      return (
+        <div className="relative w-full min-h-[50vh]">
+          <div className="absolute inset-0 flex justify-center items-start z-0">
+            <HeroLayoutHorizontal01Template className="w-full h-full max-w-7xl pointer-events-none" />
+          </div>
+          <div className="relative z-10 w-full max-w-7xl mx-auto px-0">
+            <div className="grid grid-cols-[auto_1fr] gap-4 md:gap-16 items-stretch min-h-[50vh] px-4 py-8">
+              {/* Col A: horizontal image (left) – 425px height, 5:4 aspect */}
+              <div
+                className="shrink-0 self-center h-[425px] w-[531px] min-h-[425px] min-w-[531px] overflow-hidden flex items-center justify-center"
+                style={{ boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)" }}
+              >
+                {page.mediaSrc ? (
+                  <img
+                    src={page.mediaSrc}
+                    alt="Portfolio media"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div
+                    className="flex h-full w-full items-center justify-center text-sm"
+                    style={{
+                      color: "var(--artist-text, #faf7f2)",
+                      opacity: 0.6,
+                      boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)",
+                    }}
+                  >
+                    No media
+                  </div>
+                )}
+              </div>
+              {/* Col B: text (right) – same as HeroLayoutSquare01 */}
               <div className="flex flex-col gap-4 min-w-0 self-stretch flex-1 min-h-0">
                 <div className="flex-1 min-h-[2rem]" aria-hidden />
                 <div className="flex flex-col gap-4">

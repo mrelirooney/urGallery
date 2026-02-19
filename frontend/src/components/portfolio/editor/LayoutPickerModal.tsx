@@ -3,8 +3,9 @@
 import React from "react";
 import { LayoutType } from "./PageRenderer";
 import {
-  HeroLayoutSquare00Template,
   HeroLayoutSquare01Template,
+  HeroLayoutVertical01Template,
+  HeroLayoutHorizontal01Template,
   TextOnlyTemplate,
   MediaOnlyTemplate,
 } from "../templates";
@@ -21,10 +22,15 @@ const LAYOUT_OPTIONS: {
   label: string;
   Icon: React.ComponentType<{ className?: string }>;
 }[] = [
-  { value: "HeroLayoutSquare00", label: "Title Page 1", Icon: HeroLayoutSquare00Template },
   { value: "HeroLayoutSquare01", label: "Title Page 2 – Image Right", Icon: HeroLayoutSquare01Template },
+  { value: "HeroLayoutVertical01", label: "Title Page – Vertical Image", Icon: HeroLayoutVertical01Template },
+  { value: "HeroLayoutHorizontal01", label: "Title Page – Horizontal Image", Icon: HeroLayoutHorizontal01Template },
   { value: "TextOnly", label: "Text Only", Icon: TextOnlyTemplate },
+  { value: "TextOnlyCenter", label: "Text Only – Centered", Icon: TextOnlyTemplate },
   { value: "MediaOnly", label: "Media Only", Icon: MediaOnlyTemplate },
+  { value: "MediaOnlyVertical", label: "Media Only – Vertical", Icon: MediaOnlyTemplate },
+  { value: "MediaOnlyHorizontal", label: "Media Only – Horizontal (16:9)", Icon: MediaOnlyTemplate },
+  { value: "MediaOnlyWide", label: "Media Only – Wide (16:9)", Icon: MediaOnlyTemplate },
 ];
 
 export default function LayoutPickerModal({
