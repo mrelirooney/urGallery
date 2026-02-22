@@ -16,7 +16,7 @@ export default function Container({
   return (
     <Component
       className={[
-        "mx-auto w-full md:w-full max-w-7xl px-0",
+        "mx-auto w-full max-w-site px-0",
         className,
       ].join(" ")}
     >

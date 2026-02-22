@@ -368,3 +368,21 @@ DATABASES = {
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# ============================================================
+# EMAIL (Help form, notifications)
+# Dev: console backend prints to terminal
+# Prod: set EMAIL_BACKEND=smtp + SMTP env vars
+# Recipient for help form: HELP_EMAIL_RECIPIENT
+# ============================================================
+HELP_EMAIL_RECIPIENT = os.getenv("HELP_EMAIL_RECIPIENT", "mrelirooney@gmail.com")
+EMAIL_BACKEND = os.getenv(
+    "EMAIL_BACKEND",
+    "django.core.mail.backends.console.EmailBackend" if DEBUG else "django.core.mail.backends.smtp.EmailBackend",
+)
+EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.gmail.com")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@urgallery.io")

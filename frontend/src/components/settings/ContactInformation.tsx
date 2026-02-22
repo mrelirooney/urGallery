@@ -64,7 +64,7 @@ function SortableContactItem({ id, value, index, onChange }: { id: string; value
         type="button"
         {...attributes}
         {...listeners}
-        className="p-2 text-neutral-400 hover:text-neutral-600 cursor-grab active:cursor-grabbing transition-colors"
+        className="p-0 text-neutral-400 hover:text-neutral-600 cursor-grab active:cursor-grabbing transition-colors"
         aria-label="Drag to reorder"
       >
         <GripVertical size={20} />
@@ -74,7 +74,7 @@ function SortableContactItem({ id, value, index, onChange }: { id: string; value
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={`Contact #${index + 1}`}
-        className="flex-1 px-4 py-2 text-neutral-900 bg-white border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent placeholder:text-neutral-400"
+        className="flex-1 px-4 py-2 text-[var(--foreground)] bg-[var(--background)] border border-neutral-300 dark:border-neutral-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--light-brown)] focus:border-transparent placeholder:opacity-60"
       />
     </div>
   );
@@ -266,18 +266,18 @@ export default function ContactInformation({ onSaveRef }: Props) {
 
   if (loading) {
     return (
-      <div className="p-8 text-neutral-500">
+      <div className="px-0.5 py-4 md:py-6 lg:py-8 lg:pr-0.5 lg:pl-12 text-[var(--foreground)]">
         Loading contact information...
       </div>
     );
   }
 
   return (
-    <div className="p-8">
+    <div className="px-0 py-4 md:py-6 lg:py-8 lg:pr-0.5 lg:pl-12">
       <div className="flex gap-8">
         {/* Contact Inputs */}
-        <div className="flex-1 max-w-2xl">
-          <p className="text-sm text-neutral-500 mb-4">
+        <div className="flex-1 w-full min-w-0 ">
+          <p className="text-sm text-[var(--foreground)] opacity-80 mb-4 ">
             Add up to 5 contact links. Drag the grip icon to reorder. We'll automatically detect the platform (Instagram, YouTube, LinkedIn, Email, etc.)
           </p>
 
@@ -304,10 +304,10 @@ export default function ContactInformation({ onSaveRef }: Props) {
             </SortableContext>
           </DndContext>
 
-          <div className="mt-6 text-xs text-neutral-500">
+          <div className="mt-6 text-sm text-[var(--foreground)] opacity-80">
             <p className="font-semibold mb-1">Supported platforms:</p>
             <p>Instagram, YouTube, Twitter/X, LinkedIn, Twitch, GitHub, Behance, Dribbble, TikTok, Email, Website</p>
-            <p className="mt-2 text-red-600">Note: Phone numbers are not allowed.</p>
+            <p className="mt-2 text-[var(--light-brown)]">Note: Phone numbers are not allowed.</p>
           </div>
 
           {/* Hidden save button - parent component will call this */}

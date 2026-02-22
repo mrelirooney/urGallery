@@ -28,17 +28,17 @@ const menuItems: { id: SettingsSection; label: string }[] = [
 
 export default function SettingsNav({ activeSection, onSectionChange }: Props) {
   return (
-    <div className="flex h-screen overflow-hidden bg-neutral-950 text-white">
-      <nav className="w-64 border-r border-neutral-800 bg-neutral-900 flex-1 overflow-y-auto">
+    <div className="flex h-screen overflow-hidden bg-[var(--background)] text-[var(--foreground)]">
+      <nav className="lg:w-[20%] xl:w-[5%] border-r border-neutral-200 dark:border-neutral-800 bg-[var(--background)] flex-1 overflow-y-auto">
         <ul className="py-4">
           {menuItems.map((item) => (
             <li key={item.id}>
               <button
                 onClick={() => onSectionChange(item.id)}
-                className={`w-full text-left px-6 py-3 transition-colors ${
+                className={`w-full text-left pl-0 pr-12 py-3 ${
                   activeSection === item.id
-                    ? "bg-neutral-800 text-white font-semibold"
-                    : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
+                    ? "font-semibold text-[var(--light-brown)]"
+                    : "text-[var(--foreground)] opacity-70"
                 }`}
               >
                 {item.label}

@@ -115,17 +115,23 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
     }
   }
 
+  const widthClasses = variant === "hero"
+    ? "max-w-[90vw] sm:max-w-[85vw] md:max-w-none lg:max-w-2xl xl:max-w-wide 2xl:max-w-wide"
+    : "max-w-xs sm:max-w-md md:max-w-medium lg:max-w-2xl xl:max-w-wide 2xl:max-w-wide";
+
   return (
-    <div className="relative w-full max-w-xs sm:max-w-md md:max-w-lg lg:max-w-2xl xl:max-w-3xl">
+    <div className={`relative w-full ${widthClasses}`}>
       <div
-        className={`flex items-center gap-2 sm:gap-3 rounded-xs ring-1 ring-[var(--foreground)]/10 px-3 sm:px-4 py-1 transition-all ${
+        className={`flex items-center gap-2 sm:gap-3 md:gap-4 rounded-xs ring-2 ring-[var(--foreground)]/10 px-3 sm:px-4 md:px-5 transition-all ${
+          variant === "hero" ? "py-1.5 sm:py-2" : "py-0.5 sm:py-1"
+        } ${
           !hasTheme ? "hover:ring-[var(--light-brown)]/100 focus-within:ring-[var(--light-brown)]/70" : ""
         } ${
           variant === "hero"
             ? "shadow-lg shadow-[var(--light-brown)]/90 hover:shadow-xl hover:shadow-[var(--light-brown)]/40 focus-within:shadow-xl focus-within:shadow-[var(--light-brown)]/50"
             : ""
         }`}
-        style={hasTheme ? { boxShadow: `0 0 0 1px ${useAccent ? accentColor : withOpacity50(textColor!)}` } : undefined}
+        style={hasTheme ? { boxShadow: `0 0 0 2px ${useAccent ? accentColor : withOpacity50(textColor!)}` } : undefined}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -140,7 +146,7 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
           onBlur={() => setIsFocused(false)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className="w-full outline-none text-neutral-300 text-sm bg-transparent"
+          className="w-full outline-none text-neutral-300 text-body-sm sm:text-body bg-transparent"
           aria-label="Search"
         />
         <button
@@ -164,7 +170,7 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
       {mounted && open && results.length > 0 && (
         <ul
           ref={listRef}
-          className="absolute z-20 mt-1 w-full rounded-xs bg-[var(--light-brown)] shadow-lg ring-1 ring-black/10 overflow-hidden max-h-[60vh] sm:max-h-[70vh] overflow-y-auto"
+          className="absolute z-20 mt-1 w-full rounded-xs bg-[var(--light-brown)] shadow-lg ring-1 ring-black/10 overflow-hidden max-h-[50vh] xs:max-h-[60vh] sm:max-h-[70vh] md:max-h-[75vh] overflow-y-auto"
         >
           {results.map((r, i) => (
             <li
@@ -173,23 +179,23 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
                 e.preventDefault(); // prevent input blur from swallowing click
                 handleSelect(r);
               }}
-              className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 bg-[var(--foreground)] cursor-pointer 
+              className={`flex items-center gap-2 sm:gap-3 md:gap-4 px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 md:py-3.5 bg-[var(--foreground)] cursor-pointer 
                 ${ i === active ? "bg-[var(--light-brown)]/50" : "bg-[var(--foreground)]"} 
                 hover:bg-[var(--light-brown)]/50 active:bg-[var(--light-brown)] transition-colors`}
             >
               <img
                 src={(r as any).avatar_url || "/avatars/astra-chat-profilepic.jpeg"}
                 alt=""
-                className="h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 rounded-full object-cover shrink-0"
+                className="h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 lg:h-11 lg:w-11 rounded-full object-cover shrink-0"
               />
               <div className="flex-1 min-w-0">
-                <div className="text-sm sm:text-base font-medium text-neutral-900 truncate">{r.name}</div>
+                <div className="text-body-sm sm:text-body font-medium text-neutral-900 truncate">{r.name}</div>
                 {(r as any).username && (
-                  <div className="text-xs sm:text-sm text-neutral-500 truncate">@{(r as any).username}</div>
+                  <div className="text-caption sm:text-body-sm text-neutral-500 truncate">@{(r as any).username}</div>
                 )}
               </div>
               {/* Hide location/title on very small screens */}
-              <div className="hidden sm:block text-xs sm:text-sm text-neutral-500 text-right shrink-0">
+              <div className="hidden sm:block text-caption sm:text-body-sm text-neutral-500 text-right shrink-0">
                 {r.title || "—"}
                 {r.title && r.location ? " • " : ""}
                 {r.location || ""}
@@ -200,7 +206,7 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
       )}
 
       {mounted && open && !loading && results.length === 0 && query.trim() && (
-        <div className="absolute z-20 mt-2 w-full rounded-xl bg-white shadow ring-1 ring-black/10 px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-neutral-500">
+        <div className="absolute z-20 mt-2 w-full rounded-xl bg-white shadow ring-1 ring-black/10 px-3 sm:px-4 py-2.5 sm:py-3 text-caption sm:text-body-sm text-neutral-500">
           No artists found.
         </div>
       )}

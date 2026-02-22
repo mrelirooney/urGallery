@@ -11,16 +11,17 @@ const TextField = forwardRef<HTMLInputElement, Props>(
     return (
       <label className="block">
         {label && (
-          <span className="mb-1 block text-sm font-medium text-[var(--foreground)]/70 md:text-[var(--background)]">
+          <span className="mb-1 block text-body font-medium text-[var(--foreground)]/70 md:text-[var(--background)]">
             {label}
           </span>
         )}
         <input
           ref={ref}
           className={[
-            "w-full rounded-lg border px-3 py-2 text-sm",
-            "border-neutral-300 bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-400/40 text-neutral-800",
-            error ? "border-red-400" : "",
+            "w-full rounded-xs ring-2 px-3 py-2 text-body bg-transparent",
+            "ring-[var(--foreground)]/10 md:ring-[var(--background)]/10 text-[var(--foreground)] placeholder:text-neutral-400",
+            "focus:outline-none focus:ring-2 focus:ring-[var(--light-brown)]/70",
+            error ? "ring-red-400/70" : "",
             className,
           ].join(" ")}
           {...rest}

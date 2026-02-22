@@ -224,20 +224,20 @@ export default function PortfolioMenu({ isOpen, onClose, customColors }: Props) 
       {/* Slide-in menu */}
       <div
         ref={menuRef}
-        className={`fixed left-0 top-0 bottom-0 w-80 shadow-xl z-60 transform transition-transform duration-300 ease-in-out flex flex-col ${
+        className={`fixed left-0 top-0 bottom-0 w-[85vw] max-w-80 sm:w-80 shadow-xl z-60 transform transition-transform duration-300 ease-in-out flex flex-col ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
         style={{ backgroundColor: text }}
       >
         {/* Header */}
         <div
-          className="flex items-center justify-between p-4 border-b"
+          className="flex items-center justify-between p-page-sm sm:p-page border-b"
           style={{ borderColor: `${bg}20` }}
         >
           {/* Profile section */}
           <div className="flex items-center gap-3">
             <div
-              className="h-12 w-12 rounded-full overflow-hidden border"
+              className="h-10 w-10 sm:h-12 sm:w-12 rounded-full overflow-hidden border shrink-0"
               style={{ borderColor: `${bg}40`, backgroundColor: `${bg}10` }}
             >
               <img
@@ -247,10 +247,10 @@ export default function PortfolioMenu({ isOpen, onClose, customColors }: Props) 
               />
             </div>
             <div>
-              <div className="font-medium truncate" style={{ color: bg }}>
+              <div className="font-medium truncate text-body sm:text-body-lg" style={{ color: bg }}>
                 {artistData?.profile?.display_name || "Loading..."}
               </div>
-              <div className="text-sm" style={{ color: `${bg}99` }}>
+              <div className="text-body-sm" style={{ color: `${bg}99` }}>
                 {artistData?.portfolios?.length || 0} portfolio
                 {artistData?.portfolios?.length !== 1 ? "s" : ""}
               </div>
@@ -278,11 +278,11 @@ export default function PortfolioMenu({ isOpen, onClose, customColors }: Props) 
         {/* Portfolios list */}
         <div className="flex-1 overflow-y-auto">
           {loading ? (
-            <div className="p-4 text-center" style={{ color: `${bg}99` }}>
+            <div className="p-page-sm sm:p-page text-center text-body-sm" style={{ color: `${bg}99` }}>
               Loading...
             </div>
           ) : error ? (
-            <div className="p-4 text-center" style={{ color: `${bg}99` }}>
+            <div className="p-page-sm sm:p-page text-center text-body-sm" style={{ color: `${bg}99` }}>
               {error}
             </div>
           ) : artistData?.portfolios && artistData.portfolios.length > 0 ? (
@@ -290,7 +290,7 @@ export default function PortfolioMenu({ isOpen, onClose, customColors }: Props) 
               {artistData.portfolios.map((portfolio) => (
                 <li
                   key={portfolio.id}
-                  className="p-4 transition-colors border-b last:border-b-0"
+                  className="p-page-sm sm:p-page transition-colors border-b last:border-b-0"
                   style={{ borderColor: `${bg}15` }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = `${bg}50`;
@@ -311,11 +311,11 @@ export default function PortfolioMenu({ isOpen, onClose, customColors }: Props) 
                       className="flex-1 min-w-0 text-left"
                       style={{ color: bg }}
                     >
-                      <div className="font-medium truncate">
+                      <div className="font-medium truncate text-body sm:text-body-lg">
                         {portfolio.title || "Untitled Portfolio"}
                       </div>
                       {portfolio.privacy_status && (
-                        <div className="text-xs mt-1" style={{ color: `${bg}99` }}>
+                        <div className="text-caption mt-1" style={{ color: `${bg}99` }}>
                           {portfolio.privacy_status}
                         </div>
                       )}
@@ -361,18 +361,18 @@ export default function PortfolioMenu({ isOpen, onClose, customColors }: Props) 
               ))}
             </ul>
           ) : (
-            <div className="p-4 text-center" style={{ color: `${bg}99` }}>
+            <div className="p-page-sm sm:p-page text-center text-body-sm" style={{ color: `${bg}99` }}>
               No portfolios yet
             </div>
           )}
         </div>
 
         {/* Add Portfolio button */}
-        <div className="p-4">
+        <div className="p-page-sm sm:p-page">
           {isOwner && (
             <button
               onClick={handleAddPortfolio}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-md transition font-medium"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 sm:py-3 rounded-md transition font-medium text-body-sm sm:text-body"
               style={{
                 backgroundColor: bg,
                 color: text,

@@ -197,8 +197,8 @@ export default function CustomizationSection({ onSaveRef }: CustomizationSection
 
   if (loading) {
     return (
-      <div className="p-8">
-        <p className="text-neutral-500">Loading...</p>
+      <div className="px-0.5 py-4 md:py-6 lg:py-8 lg:pr-0.5 lg:pl-12">
+        <p className="text-[var(--foreground)]">Loading...</p>
       </div>
     );
   }
@@ -225,14 +225,15 @@ export default function CustomizationSection({ onSaveRef }: CustomizationSection
     <div className="flex h-full">
       <GoogleFontsAllLoader />
       <GoogleFontsLoader fontFamily={previewFont} />
-      {/* Left side - Color controls */}
-      <div className="flex-1 p-8 overflow-y-auto">
-        <div className="max-w-md">
-          <h2 className="text-2xl font-bold text-neutral-900 mb-8">Customization</h2>
-
-          {/* Background Color */}
+      {/* Left side - Colors, Font, Themes */}
+      <div className="flex-1 px-0 py-4 md:py-6 lg:py-8 lg:pr-0.5 lg:pl-12 overflow-y-auto">
+        <div className="w-full lg:max-w-none">
+        <h3 className="block text-lg font-semibold text-[var(--foreground)] mb-2">
+            Colors
+          </h3>
+          {/* Color #1 */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-neutral-700 mb-2">
+            <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
               Color #1
             </label>
             <div className="flex items-center gap-3">
@@ -240,21 +241,21 @@ export default function CustomizationSection({ onSaveRef }: CustomizationSection
                 type="color"
                 value={colors.background}
                 onChange={(e) => handleColorChange("background", e.target.value)}
-                className="h-12 w-20 rounded border border-neutral-300 cursor-pointer"
+                className="h-12 w-20 rounded-xs border-0 cursor-pointer"
               />
               <input
                 type="text"
                 value={colors.background}
                 onChange={(e) => handleColorChange("background", e.target.value)}
                 placeholder="#faf7f2"
-                className="flex-1 px-4 py-2 border border-neutral-300 rounded-md text-neutral-900"
+                className="flex-1 px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-xs text-[var(--foreground)] bg-[var(--background)]"
               />
             </div>
           </div>
 
           {/* Foreground/Primary Color
           <div className="mb-6">
-            <label className="block text-sm font-medium text-neutral-700 mb-2">
+            <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
               Primary Color
             </label>
             <div className="flex items-center gap-3">
@@ -262,21 +263,21 @@ export default function CustomizationSection({ onSaveRef }: CustomizationSection
                 type="color"
                 value={colors.foreground}
                 onChange={(e) => handleColorChange("foreground", e.target.value)}
-                className="h-12 w-20 rounded border border-neutral-300 cursor-pointer"
+                className="h-12 w-20 rounded-xs border border-neutral-300 cursor-pointer"
               />
               <input
                 type="text"
                 value={colors.foreground}
                 onChange={(e) => handleColorChange("foreground", e.target.value)}
                 placeholder="#11100e"
-                className="flex-1 px-4 py-2 border border-neutral-300 rounded-md text-neutral-900"
+                className="flex-1 px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-xs text-[var(--foreground)] bg-[var(--background)]"
               />
             </div>
           </div> */}
 
-          {/* Text Color */}
+          {/* Color #2 */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-neutral-700 mb-2">
+            <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
               Color #2
             </label>
             <div className="flex items-center gap-3">
@@ -284,21 +285,21 @@ export default function CustomizationSection({ onSaveRef }: CustomizationSection
                 type="color"
                 value={colors.text}
                 onChange={(e) => handleColorChange("text", e.target.value)}
-                className="h-12 w-20 rounded border border-neutral-300 cursor-pointer"
+                className="h-12 w-20 rounded-xs border-0 cursor-pointer"
               />
               <input
                 type="text"
                 value={colors.text}
                 onChange={(e) => handleColorChange("text", e.target.value)}
                 placeholder="#11100e"
-                className="flex-1 px-4 py-2 border border-neutral-300 rounded-md text-neutral-900"
+                className="flex-1 px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-xs text-[var(--foreground)] bg-[var(--background)]"
               />
             </div>
           </div>
 
-          {/* Accent Color */}
+          {/* Color #3 */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-neutral-700 mb-2">
+            <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
               Color #3
             </label>
             <div className="flex items-center gap-3">
@@ -306,27 +307,27 @@ export default function CustomizationSection({ onSaveRef }: CustomizationSection
                 type="color"
                 value={colors.accent}
                 onChange={(e) => handleColorChange("accent", e.target.value)}
-                className="h-12 w-20 rounded border border-neutral-300 cursor-pointer"
+                className="h-12 w-20 rounded-xs border-0 cursor-pointer"
               />
               <input
                 type="text"
                 value={colors.accent}
                 onChange={(e) => handleColorChange("accent", e.target.value)}
                 placeholder="#c96a4a"
-                className="flex-1 px-4 py-2 border border-neutral-300 rounded-md text-neutral-900"
+                className="flex-1 px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-xs text-[var(--foreground)] bg-[var(--background)]"
               />
             </div>
           </div>
 
           {/* Font */}
           <div className="mb-6 relative" ref={fontDropdownRef}>
-            <label className="block text-sm font-medium text-neutral-700 mb-2">
+            <h3 className="block text-lg font-semibold text-[var(--foreground)] mb-2">
               Font
-            </label>
+            </h3>
             <button
               type="button"
               onClick={() => setFontDropdownOpen((o) => !o)}
-              className="w-full px-4 py-2.5 border border-neutral-300 rounded-md text-neutral-900 bg-white text-left flex items-center justify-between hover:border-neutral-400 transition-colors"
+              className="w-full px-4 py-2.5 border border-neutral-300 dark:border-neutral-600 rounded-xs text-[var(--foreground)] bg-[var(--background)] text-left flex items-center justify-between hover:border-neutral-400 transition-colors"
             >
               <span style={{ fontFamily: `"${selectedFont}", sans-serif` }}>
                 {selectedFont}
@@ -342,7 +343,7 @@ export default function CustomizationSection({ onSaveRef }: CustomizationSection
             </button>
             {fontDropdownOpen && (
               <div
-                className="text-neutral-900 absolute z-50 mt-1 left-0 right-0 max-h-64 overflow-y-auto border border-neutral-200 rounded-md bg-white shadow-lg"
+                className="text-[var(--foreground)] absolute z-50 mt-1 left-0 right-0 max-h-64 overflow-y-auto border border-neutral-200 dark:border-neutral-600 rounded-xs bg-[var(--background)] shadow-lg"
                 onMouseLeave={() => setHoveredFont(null)}
               >
                 {GOOGLE_FONTS.map((f) => {
@@ -356,8 +357,8 @@ export default function CustomizationSection({ onSaveRef }: CustomizationSection
                         setSelectedFont(f.family);
                         setFontDropdownOpen(false);
                       }}
-                      className={`w-full px-4 py-2.5 text-left hover:bg-neutral-50 transition-colors first:rounded-t-md last:rounded-b-md ${
-                        isSelected ? "bg-neutral-100 font-medium" : ""
+                      className={`w-full px-4 py-2.5 text-left hover:bg-neutral-50 transition-colors first:rounded-xs-t-md last:rounded-xs-b-md ${
+                        isSelected ? "bg-[var(--light-brown)] font-medium" : ""
                       }`}
                       style={{ fontFamily: `"${f.family}", sans-serif` }}
                     >
@@ -369,13 +370,13 @@ export default function CustomizationSection({ onSaveRef }: CustomizationSection
             )}
           </div>
 
-          {/* Theme - full row */}
-          <div className="mt-8 pt-8 border-t border-neutral-200 w-full max-w-2xl">
-            <h3 className="text-lg font-semibold text-neutral-900 mb-2">Theme</h3>
-            <p className="text-sm text-neutral-600 mb-4">
+          {/* Theme */}
+          <div className="w-full mt-8 pt-0">
+            <h3 className="text-lg font-semibold text-[var(--foreground)] mb-2">Theme</h3>
+            <p className="text-sm text-[var(--foreground)] opacity-80 mb-4">
               Choose a background pattern for your profile and portfolio pages.
             </p>
-            <div className="flex flex-wrap gap-4">
+            <div className="grid grid-cols-3 md:grid-cols-8 lg:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4 md:gap-1">
               {themeOptions.map((opt) => {
                 const isSelected = selectedThemeId === opt.id;
                 return (
@@ -383,13 +384,13 @@ export default function CustomizationSection({ onSaveRef }: CustomizationSection
                     key={opt.key}
                     type="button"
                     onClick={() => setSelectedThemeId(opt.id)}
-                    className={`flex flex-col items-center gap-2 p-2 rounded-lg border-2 transition-colors ${
+                    className={`flex flex-col items-center gap-2 p-2 rounded-xs border-0 transition-colors w-full min-w-0 ${
                       isSelected
-                        ? "border-neutral-900 bg-neutral-50"
-                        : "border-neutral-200 hover:border-neutral-400"
+                        ? "bg-[var(--light-brown)]"
+                        : "hover:bg-[var(--light-brown)/50]"
                     }`}
                   >
-                    <div className="w-24 h-24 rounded-md overflow-hidden bg-neutral-200 flex items-center justify-center shrink-0">
+                    <div className="w-full aspect-square min-w-0 rounded-xs overflow-hidden bg-neutral-200 flex items-center justify-center shrink-0">
                       {opt.previewUrl ? (
                         <img
                           src={opt.previewUrl}
@@ -397,12 +398,12 @@ export default function CustomizationSection({ onSaveRef }: CustomizationSection
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <span className="text-neutral-500 text-sm font-medium">
+                        <span className="text-[var(--foreground)] opacity-70 text-sm font-medium">
                           {opt.name}
                         </span>
                       )}
                     </div>
-                    <span className="text-sm font-medium text-neutral-700">
+                    <span className="text-sm font-medium text-[var(--foreground)]">
                       {opt.name}
                     </span>
                   </button>
@@ -413,12 +414,12 @@ export default function CustomizationSection({ onSaveRef }: CustomizationSection
         </div>
       </div>
 
-      {/* Right side - Preview */}
-      <div className="w-[400px] border-l border-neutral-200 p-8 overflow-y-auto bg-neutral-50">
+      {/* Right side - Preview (hidden on mobile per wireframe) */}
+      <div className="hidden lg:block w-[400px] pt-8 pr-0 pl-12 overflow-y-auto bg-[var(--background)]">
         <div className="sticky top-0">         
           {/* Profile preview card */}
           <div
-            className="relative overflow-hidden shadow-lg"
+            className="relative overflow-hidden border border-neutral-200 dark:border-neutral-700 rounded-xs"
             style={{ backgroundColor: colors.background }}
           >
             {absoluteSvgUrl && (
@@ -430,7 +431,7 @@ export default function CustomizationSection({ onSaveRef }: CustomizationSection
             )}
             <div className="relative z-10 p-6 pr-5 pl-5" style={{ fontFamily: previewFontFamily }}>
               <div 
-                className="w-20 h-20 rounded-full mb-4 flex items-center justify-center"
+                className="w-20 h-20 rounded-xs-full mb-4 flex items-center justify-center"
                 style={{ backgroundColor: colors.text }}
               >
               </div>
@@ -457,7 +458,7 @@ export default function CustomizationSection({ onSaveRef }: CustomizationSection
 
           {/* Portfolio preview card */}
           <div
-            className="relative overflow-hidden shadow-lg mt-4 z-[5]"
+            className="relative overflow-hidden mt-4 z-[5] border border-neutral-200 dark:border-neutral-700 rounded-xs"
             style={{ backgroundColor: colors.text }}
           >
             {absoluteSvgUrl && (
@@ -509,7 +510,7 @@ export default function CustomizationSection({ onSaveRef }: CustomizationSection
             </div>
           </div>
 
-          <p className="text-xs text-neutral-500 mt-4">
+          <p className="text-xs text-[var(--foreground)] opacity-70 mt-4">
             Changes will be visible on your public profile and portfolio pages after saving.
           </p>
         </div>

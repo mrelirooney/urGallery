@@ -24,6 +24,8 @@ from rest_framework.decorators import (
 )
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from django.conf import settings
+from django.core.mail import send_mail
 
 User = get_user_model()
 
@@ -291,3 +293,58 @@ class PageDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         return Page.objects.filter(portfolio__user=self.request.user)
+
+
+# ---------- HELP FORM ----------
+
+
+@api_view(["POST"])
+@authentication_classes([SessionAuthentication])
+@permission_classes([IsAuthenticated])
+def help_form_view(request):
+    """
+    Send a help/feedback message via email to HELP_EMAIL_RECIPIENT.
+    Requires authenticated user. CSRF required.
+    """
+    message = (request.data.get("message") or "").strip()
+    subject = (request.data.get("subject") or "").strip()
+    reply_email = (request.data.get("email") or "").strip()
+
+    if not message:
+        return Response(
+            {"detail": "Message is required."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if len(message) > 5000:
+        return Response(
+            {"detail": "Message is too long."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    user = request.user
+    from_email = getattr(user, "email", "") or "unknown@urgallery.io"
+    reply_to = reply_email or from_email
+
+    email_subject = subject or "urGallery Help Request"
+    email_body = f"From: {user.username} ({from_email})\n"
+    if reply_to != from_email:
+        email_body += f"Reply-to preferred: {reply_to}\n"
+    email_body += f"\n--- Message ---\n\n{message}"
+
+    recipient = getattr(settings, "HELP_EMAIL_RECIPIENT", "mrelirooney@gmail.com")
+    try:
+        send_mail(
+            subject=f"[urGallery Help] {email_subject}",
+            message=email_body,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[recipient],
+            fail_silently=False,
+        )
+    except Exception as e:
+        return Response(
+            {"detail": "Failed to send message. Please try again later."},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+    return Response({"detail": "Message sent successfully."}, status=status.HTTP_200_OK)

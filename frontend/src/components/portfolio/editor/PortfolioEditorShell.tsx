@@ -2,6 +2,7 @@
 
 import React, { useCallback, useMemo, useState } from "react";
 import EditorTopBar from "./EditorTopBar";
+import PageThumbnailCapture from "./PageThumbnailCapture";
 import ThemePatternLayer from "../../artist/ThemePatternLayer";
 import PageRenderer, {
   LayoutType,
@@ -128,6 +129,9 @@ export default function PortfolioEditorShell({
   // -------- Modals --------
   const [isLayoutModalOpen, setIsLayoutModalOpen] = useState(false);
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
+
+  // -------- Page thumbnails (snapshots for pagination menu) --------
+  const [pageThumbnails, setPageThumbnails] = useState<(string | null)[]>([]);
 
   // -------- Derived values --------
   const currentPage = useMemo(
@@ -705,9 +709,17 @@ export default function PortfolioEditorShell({
       className="w-full min-w-0 flex-1 flex flex-col min-h-0 pt-5"
       style={{ backgroundColor: "var(--artist-background, #11100e)" }}
     >
+      {/* Off-screen capture for page thumbnails */}
+      <PageThumbnailCapture
+        pages={pages}
+        customColors={customColors}
+        onThumbnailsReady={setPageThumbnails}
+      />
+
       {/* Top bar with thumbnails + actions */}
       <EditorTopBar
         pages={pages}
+        pageThumbnails={pageThumbnails}
         currentPageIndex={currentPageIndex}
         totalPages={pages.length}
         onSelectPage={handleSelectPage}

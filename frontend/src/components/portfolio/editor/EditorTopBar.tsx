@@ -23,6 +23,7 @@ export type EditorTopBarProps = {
 
   // page data + navigation
   pages: PortfolioPageData[];
+  pageThumbnails?: (string | null)[];
   currentPageIndex: number;
   totalPages: number;
   onSelectPage: (index: number) => void;
@@ -51,6 +52,7 @@ export default function EditorTopBar({
   disableDelete,
 
   pages,
+  pageThumbnails = [],
   currentPageIndex,
   totalPages,
 
@@ -109,7 +111,7 @@ export default function EditorTopBar({
       </div>
       </div>
       {/* --- Thumbnails row --- */}
-      <div className="flex gap-2 overflow-x-auto pt-2 pb-2 px-45">
+      <div className="flex gap-2 overflow-x-auto pt-2 pb-2 px-45 rounded-xs">
         {pages.map((page, index) => {
           const isActive = index === currentPageIndex;
           const isDragged = index === dragIndex;
@@ -147,23 +149,23 @@ export default function EditorTopBar({
                 setDragIndex(null);
                 setDragOverIndex(null);
               }}
-              className={`w-20 h-16 rounded-md border transition-transform ${
-                isActive ? "border-white" : "border-neutral-600"
+              className={`w-20 h-12 rounded-xs border transition-transform ${
+                isActive ? "border-3 border-white/50" : "border-neutral-600"
               } ${
                 isDragged
                   ? "opacity-60"
                   : isDragOver
-                    ? "ring-2 ring-white ring-offset-2 ring-offset-neutral-800"
+                    ? "ring-2 ring-var(--artist-text, #C96A4A) ring-offset-2 ring-[var(--artist-text, #C96A4A)]"
                     : ""
               }`}
             >
-              {page.mediaSrc && (
+              {(pageThumbnails[index] ?? page.mediaSrc) ? (
                 <img
-                  src={page.mediaSrc}
-                  className="w-full h-full object-cover rounded-md pointer-events-none"
+                  src={pageThumbnails[index] ?? page.mediaSrc ?? ""}
+                  className="w-full h-full object-cover object-top rounded-xs pointer-events-none "
                   alt={page.title || `Page ${index + 1}`}
                 />
-              )}
+              ) : null}
             </button>
           );
         })}

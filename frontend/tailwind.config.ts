@@ -1,6 +1,7 @@
 // frontend/tailwind.config.ts
 import type { Config } from "tailwindcss";
 import aspectRatio from "@tailwindcss/aspect-ratio";
+import { tailwindThemeExtend } from "./design-tokens";
 
 const config: Config = {
   content: [
@@ -9,7 +10,7 @@ const config: Config = {
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    extend: {},
+    extend: tailwindThemeExtend,
   },
   plugins: [aspectRatio],
 };

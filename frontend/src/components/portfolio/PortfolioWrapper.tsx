@@ -211,7 +211,7 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
             currentPageIndex={currentPageIndex}
           />
         </div>
-        <div className="justify-end relative z-20">
+        <div className="justify-end relative z-20 top-5">
           <Pagination
             totalPages={pages.length}
             currentPage={currentPageIndex + 1}

@@ -60,9 +60,9 @@ export default function Footer() {
 
   return (
     <footer style={{ backgroundColor: footerBg, position: 'relative', zIndex: 50 }}>
-      <Container className="h-auto md:h-14 flex flex-col md:flex-row items-center justify-space-between md:justify-between text-xs max-w-6xl px-16 py-3 md:py-0 gap-1 md:gap-0 opacity-70">
+      <Container className="h-auto md:h-14 flex flex-col md:flex-row items-center justify-space-between md:justify-between text-caption max-w-full px-0 py-3 md:py-0 gap-3 sm:gap-4 md:gap-0 opacity-70">
         {/* Mobile: Links first, Desktop: Links on right */}
-        <nav className="flex items-center gap-12 order-1 md:order-2">
+        <nav className="flex flex-wrap items-center justify-center sm:justify-center md:justify-end gap-4 sm:gap-6 md:gap-8 lg:gap-10 xl:gap-12 order-1 md:order-2">
           {footerLinks.map((l) => (
             <Link
               key={l.href}
@@ -84,10 +84,10 @@ export default function Footer() {
         </nav>
 
         {/* Mobile: Copyright below, Desktop: Copyright on left */}
-        <div className="whitespace-nowrap order-2 md:order-1" style={{ color: footerText }}>
+        <div className="whitespace-nowrap order-2 md:order-1 text-center md:text-left" style={{ color: footerText }}>
           <span>&copy; urGallery {year} </span>
           <span 
-            className="rounded-sm px-2 py-0.5 text-[10px] leading-none"
+            className="rounded-sm px-2 py-0.5 text-caption leading-none inline-block"
             style={{
               backgroundColor: customColors?.text || '#5a3e36',
               color: footerBg,

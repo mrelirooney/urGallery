@@ -2,17 +2,17 @@
 
 export default function TermsSection() {
   return (
-    <div className="p-8">
-      <div className="prose prose-lg">
-        <p className="text-neutral-700">urGallery (“we,” “our,” or “us”) is committed to protecting 
+    <div className="px-0.5 py-4 md:py-6 lg:py-8 lg:pr-0.5 lg:pl-12 text-[var(--foreground)]">
+      <div className="prose prose-lg prose-neutral dark:prose-invert max-w-none">
+        <p className="text-[var(--foreground)]">urGallery (“we,” “our,” or “us”) is committed to protecting 
         your privacy. This Privacy Policy explains how we collect, use, store, and safeguard your 
         information when you use our website, platform, and related services 
         (collectively, the “Service”). By using urGallery, you agree to the practices described in 
         this Privacy Policy.</p>
-        <h2 className="text-xl font-semibold text-neutral-900 mb-4"> 1. Information We Collect</h2>
-        <p className="text-neutral-700">We collect the following types of information to provide and 
+        <h2 className="text-xl font-semibold text-[var(--light-brown)] mb-4"> 1. Information We Collect</h2>
+        <p className="text-[var(--foreground)]">We collect the following types of information to provide and 
         improve the Service:</p>
-        <p className="text-neutral-700">A. Information You Provide Directly</p>
+        <p className="text-[var(--foreground)]">A. Information You Provide Directly</p>
         <ul>
             <li>Name, email address, username</li>
             <li>Portfolio content (images, videos, text, project descriptions)</li>
@@ -21,7 +21,7 @@ export default function TermsSection() {
             <li>Payment information (processed securely by third-party providers — 
                 we do NOT store card numbers)</li>
         </ul>
-        <p className="text-neutral-700">B. Automatically Collected Information, 
+        <p className="text-[var(--foreground)]">B. Automatically Collected Information, 
             When you use urGallery, we may automatically collect:</p>
         <ul>
             <li>IP address</li>
@@ -32,7 +32,7 @@ export default function TermsSection() {
             <li>This helps us improve performance, provide security, 
                 and understand how users interact with the platform.</li>
         </ul>
-        <p className="text-neutral-700">C. Information From Third Parties, 
+        <p className="text-[var(--foreground)]">C. Information From Third Parties, 
             We may receive limited information through:</p>
         <ul>
             <li>authentication tools</li>
@@ -40,15 +40,15 @@ export default function TermsSection() {
             <li>analytics providers</li>
             <li>social login integrations (if enabled)</li>
         </ul>
-        <h2 className="text-xl font-semibold text-neutral-900 mb-4">2. How We Use Your Information</h2>
-        <p className="text-neutral-700">We use your information to:</p>
-        <h2 className="text-xl font-semibold text-neutral-900 mb-4">Terms</h2>
-        <p className="text-neutral-700"></p>
-        <h2 className="text-xl font-semibold text-neutral-900 mb-4">Terms</h2>
-        <p className="text-neutral-700"></p>
-        <h2 className="text-xl font-semibold text-neutral-900 mb-4">Terms</h2>
-        <p className="text-neutral-700"></p>
-        <p className="text-neutral-700">
+        <h2 className="text-xl font-semibold text-[var(--light-brown)] mb-4">2. How We Use Your Information</h2>
+        <p className="text-[var(--foreground)]">We use your information to:</p>
+        <h2 className="text-xl font-semibold text-[var(--light-brown)] mb-4">Terms</h2>
+        <p className="text-[var(--foreground)]"></p>
+        <h2 className="text-xl font-semibold text-[var(--light-brown)] mb-4">Terms</h2>
+        <p className="text-[var(--foreground)]"></p>
+        <h2 className="text-xl font-semibold text-[var(--light-brown)] mb-4">Terms</h2>
+        <p className="text-[var(--foreground)]"></p>
+        <p className="text-[var(--foreground)]">
 
             Create and manage your account
 

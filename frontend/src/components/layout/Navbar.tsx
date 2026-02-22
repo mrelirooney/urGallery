@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Logo from "@/components/layout/Logo";
+import Container from "@/components/layout/Container";
 import AvatarButton from "../menus/AvatarButton";
 import SearchInput from "@/components/search/SearchInput";
 import PortfolioMenu from "@/components/layout/PortfolioMenu";
@@ -163,7 +164,7 @@ export default function Navbar() {
         className="sticky top-0 z-55"
         style={{ backgroundColor: customColors?.background || 'var(--background)' }}
       >
-        <div className="mx-auto max-w-6xl px-4 md:px-0 lg:px-0 h-14 flex items-center justify-between">
+        <Container className="max-w-full px-0 h-12 sm:h-14 flex items-center justify-between gap-2">
         {/* Left: Back arrow (mobile/tablet only) OR Logo + Hamburger (desktop) */}
         <div className="flex items-center">
           {/* Mobile/Tablet: Back arrow (only on artist pages) */}
@@ -190,13 +191,15 @@ export default function Navbar() {
             </button>
           )}
 
-          {/* Logo - hidden on mobile/tablet for artist profile pages, shown on desktop */}
+          {/* Logo - hidden on mobile/tablet for artist profile pages, shown on desktop.
+              Color: theme text on profile pages, var(--foreground) on home (light/dark auto) */}
           <Link 
             href="/" 
             aria-label="Home" 
-            className={`${isArtistPage ? "lg:ml-3" : ""} ${isArtistPage ? "hidden lg:block" : ""}`}
+            className={`${isArtistPage ? "lg:ml-3" : ""} ${isArtistPage ? "hidden lg:block" : ""} ${!isArtistPage || !customColors?.text ? "text-[var(--foreground)]" : ""}`}
+            style={isArtistPage && customColors?.text ? { color: customColors.text } : undefined}
           >
-            <Logo className="h-5 w-auto" />
+            <Logo className="h-10 sm:h-11 lg:h-12 w-auto" />
           </Link>
         </div>
         
@@ -219,8 +222,8 @@ export default function Navbar() {
             )}
             
             {/* Desktop: Search + Avatar */}
-            <div className="hidden lg:flex items-center gap-3">
-              <div className="pl-4">
+            <div className="hidden lg:flex items-center gap-3 lg:gap-4 xl:gap-5">
+              <div className="pl-2 lg:pl-4 xl:pl-6">
                 <SearchInput
                   variant="nav"
                   placeholder="Search…"
@@ -240,7 +243,7 @@ export default function Navbar() {
                   <div
                     role="menu"
                     aria-label="User menu"
-                    className="absolute right-0 mt-2 w-44 rounded-md border border-neutral-200 bg-white shadow-lg z-55"
+                    className="absolute right-0 mt-2 w-44 min-w-[10rem] max-w-[calc(100vw-2rem)] rounded-md border border-neutral-200 bg-white shadow-lg z-55"
                     onKeyDown={(e) => {
                       if (e.key !== "Tab") return;
                       const container = menuRef.current;
@@ -260,7 +263,7 @@ export default function Navbar() {
                       }
                     }}
                   >
-                    <ul className="py-1 text-sm text-gray-700">
+                    <ul className="py-1 text-body-sm text-gray-700">
                       <li>
                         <Link
                           href={profileHref}
@@ -310,7 +313,7 @@ export default function Navbar() {
                   <div
                     role="menu"
                     aria-label="User menu"
-                    className="absolute right-0 mt-2 w-44 rounded-md border border-gray-200 bg-white shadow-lg z-50"
+                    className="absolute right-0 mt-2 w-44 min-w-[10rem] max-w-[calc(100vw-2rem)] rounded-md border border-gray-200 bg-white shadow-lg z-50"
                     onKeyDown={(e) => {
                       if (e.key !== "Tab") return;
                       const container = menuRef.current;
@@ -330,7 +333,7 @@ export default function Navbar() {
                       }
                     }}
                   >
-                    <ul className="py-1 text-sm text-gray-700">
+                    <ul className="py-1 text-body-sm text-gray-700">
                       <li>
                         <Link
                           href={profileHref}
@@ -368,7 +371,7 @@ export default function Navbar() {
           </div>
         ) : (
           // --- Logged-out view ---
-          <nav className="flex items-center gap-4 text-sm">
+          <nav className="flex items-center gap-3 sm:gap-4 text-body-sm">
             {/* Mobile/Tablet: Hamburger on right (only on artist profile pages) */}
             {isArtistPage && (
               <button
@@ -381,23 +384,25 @@ export default function Navbar() {
             )}
             
             {/* Login/SignUp buttons - hidden on mobile/tablet for artist pages */}
-            <div className={isArtistPage ? "hidden lg:flex items-center gap-4" : "flex items-center gap-4"}>
+            <div className={isArtistPage ? "hidden lg:flex items-center gap-3 lg:gap-4 xl:gap-5" : "flex items-center gap-3 sm:gap-4"}>
               <Link
                 href="/login"
-                className="px-3 py-1.5 border border-white/60 rounded-xs bg-(--foreground)/0 text-white/60 hover:bg-(--foreground)/90 hover:text-black transition-opacity"
+                className={`px-2 sm:px-3 py-1 sm:py-1.5 text-body rounded-xs bg-transparent border-2 transition-opacity hover:opacity-90 ${!isArtistPage ? "text-neutral-800 border-neutral-800/40 dark:text-neutral-100 dark:border-neutral-100/40" : ""} sm:border-white/30 sm:bg-(--foreground)/0 sm:text-white/30 sm:hover:bg-(--foreground)/90 sm:hover:text-black`}
+                style={isArtistPage && customColors?.text ? { color: customColors.text, borderColor: `${customColors.text}66` } : undefined}
               >
                 Login
               </Link>
               <Link
                 href="/signup"
-                className="px-3 py-1.5 border border-white/60 rounded-xs bg-(--foreground)/0 text-white/60 hover:bg-(--foreground)/90 hover:text-black transition-opacity"
+                className={`px-2 sm:px-3 py-1 sm:py-1.5 text-body rounded-xs bg-transparent border-2 transition-opacity hover:opacity-90 ${!isArtistPage ? "text-neutral-800 border-neutral-800/40 dark:text-neutral-100 dark:border-neutral-100/40" : ""} sm:border-white/30 sm:bg-(--foreground)/0 sm:text-white/30 sm:hover:bg-(--foreground)/90 sm:hover:text-black`}
+                style={isArtistPage && customColors?.text ? { color: customColors.text, borderColor: `${customColors.text}66` } : undefined}
               >
                 Sign Up
               </Link>
             </div>
           </nav>
         )}
-      </div>
+      </Container>
     </header>
     </>
   );

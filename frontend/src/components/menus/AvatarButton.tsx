@@ -27,9 +27,9 @@ const AvatarButton = forwardRef<HTMLButtonElement, Props>(
         onClick={onClick}
         aria-label="Open user menu"
         className={[
-          "flex items-center justify-center overflow-hidden",
+          "flex items-center justify-center overflow-hidden shrink-0",
           "rounded-full border border-neutral-300 bg-neutral-200 hover:bg-neutral-300/80",
-          "transition-colors outline-none focus:ring-2 focus:ring-neutral-400/50",
+          "transition-colors outline-none focus:ring-2 focus:ring-neutral-400/50 focus:ring-offset-1",
           className,
         ].join(" ")}
         style={{ width: size, height: size }}
@@ -41,7 +41,7 @@ const AvatarButton = forwardRef<HTMLButtonElement, Props>(
             className="h-full w-full object-cover"
           />
         ) : (
-          <span className="text-xs font-semibold text-neutral-700">
+          <span className="text-caption font-semibold text-neutral-700">
             {initial}
           </span>
         )}

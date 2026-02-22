@@ -2,9 +2,9 @@
 
 export default function PrivacySection() {
   return (
-    <div className="p-8">
+    <div className="px-0.5 py-4 md:py-6 lg:py-8 lg:pr-0.5 lg:pl-12 text-[var(--foreground)]">
       <div className="prose prose-lg">
-        <p className="text-neutral-700">Hello World</p>
+        <p className="text-[var(--foreground)]">Hello World</p>
       </div>
     </div>
   );

@@ -8,7 +8,7 @@ from accounts.views import (
     csrf_cookie_view,
 )
 from django.urls import path, include
-from api.views import MyProfileView, ThemeListView, MyPortfolioListCreateView, MyPortfolioDetailView
+from api.views import MyProfileView, ThemeListView, MyPortfolioListCreateView, MyPortfolioDetailView, help_form_view
 
 urlpatterns = [
     # CSRF warm-up
@@ -29,5 +29,8 @@ urlpatterns = [
 
     # THEMES (public)
     path("themes/", ThemeListView.as_view(), name="theme-list"),
+
+    # HELP (authenticated)
+    path("help/", help_form_view, name="help-form"),
 ]
 
