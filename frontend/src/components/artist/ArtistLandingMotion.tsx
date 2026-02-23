@@ -24,6 +24,8 @@ export default function ArtistLandingMotion({ pagesCount = 1 }: ArtistLandingMot
     const triggerDelta = 75;
     const startY = window.scrollY;
     let compactEnterY = 0;
+    // On mobile vertical: require scrolling up ~150px before switching back to profile (hysteresis)
+    const getScrollUpThreshold = () => (window.innerWidth < 768 ? 150 : 0);
 
     const toCompact = () => {
       if (compact) return;
@@ -54,7 +56,8 @@ export default function ArtistLandingMotion({ pagesCount = 1 }: ArtistLandingMot
       if (isAuto) return;
       const y = window.scrollY;
       if (!compact && y >= startY + triggerDelta) return toCompact();
-      if (compact && y <= compactEnterY) return toExpanded();
+      // Only switch back when scrolled up past threshold (prevents accidental snap-back on mobile)
+      if (compact && y <= compactEnterY - getScrollUpThreshold()) return toExpanded();
     };
 
     const onKey = (e: KeyboardEvent) => {

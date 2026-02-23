@@ -51,6 +51,7 @@ export default function ThemePatternLayer({
 
   return (
     <div
+      data-theme-pattern
       className={`absolute inset-0 z-0 pointer-events-none overflow-hidden ${className}`}
       style={{
         opacity: opacity ?? THEME_PATTERN_OPACITY,

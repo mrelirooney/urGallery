@@ -24,7 +24,7 @@ export default function Pagination({ totalPages, currentPage, onChangePage, cust
   return (
     <>
       {/* Mobile/Tablet: Ellipses (centered) */}
-      <div className="flex justify-center items-center gap-2 lg:hidden">
+      <div className="flex justify-center items-center gap-2 lg:hidden md:pt-4">
         {Array.from({ length: totalPages }).map((_, idx) => (
           <button
             key={idx}

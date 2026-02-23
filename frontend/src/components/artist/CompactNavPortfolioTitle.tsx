@@ -57,7 +57,7 @@ export default function CompactNavPortfolioTitle({ initialTitle = "", customColo
       <MoreVertical
         size={20}
         style={customColors ? { color: customColors.text } : undefined}
-        className={!customColors ? "text-[var(--light-brown)]" : ""}
+        className={`hidden md:block ${!customColors ? "text-[var(--light-brown)]" : ""}`}
       />
       <PortfolioTitle
         text={portfolioTitle}

@@ -9,7 +9,7 @@ export default function BackArrowButton() {
   return (
     <button
       onClick={() => router.push("/")}
-      className="rounded-md text-[var(--light-brown)] hover:text-[var(--light-brown)]/80 transition-colors"
+      className="rounded-md text-[var(--artist-text,var(--light-brown))] hover:opacity-80 transition-colors"
       aria-label="Back to home"
     >
       <ArrowLeft size={24} />

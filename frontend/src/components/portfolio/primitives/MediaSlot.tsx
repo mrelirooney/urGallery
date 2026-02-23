@@ -37,7 +37,7 @@ export default function MediaSlotC({
 
   // 2) Optional styling flags
   const borderClass = border ? "border border-neutral-700" : "";
-  const shadowClass = shadow ? "shadow-lg" : "";
+  const shadowClass = shadow ? "shadow-lg md:shadow-[0_0_0_15px_var(--artist-accent,#c96a4a)]" : "";
 
   // 3) Horizontal alignment inside the column
   const alignClass =
@@ -48,9 +48,9 @@ export default function MediaSlotC({
       <div
         className={`
           ${alignClass}
-          max-h-[63vh]
+          max-h-[50vh] lg:max-h-[20vw]  /* tablet: portrait; laptop: square slot ~30vw vibe */
           w-full
-          max-w-4xl          /* keeps it from being TOO wide on huge screens */
+          max-w-2xl lg:max-w-[20vw]  /* laptop 1024px+: matches square aspect */
           ${shapeClass}      /* aspect ratio = shape */
           flex items-center justify-center
           bg-neutral-200
@@ -97,7 +97,7 @@ export function MediaSlotR({
       : "aspect-[16/9]";
 
   const borderClass = border ? "border border-neutral-700" : "";
-  const shadowClass = shadow ? "shadow-lg" : "";
+  const shadowClass = shadow ? "shadow-lg md:shadow-[0_0_0_15px_var(--artist-accent,#c96a4a)]" : "";
 
   const alignClass =
     align === "center" ? "mx-auto" : align === "right" ? "ml-auto" : "mr-auto";
@@ -107,7 +107,7 @@ export function MediaSlotR({
       <div
         className={`
           ${alignClass}
-          max-h-[63vh]
+          max-h-[44vh] lg:max-h-[30vh]  /* tablet: portrait; laptop: matches 30vw vibe */
           w-full
           max-w-md          /* smaller cap than the canvas version */
           ${shapeClass}

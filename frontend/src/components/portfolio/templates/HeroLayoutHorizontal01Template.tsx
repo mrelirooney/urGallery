@@ -14,9 +14,9 @@ export default function HeroLayoutHorizontal01Template({
 }) {
   return (
     <div>
-      <svg width="100vw" height="88vh" viewBox="0 0 2000 1000" fill="none" xmlns="http://www.w3.org/2000/svg"
-      style={{opacity: 0.8, zIndex: 6, position: "absolute", top: -110, left: -300, right: 0, bottom: 0}}>
-        <rect width="800" height="1200" fill="var(--artist-accent, #C96A4A)"/>
+      <svg className="hidden" width="100vw" height="100vh" viewBox="0 0 2500 1600" fill="none" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"
+      style={{opacity: 0.8, zIndex: 6, position: "absolute", top: "var(--accent-band-top, -120px)", left: "var(--accent-band-left, -300px)", right: 0, bottom: 0}}>
+        <rect width="var(--accent-band-width-horizontal, 800)" height="var(--accent-band-height, 1200)" fill="var(--artist-accent, #C96A4A)"/>
         
       </svg>
       

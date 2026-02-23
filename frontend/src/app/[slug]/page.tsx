@@ -1,6 +1,5 @@
 // frontend/src/app/[slug]/page.tsx
 import type { Metadata } from "next";
-import Container from "@/components/layout/Container";
 import type { ArtistLanding } from "@/lib/types";
 import { getArtistLanding } from "@/lib/api/artistLanding";
 import ArtistHeader from "@/components/artist/ArtistHeader";
@@ -11,6 +10,7 @@ import CompactNavHamburger from "@/components/artist/CompactNavHamburger";
 import CompactNavPortfolioTitle from "@/components/artist/CompactNavPortfolioTitle";
 import { notFound } from "next/navigation";
 import BackArrowButton from "@/components/artist/BackArrowButton";
+import ProfileSettingsButton from "@/components/artist/ProfileSettingsButton";
 import ColorThemeSetter from "@/components/artist/ColorThemeSetter";
 import GoogleFontsLoader from "@/components/artist/GoogleFontsLoader";
 import ThemePatternLayer from "../../components/artist/ThemePatternLayer";
@@ -108,7 +108,7 @@ export default async function ArtistPage(
         <ArtistLandingMotion pagesCount={firstPortfolio?.pages_count ?? 1} />
 
         {/* Artist Header Section */}
-        <section style={{ backgroundColor: customColors.background, fontFamily: "var(--artist-font, 'Raleway'), sans-serif" }} className="relative z-50 overflow-hidden">
+        <section id="artist-profile-section" style={{ backgroundColor: customColors.background, fontFamily: "var(--artist-font, 'Raleway'), sans-serif" }} className="relative z-50 overflow-hidden">
         {/* Theme pattern layer (behind content) - inline SVG for dynamic colors */}
         {profile?.theme?.svg_url && (
           <ThemePatternLayer
@@ -122,7 +122,7 @@ export default async function ArtistPage(
         )}
         {/* Banner Image - Full width, outside container */}
         {profile?.banner_image_url && (
-          <div className="absolute top-0 left-0 right-0 h-30 md:h-[33vh] overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-30 md:h-[20vh] lg:h-[33vh] overflow-hidden">
             <img
               src={profile.banner_image_url}
               alt={`${profile?.display_name ?? "Artist"} banner`}
@@ -130,10 +130,16 @@ export default async function ArtistPage(
             />
           </div>
         )}
+        {/* Settings button - aligned with content padding so it stays within content area */}
+        {profile?.banner_image_url && (
+          <div className="absolute top-4 right-4 sm:right-6 md:right-10 z-[60] lg:hidden">
+            <ProfileSettingsButton profileSlug={profile.slug} customColors={customColors} />
+          </div>
+        )}
         
-        {/* Content Container - full width on mobile, constrained on larger screens */}
-        <div className="w-full md:mx-auto md:max-w-6xl px-0 md:px-10 lg:px-0 relative z-50">
-          <div className="py-10 lg:py-10 relative z-50 px-4 md:px-0 ">
+        {/* Content Container - same width/padding as navbar for alignment */}
+        <div className="max-w-6xl xl:max-w-7xl 2xl:max-w-[1310px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-16 2xl:px-20 relative z-50">
+          <div className="py-10 md:py-6 lg:py-10 relative z-50">
             <ArtistHeader profile={profile} customColors={customColors} />
           </div>
         </div>
@@ -142,43 +148,39 @@ export default async function ArtistPage(
       {/* Compact sticky profile (appears in compact mode) */}
       <div
         id="artist-profile-compact"
-        style={{ backgroundColor: customColors.background, fontFamily: "var(--artist-font, 'Raleway'), sans-serif" }}
-        className="sticky mt-20 top-0 z-50 hidden backdrop-blur overflow-hidden relative"
+        style={{
+          backgroundColor: customColors.background,
+          fontFamily: "var(--artist-font, 'Raleway'), sans-serif",
+          borderColor: `${customColors.text}30`,
+        }}
+        className="sticky mt-20 md:mt-0 md:top-14 lg:mt-0 lg:top-0 top-0 z-50 hidden backdrop-blur overflow-hidden relative border-b shrink-0"
       >
-        <div className="mx-auto max-w-6xl h-20 md:h-16 px-4 md:px-8 lg:px-0 flex flex-col">
-          <div className="pt-4 lg:pt-3 flex items-center justify-between">
-            {/* Left: Back arrow (mobile only) */}
-            <div className="block md:hidden">
-              <BackArrowButton />
-            </div>
-            {/* Left: avatar + name */}
+        <div className="max-w-6xl xl:max-w-7xl 2xl:max-w-[1310px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-16 2xl:px-20 py-4 md:py-4 lg:py-2 flex flex-col lg:min-h-0 lg:justify-start">
+          {/* Phone: back arrow, avatar, hamburger, portfolio title */}
+          <div className="flex items-center justify-between md:hidden">
+            <BackArrowButton />
             <div className="flex items-center gap-3">
               <div className="h-9 w-9 rounded-full overflow-hidden border border-neutral-300">
-                <img
-                  src={src}
-                      alt={`${profile?.display_name ?? "Artist"} avatar`}
-                      className="h-full w-full object-cover"
-                />
+                <img src={src} alt={`${profile?.display_name ?? "Artist"} avatar`} className="h-full w-full object-cover" />
               </div>
-              <span 
-                className="hidden md:block font-semibold"
-                style={{ color: customColors.text }}
-              >
+            </div>
+            <CompactNavHamburger />
+          </div>
+          <div className="flex justify-center md:hidden mt-2">
+            <CompactNavPortfolioTitle initialTitle={initialPortfolioTitle} customColors={customColors} />
+          </div>
+
+          {/* Tablet + Laptop: thin bar - pic + name left, contact buttons right */}
+          <div className="hidden md:flex items-center justify-between gap-4 py-1">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="h-10 w-10 shrink-0 rounded-full overflow-hidden border border-neutral-300">
+                <img src={src} alt={`${profile?.display_name ?? "Artist"} avatar`} className="h-full w-full object-cover" />
+              </div>
+              <span className="font-semibold truncate" style={{ color: customColors.text }}>
                 {profile?.display_name ?? "Loading..."}
               </span>
             </div>
-
-            {/* Right: contact buttons (desktop) OR hamburger (mobile) */}
-            <div className="hidden md:block">
-              <CompactContactButtons profile={profile} customColors={customColors} />
-            </div>
-            <div className="block md:hidden">
-              <CompactNavHamburger />
-            </div>
-          </div>
-          {/* Portfolio Title - mobile only */}
-          <div className="block md:hidden flex justify-center">
-            <CompactNavPortfolioTitle initialTitle={initialPortfolioTitle} customColors={customColors} />
+            <CompactContactButtons profile={profile} customColors={customColors} />
           </div>
         </div>
       </div>
@@ -205,7 +207,7 @@ export default async function ArtistPage(
             }}
           />
         )}
-        <Container className="text-white">
+        <div className="max-w-6xl xl:max-w-7xl xl-lg:max-w-[1600px] 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-16 2xl:px-20">
           {portfolios.length > 0 ? (
             <PortfolioSelector
               artistSlug={profile.slug}
@@ -221,7 +223,7 @@ export default async function ArtistPage(
               </p>
             </div>
           )}
-        </Container>
+        </div>
       </section>
     </main>
     </>

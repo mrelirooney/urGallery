@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { X, Edit2, Trash2, Plus } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -41,6 +41,7 @@ export default function PortfolioMenu({ isOpen, onClose, customColors }: Props) 
   const bg = customColors?.background || DEFAULT_BG;
   const text = customColors?.text || DEFAULT_TEXT;
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const { user } = useAuth();
   const [artistData, setArtistData] = useState<ArtistData | null>(null);
@@ -50,6 +51,7 @@ export default function PortfolioMenu({ isOpen, onClose, customColors }: Props) 
 
    // Extract artist slug from pathname (e.g., "/mrelirooney" -> "mrelirooney")
    const artistSlug = pathname?.split("/")[1] || "";
+   const currentPortfolioSlug = searchParams?.get("portfolio") ?? artistData?.portfolios?.[0]?.slug ?? "";
 
    // Check if current user is the owner of this profile
    const isOwner = user?.slug === artistSlug;
@@ -221,17 +223,19 @@ export default function PortfolioMenu({ isOpen, onClose, customColors }: Props) 
         />
       )}
 
-      {/* Slide-in menu */}
+      {/* Slide-in menu: mobile = full width from top (full height), desktop = sidebar from left */}
       <div
         ref={menuRef}
-        className={`fixed left-0 top-0 bottom-0 w-[85vw] max-w-80 sm:w-80 shadow-xl z-60 transform transition-transform duration-300 ease-in-out flex flex-col ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`fixed left-0 right-0 top-0 bottom-0 w-full h-screen overflow-y-auto
+          sm:left-0 sm:right-auto sm:bottom-0 sm:top-0 sm:w-80 sm:h-auto sm:max-h-none
+          shadow-xl z-60 transform transition-transform duration-300 ease-in-out flex flex-col
+          ${isOpen ? "translate-y-0 translate-x-0" : "-translate-y-full sm:translate-y-0 sm:-translate-x-full"}
+        `}
         style={{ backgroundColor: text }}
       >
-        {/* Header */}
+        {/* Header - px-4 on mobile to match navbar width */}
         <div
-          className="flex items-center justify-between p-page-sm sm:p-page border-b"
+          className="flex items-center justify-between px-4 py-4 sm:p-page border-b"
           style={{ borderColor: `${bg}20` }}
         >
           {/* Profile section */}
@@ -275,22 +279,24 @@ export default function PortfolioMenu({ isOpen, onClose, customColors }: Props) 
 
         
 
-        {/* Portfolios list */}
-        <div className="flex-1 overflow-y-auto">
+        {/* Portfolios list - px-4 on mobile to match navbar, extra pt for portfolio titles */}
+        <div className="flex-1 overflow-y-auto pt-6 sm:pt-0">
           {loading ? (
-            <div className="p-page-sm sm:p-page text-center text-body-sm" style={{ color: `${bg}99` }}>
+            <div className="px-4 py-4 sm:p-page text-center text-body-sm" style={{ color: `${bg}99` }}>
               Loading...
             </div>
           ) : error ? (
-            <div className="p-page-sm sm:p-page text-center text-body-sm" style={{ color: `${bg}99` }}>
+            <div className="px-4 py-4 sm:p-page text-center text-body-sm" style={{ color: `${bg}99` }}>
               {error}
             </div>
           ) : artistData?.portfolios && artistData.portfolios.length > 0 ? (
             <ul>
-              {artistData.portfolios.map((portfolio) => (
+              {artistData.portfolios.map((portfolio) => {
+                const isActive = portfolio.slug === currentPortfolioSlug;
+                return (
                 <li
                   key={portfolio.id}
-                  className="p-page-sm sm:p-page transition-colors border-b last:border-b-0"
+                  className="px-4 py-4 sm:p-page transition-colors border-b last:border-b-0"
                   style={{ borderColor: `${bg}15` }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = `${bg}50`;
@@ -311,7 +317,7 @@ export default function PortfolioMenu({ isOpen, onClose, customColors }: Props) 
                       className="flex-1 min-w-0 text-left"
                       style={{ color: bg }}
                     >
-                      <div className="font-medium truncate text-body sm:text-body-lg">
+                      <div className={`truncate text-body sm:text-body-lg ${isActive ? "font-semibold opacity-100" : "font-medium opacity-60"}`}>
                         {portfolio.title || "Untitled Portfolio"}
                       </div>
                       {portfolio.privacy_status && (
@@ -320,7 +326,7 @@ export default function PortfolioMenu({ isOpen, onClose, customColors }: Props) 
                         </div>
                       )}
                     </button>
-                    <div className="flex items-center gap-1">
+                    <div className="hidden lg:flex items-center gap-1">
                       {isOwner && (
                         <>
                           <button
@@ -358,17 +364,18 @@ export default function PortfolioMenu({ isOpen, onClose, customColors }: Props) 
                     </div>
                   </div>
                 </li>
-              ))}
+              );
+              })}
             </ul>
           ) : (
-            <div className="p-page-sm sm:p-page text-center text-body-sm" style={{ color: `${bg}99` }}>
+            <div className="px-4 py-4 sm:p-page text-center text-body-sm" style={{ color: `${bg}99` }}>
               No portfolios yet
             </div>
           )}
         </div>
 
-        {/* Add Portfolio button */}
-        <div className="p-page-sm sm:p-page">
+        {/* Add Portfolio button - hidden on mobile and tablet, laptop only */}
+        <div className="hidden lg:block p-page-sm sm:p-page">
           {isOwner && (
             <button
               onClick={handleAddPortfolio}

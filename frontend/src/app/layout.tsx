@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Raleway } from "next/font/google";
 import "./globals.css";
 import ConditionalFooter from "@/components/layout/ConditionalFooter";
 import ConditionalNavbar from "@/components/layout/ConditionalNavbar";
+import LayoutWrapper from "@/components/layout/LayoutWrapper";
 import ColorThemeGuard from "@/components/artist/ColorThemeGuard";
 
 const geistSans = Geist({
@@ -31,14 +32,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={raleway.variable}>
       <body className="min-h-dvh flex flex-col bg-[var(--artist-background,var(--background))] text-neutral-900">
         <ColorThemeGuard />
-        {/* Shared page container: consistent padding and max-width for navbar, content, footer */}
-        <div className="flex-1 flex flex-col w-full max-w-6xl xl:max-w-7xl 2xl:max-w-[1310px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-16 2xl:px-20 min-w-0">
+        {/* Shared page container: constrained for app routes, full-width for profile/portfolio */}
+        <LayoutWrapper>
           <ConditionalNavbar />
           <main className="flex-1 flex flex-col min-h-0 min-w-0">
             {children}
           </main>
           <ConditionalFooter />
-        </div>
+        </LayoutWrapper>
       </body>
     </html>
   );

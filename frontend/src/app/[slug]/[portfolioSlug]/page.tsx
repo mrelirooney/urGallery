@@ -39,6 +39,7 @@ export default async function PortfolioPage({ params }: ArtistPortfolioPageProps
       <GoogleFontsLoader fontFamily={fontFamily} />
       <ColorThemeSetter colors={customColors} fontFamily={fontFamily} />
       <div
+        id="portfolio-page"
         className="min-h-full relative overflow-hidden"
         style={{ backgroundColor: customColors.text, fontFamily: "var(--artist-font, 'Raleway'), sans-serif" }}
       >

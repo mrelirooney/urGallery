@@ -139,7 +139,7 @@ export default function ArtistHeader({ profile, customColors }: Props) {
         {/* Row 2: Bio */}
         <div className="md:col-span-2">
           <p 
-            className="mt-1 max-w-3xl text-sm sm:text-md md:text-lg leading-relaxed"
+            className="mt-1 text-sm sm:text-md md:text-lg leading-relaxed"
             style={{ color: customColors?.text || 'var(--foreground)' }}
           >
             {profile.bio || "This artist hasn't added a bio yet."}

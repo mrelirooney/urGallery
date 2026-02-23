@@ -189,6 +189,7 @@ export default function PageRenderer({
 
   // Default to square if missing
   const shape: MediaShapeType = mediaShape ?? "1:1";
+  const isHorizontal = shape === "16:9" || shape === "5:4" || shape === "21:9";
 
   const text = (
     <TextColumn
@@ -237,6 +238,51 @@ export default function PageRenderer({
     </div>
   );
 
+  // Mobile: unified layout – Media → Header → Description (minimalist, no SVG, no shadow)
+  // Image breaks out of padded container to be full viewport width on phones
+  const mobileLayout = (
+    <div className="flex flex-col gap-4 md:hidden w-full">
+      {mediaSrc && (
+        <div className="w-screen relative left-1/2 -translate-x-1/2 md:w-full md:left-0 md:translate-x-0 overflow-hidden">
+          <img
+            src={mediaSrc}
+            alt="Portfolio media"
+            className="w-full h-auto object-cover"
+          />
+        </div>
+      )}
+      <div className="w-screen relative left-1/2 -translate-x-1/2 md:w-full md:left-0 md:translate-x-0 px-4 flex flex-col gap-2">
+        <h2
+          className="text-2xl font-bold leading-tight"
+          style={{ color: "var(--artist-background, #11100e)" }}
+        >
+          {title}
+        </h2>
+        <p
+          className="whitespace-pre-line text-base"
+          style={{ color: "var(--artist-background, #11100e)", opacity: 0.9 }}
+        >
+          {description || page.title2 || ""}
+        </p>
+      </div>
+    </div>
+  );
+
+  // Mobile: image only, no text (for MediaOnly, TwoColumnMediaOnly, etc.)
+  const mobileLayoutMediaOnly = (
+    <div className="flex flex-col md:hidden w-full">
+      {mediaSrc && (
+        <div className="w-screen relative left-1/2 -translate-x-1/2 md:w-full md:left-0 md:translate-x-0 overflow-hidden">
+          <img
+            src={mediaSrc}
+            alt="Portfolio media"
+            className="w-full h-auto object-cover"
+          />
+        </div>
+      )}
+    </div>
+  );
+
   // Second column text (for TwoColumnMediaWithText)
   const text2 = (
     <div className="flex flex-col gap-4">
@@ -253,50 +299,101 @@ export default function PageRenderer({
   switch (layoutType) {
     case "MediaLeft_TextRight":
       return (
-        <div className="flex flex-col md:grid md:items-center gap-3 md:gap-10 md:grid-cols-12">
-          <div className={`order-1 md:order-none ${mediaCols}`}>{media}</div>
-          <div className={`order-2 md:order-none px-4 md:px-0 ${textCols}`}>{text}</div>
-        </div>
+        <>
+          {mobileLayout}
+          {/* Tablet: horizontal image = top/bottom; square/vertical = left/right halves */}
+          <div className="hidden md:block lg:hidden">
+            {isHorizontal ? (
+              <div className="flex flex-col gap-4 h-full min-h-[50vh]">
+                <div className="flex-1 min-h-[50%] flex items-center justify-center overflow-hidden">{media}</div>
+                <div className="flex-1 min-h-[50%] flex flex-col justify-center px-4">{text}</div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-4 md:gap-6 items-center">
+                <div className="col-span-1">{media}</div>
+                <div className="col-span-1 px-4">{text}</div>
+              </div>
+            )}
+          </div>
+          {/* Laptop: always side-by-side */}
+          <div className="hidden lg:block">
+            <div className="grid items-center gap-6 lg:gap-10 grid-cols-12">
+              <div className={mediaCols}>{media}</div>
+              <div className={`px-4 lg:px-0 ${textCols}`}>{text}</div>
+            </div>
+          </div>
+        </>
       );
 
     case "MediaRight_TextLeft":
       return (
-        <div className="flex flex-col md:grid md:items-center gap-3 md:gap-10 md:grid-cols-12">
-          <div className={`order-1 md:order-none ${mediaCols}`}>{media}</div>
-          <div className={`order-2 md:order-none px-4 md:px-0 ${textCols}`}>{text}</div>
-        </div>
+        <>
+          {mobileLayout}
+          {/* Tablet: horizontal image = top/bottom; square/vertical = left/right halves */}
+          <div className="hidden md:block lg:hidden">
+            {isHorizontal ? (
+              <div className="flex flex-col gap-4 h-full min-h-[50vh]">
+                <div className="flex-1 min-h-[50%] flex items-center justify-center overflow-hidden">{media}</div>
+                <div className="flex-1 min-h-[50%] flex flex-col justify-center px-4">{text}</div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-4 md:gap-6 items-center">
+                <div className="col-span-1 order-2">{text}</div>
+                <div className="col-span-1 order-1">{media}</div>
+              </div>
+            )}
+          </div>
+          {/* Laptop: always side-by-side (text left, media right) */}
+          <div className="hidden lg:block">
+            <div className="grid items-center gap-6 lg:gap-10 grid-cols-12">
+              <div className={textCols}>{text}</div>
+              <div className={mediaCols}>{media}</div>
+            </div>
+          </div>
+        </>
       );
 
     case "TwoColumnMediaOnly":
       return (
-        <div className="flex flex-col md:grid grid-cols-1 md:grid-cols-2 gap-8 ">
-          <div className="order-1 md:order-none max-h-[50vh]">{media}</div>
-          <div className="order-2 md:order-none max-h-[50vh]">{media2}</div>
-        </div>
+        <>
+          {mobileLayoutMediaOnly}
+          <div className="hidden md:block">
+            <div className="flex flex-col md:grid grid-cols-1 md:grid-cols-2 gap-8 ">
+              <div className="order-1 md:order-none max-h-[50vh]">{media}</div>
+              <div className="order-2 md:order-none max-h-[50vh]">{media2}</div>
+            </div>
+          </div>
+        </>
       );
 
     case "TwoColumnMediaWithText":
       return (
-        <div className="flex flex-col md:grid grid-cols-1 md:grid-cols-2 gap-10">
-          <div className="flex flex-col gap-6 order-1 md:order-none">
-            <div className="max-h-[45vh]">{media}</div>
-            {text}
+        <>
+          {mobileLayout}
+          <div className="hidden md:block">
+            <div className="flex flex-col md:grid grid-cols-1 md:grid-cols-2 gap-10">
+              <div className="flex flex-col gap-6 order-1 md:order-none">
+                <div className="max-h-[45vh]">{media}</div>
+                {text}
+              </div>
+              <div className="flex flex-col gap-6 order-2 md:order-none">
+                <div className="max-h-[45vh]">{media2}</div>
+                {text2}
+              </div>
+            </div>
           </div>
-          <div className="flex flex-col gap-6 order-2 md:order-none">
-            <div className="max-h-[45vh]">{media2}</div>
-            {text2}
-          </div>
-        </div>
+        </>
       );
 
     case "MediaOnly":
       return (
-        <div className="relative w-full min-h-[50vh]">
-          <MediaOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none" />
-          <div className="relative z-10 w-full max-w-7xl mx-auto flex justify-center items-center min-h-[50vh] py-8">
+        <>
+          {mobileLayoutMediaOnly}
+          <div className="hidden md:block relative w-full min-h-[50vh]">
+            <MediaOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none hidden lg:block" />
+            <div className="relative z-10 w-full max-w-7xl xl-lg:max-w-[1600px] mx-auto flex justify-center items-center min-h-[50vh] lg:min-h-[30vh] py-8">
             <div
-              className="shrink-0 w-[425px] aspect-square overflow-hidden flex items-center justify-center"
-              style={{ boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)" }}
+              className="shrink-0 w-[425px] lg:w-[30vw] aspect-square overflow-hidden flex items-center justify-center md:shadow-[0_0_0_15px_var(--artist-accent,#c96a4a)]"
             >
               {mediaSrc ? (
                 <img
@@ -319,16 +416,18 @@ export default function PageRenderer({
             </div>
           </div>
         </div>
+        </>
       );
 
     case "MediaOnlyVertical":
       return (
-        <div className="relative w-full min-h-[50vh]">
-          <MediaOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none" />
-          <div className="relative z-10 w-full max-w-7xl mx-auto flex justify-center items-center min-h-[50vh] py-8">
+        <>
+          {mobileLayoutMediaOnly}
+          <div className="hidden md:block relative w-full min-h-[50vh]">
+            <MediaOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none hidden lg:block" />
+            <div className="relative z-10 w-full max-w-7xl xl-lg:max-w-[1600px] mx-auto flex justify-center items-center min-h-[50vh] lg:min-h-[30vh] py-8">
             <div
-              className="shrink-0 h-[425px] w-[340px] overflow-hidden flex items-center justify-center"
-              style={{ boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)" }}
+              className="shrink-0 h-[425px] w-[340px] lg:h-[30vw] lg:w-[24vw] overflow-hidden flex items-center justify-center md:shadow-[0_0_0_15px_var(--artist-accent,#c96a4a)]"
             >
               {mediaSrc ? (
                 <img
@@ -351,16 +450,18 @@ export default function PageRenderer({
             </div>
           </div>
         </div>
+        </>
       );
 
     case "MediaOnlyHorizontal":
       return (
-        <div className="relative w-full min-h-[50vh]">
-          <MediaOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none" />
-          <div className="relative z-10 w-full max-w-7xl mx-auto flex justify-center items-center min-h-[50vh] py-8">
+        <>
+          {mobileLayoutMediaOnly}
+          <div className="hidden md:block relative w-full min-h-[50vh]">
+            <MediaOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none hidden lg:block" />
+            <div className="relative z-10 w-full max-w-6xl xl:max-w-7xl xl-lg:max-w-[1600px] 2xl:max-w-[1600px] mx-auto flex justify-center items-center min-h-[50vh] lg:min-h-[30vh] py-8">
             <div
-              className="shrink-0 w-[756px] h-[425px] overflow-hidden flex items-center justify-center"
-              style={{ boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)" }}
+              className="w-full aspect-video lg:max-h-[32vw] lg:w-[60vw] lg:aspect-auto overflow-hidden flex items-center justify-center md:shadow-[0_0_0_15px_var(--artist-accent,#c96a4a)]"
             >
               {mediaSrc ? (
                 <img
@@ -383,16 +484,18 @@ export default function PageRenderer({
             </div>
           </div>
         </div>
+        </>
       );
 
     case "MediaOnlyWide":
       return (
-        <div className="relative w-full min-h-[50vh]">
-          <MediaOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none" />
-          <div className="relative z-10 w-full max-w-7xl mx-auto flex justify-center items-center min-h-[50vh] py-8">
+        <>
+          {mobileLayoutMediaOnly}
+          <div className="hidden md:block relative w-full min-h-[50vh]">
+            <MediaOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none hidden lg:block" />
+            <div className="relative z-10 w-full max-w-6xl xl:max-w-7xl xl-lg:max-w-[1600px] 2xl:max-w-[1600px] mx-auto flex justify-center items-center min-h-[50vh] lg:min-h-[30vh] py-8">
             <div
-              className="shrink-0 w-[756px] h-[425px] overflow-hidden flex items-center justify-center"
-              style={{ boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)" }}
+              className="w-full aspect-video lg:max-h-[30vw] lg:w-[70vw] lg:aspect-auto overflow-hidden flex items-center justify-center md:shadow-[0_0_0_15px_var(--artist-accent,#c96a4a)]"
             >
               {mediaSrc ? (
                 <img
@@ -415,150 +518,183 @@ export default function PageRenderer({
             </div>
           </div>
         </div>
+        </>
       );
 
     case "TextOnly":
       return (
-        <div className="relative w-full min-h-[50vh]">
-          <TextOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none" />
-          <div className="relative z-10 w-full max-w-7xl mx-auto">{text}</div>
-        </div>
+        <>
+          {/* Mobile: background = text color (Color #2), text = background color (Color #1) */}
+          <div className="md:hidden w-screen relative left-1/2 -translate-x-1/2 bg-[var(--artist-text)] px-4 py-4 flex flex-col gap-4 min-h-[60vh]">
+            <h2
+              className="text-2xl md:text-4xl lg:text-5xl font-bold leading-tight"
+              style={{ color: "var(--artist-background, #11100e)" }}
+            >
+              {title}
+            </h2>
+            <p
+              className="whitespace-pre-line text-sm sm:text-base md:text-lg"
+              style={{ color: "var(--artist-background, #11100e)", opacity: 0.9 }}
+            >
+              {description}
+            </p>
+          </div>
+          <div className="hidden md:block relative w-full min-h-[50vh]">
+            <TextOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none hidden lg:block" />
+            <div className="relative z-10 w-full max-w-7xl mx-auto">{text}</div>
+          </div>
+        </>
       );
 
     case "TextOnlyCenter":
       return (
-        <div className="relative w-full min-h-[50vh]">
-          <TextOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none" />
-          <div className="relative z-10 w-full max-w-7xl mx-auto px-6">{text}</div>
-        </div>
+        <>
+          {/* Mobile: background = text color (Color #2), text = background color (Color #1) */}
+          <div className="md:hidden w-screen relative left-1/2 -translate-x-1/2 bg-[var(--artist-text)] px-4 py-4 flex flex-col gap-2 text-center min-h-[60vh]">
+            <h2
+              className="text-2xl md:text-4xl font-bold leading-tight"
+              style={{ color: "var(--artist-background, #11100e)" }}
+            >
+              {title}
+            </h2>
+            <p
+              className="whitespace-pre-line text-sm md:text-base"
+              style={{ color: "var(--artist-background, #11100e)", opacity: 0.9 }}
+            >
+              {description}
+            </p>
+          </div>
+          <div className="hidden md:block relative w-full min-h-[50vh]">
+            <TextOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none hidden lg:block" />
+            <div className="relative z-10 w-full max-w-7xl mx-auto px-6">{text}</div>
+          </div>
+        </>
       );
 
     case "HeroLayoutSquare01":
       return (
-        <div
-          className="relative w-full min-h-[50vh]">
-          <div className="absolute inset-0 flex justify-center items-start z-0">
-            <HeroLayoutSquare01Template className="w-full h-full max-w-7xl pointer-events-none" />
-          </div>
-          <div className="relative z-10 w-full max-w-7xl mx-auto px-0">
-          <div className="grid grid-cols-[1fr_1fr] gap-8 md:gap-4 items-stretch min-h-[50vh] px-4 py-8 ">
-              {/* Col A: image (left) – matches editor */}
-              <div
-                className="shrink-0 self-center w-[425px] aspect-square overflow-hidden flex items-center justify-center"
-                style={{ boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)" }}
-              >
+        <>
+          {mobileLayout}
+          {/* Tablet: 50/50 image left, text right */}
+          <div className="hidden md:block lg:hidden relative w-full min-h-[50vh]">
+            <div className="grid grid-cols-2 gap-4 md:gap-6 items-center min-h-[50vh] px-4 py-8">
+              <div className="w-full aspect-square overflow-hidden flex items-center justify-center md:shadow-[0_0_0_15px_var(--artist-accent,#c96a4a)]">
                 {page.mediaSrc ? (
                   <img
                     src={page.mediaSrc}
                     alt="Portfolio media"
-                    className="h-full w-full object-cover"
+                    className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div
-                    className="flex h-full w-full items-center justify-center text-sm"
-                    style={{
-                      color: "var(--artist-text, #faf7f2)",
-                      opacity: 0.6,
-                      boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)",
-                    }}
-                  >
+                  <div className="w-full h-full flex items-center justify-center text-sm" style={{ color: "var(--artist-text, #faf7f2)", opacity: 0.6 }}>
                     No media
                   </div>
                 )}
               </div>
-              {/* Col B: text (right) – vertically centered, matches editor */}
-              <div className="flex flex-col gap-4 min-w-0 self-stretch flex-1 min-h-0">
-                <div className="flex-1 min-h-[2rem]" aria-hidden />
-                <div className="flex flex-col gap-4">
-                  <h2
-                    className="text-4xl md:text-5xl font-bold leading-tight"
-                    style={{ color: "var(--artist-background, #11100e)" }}
-                  >
-                    {page.title || "Header"}
-                  </h2>
-                  <p
-                    className="text-xl whitespace-pre-line"
-                    style={{ color: "var(--artist-background, #11100e)", opacity: 0.8 }}
-                  >
-                    {page.title2 || "Subheader"}
-                  </p>
-                </div>
-                <div className="flex-1 min-h-[2rem]" aria-hidden />
+              <div className="flex flex-col gap-4 px-4">
+                <h2 className="text-2xl md:text-3xl font-bold leading-tight" style={{ color: "var(--artist-background, #11100e)" }}>
+                  {page.title || "Header"}
+                </h2>
+                <p className="text-base md:text-lg whitespace-pre-line" style={{ color: "var(--artist-background, #11100e)", opacity: 0.8 }}>
+                  {page.title2 || "Subheader"}
+                </p>
               </div>
             </div>
           </div>
-        </div>
+          {/* Laptop: original layout */}
+          <div className="hidden lg:block relative w-full min-h-[50vh]">
+            <div className="absolute inset-0 flex justify-center items-start z-0">
+              <HeroLayoutSquare01Template className="w-full h-full max-w-7xl xl-lg:max-w-[1600px] pointer-events-none" />
+            </div>
+            <div className="relative z-10 w-full max-w-7xl xl-lg:max-w-[1600px] mx-auto px-0">
+              <div className="grid grid-cols-[1fr_1fr] xl-lg:grid-cols-[1.5fr_1fr] gap-8 items-stretch min-h-[50vh] px-4 py-8">
+                <div className="shrink-0 self-center w-[425px] lg:w-[30vw] aspect-square overflow-hidden flex items-center justify-center md:shadow-[0_0_0_15px_var(--artist-accent,#c96a4a)]">
+                  {page.mediaSrc ? (
+                    <img src={page.mediaSrc} alt="Portfolio media" className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-sm" style={{ color: "var(--artist-text, #faf7f2)", opacity: 0.6 }}>No media</div>
+                  )}
+                </div>
+                <div className="flex flex-col gap-4 min-w-0 self-stretch flex-1 min-h-0">
+                  <div className="flex-1 min-h-[2rem]" aria-hidden />
+                  <div className="flex flex-col gap-4">
+                    <h2 className="text-4xl md:text-5xl font-bold leading-tight" style={{ color: "var(--artist-background, #11100e)" }}>{page.title || "Header"}</h2>
+                    <p className="text-xl whitespace-pre-line" style={{ color: "var(--artist-background, #11100e)", opacity: 0.8 }}>{page.title2 || "Subheader"}</p>
+                  </div>
+                  <div className="flex-1 min-h-[2rem]" aria-hidden />
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
       );
 
     case "HeroLayoutVertical01":
       return (
-        <div className="relative w-full min-h-[50vh]">
-          <div className="absolute inset-0 flex justify-center items-start z-0">
-            <HeroLayoutVertical01Template className="w-full h-full max-w-7xl pointer-events-none" />
-          </div>
-          <div className="relative z-10 w-full max-w-7xl mx-auto px-0">
-            <div className="grid grid-cols-[auto_1fr] gap-4 md:gap-16 items-stretch min-h-[50vh] px-4 py-8">
-              {/* Col A: vertical image (left) – auto width fits 340px image, text closer */}
-              <div
-                className="shrink-0 self-center h-[425px] w-[340px] overflow-hidden flex items-center justify-center"
-                style={{ boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)" }}
-              >
+        <>
+          {mobileLayout}
+          {/* Tablet: 50/50 image left, text right */}
+          <div className="hidden md:block lg:hidden relative w-full min-h-[50vh]">
+            <div className="grid grid-cols-2 gap-4 md:gap-6 items-center min-h-[50vh] px-4 py-8">
+              <div className="w-full aspect-[4/5] overflow-hidden flex items-center justify-center md:shadow-[0_0_0_15px_var(--artist-accent,#c96a4a)]">
                 {page.mediaSrc ? (
                   <img
                     src={page.mediaSrc}
                     alt="Portfolio media"
-                    className="h-full w-full object-cover"
+                    className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div
-                    className="flex h-full w-full items-center justify-center text-sm"
-                    style={{
-                      color: "var(--artist-text, #faf7f2)",
-                      opacity: 0.6,
-                      boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)",
-                    }}
-                  >
+                  <div className="w-full h-full flex items-center justify-center text-sm" style={{ color: "var(--artist-text, #faf7f2)", opacity: 0.6 }}>
                     No media
                   </div>
                 )}
               </div>
-              {/* Col B: text (right) – same as HeroLayoutSquare01 */}
-              <div className="flex flex-col min-w-0 self-stretch flex-1 min-h-0">
-                <div className="flex-1 min-h-[2rem]" aria-hidden />
-                <div className="flex flex-col gap-4">
-                  <h2
-                    className="text-4xl md:text-5xl font-bold leading-tight"
-                    style={{ color: "var(--artist-background, #11100e)" }}
-                  >
-                    {page.title || "Header"}
-                  </h2>
-                  <p
-                    className="text-xl whitespace-pre-line"
-                    style={{ color: "var(--artist-background, #11100e)", opacity: 0.8 }}
-                  >
-                    {page.title2 || "Subheader"}
-                  </p>
-                </div>
-                <div className="flex-1 min-h-[2rem]" aria-hidden />
+              <div className="flex flex-col gap-4 px-4">
+                <h2 className="text-2xl md:text-3xl font-bold leading-tight" style={{ color: "var(--artist-background, #11100e)" }}>
+                  {page.title || "Header"}
+                </h2>
+                <p className="text-base md:text-lg whitespace-pre-line" style={{ color: "var(--artist-background, #11100e)", opacity: 0.8 }}>
+                  {page.title2 || "Subheader"}
+                </p>
               </div>
             </div>
           </div>
-        </div>
+          {/* Laptop: original layout */}
+          <div className="hidden lg:block relative w-full min-h-[50vh]">
+            <div className="absolute inset-0 flex justify-center items-start z-0">
+              <HeroLayoutVertical01Template className="w-full h-full max-w-7xl xl-lg:max-w-[1600px] pointer-events-none" />
+            </div>
+            <div className="relative z-10 w-full max-w-7xl xl-lg:max-w-[1600px] mx-auto px-0">
+              <div className="grid grid-cols-[auto_1fr] gap-4 md:gap-16 items-stretch min-h-[50vh] px-4 py-8">
+                <div className="shrink-0 self-center h-[425px] w-[340px] lg:h-[30vw] lg:w-[24vw] overflow-hidden flex items-center justify-center md:shadow-[0_0_0_15px_var(--artist-accent,#c96a4a)]">
+                  {page.mediaSrc ? (
+                    <img src={page.mediaSrc} alt="Portfolio media" className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-sm" style={{ color: "var(--artist-text, #faf7f2)", opacity: 0.6 }}>No media</div>
+                  )}
+                </div>
+                <div className="flex flex-col min-w-0 self-stretch flex-1 min-h-0">
+                  <div className="flex-1 min-h-[2rem]" aria-hidden />
+                  <div className="flex flex-col gap-4">
+                    <h2 className="text-4xl md:text-5xl font-bold leading-tight" style={{ color: "var(--artist-background, #11100e)" }}>{page.title || "Header"}</h2>
+                    <p className="text-xl whitespace-pre-line" style={{ color: "var(--artist-background, #11100e)", opacity: 0.8 }}>{page.title2 || "Subheader"}</p>
+                  </div>
+                  <div className="flex-1 min-h-[2rem]" aria-hidden />
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
       );
 
     case "HeroLayoutHorizontal01":
       return (
-        <div className="relative w-full min-h-[50vh]">
-          <div className="absolute inset-0 flex justify-center items-start z-0">
-            <HeroLayoutHorizontal01Template className="w-full h-full max-w-7xl pointer-events-none" />
-          </div>
-          <div className="relative z-10 w-full max-w-7xl mx-auto px-0">
-            <div className="grid grid-cols-[auto_1fr] gap-4 md:gap-16 items-stretch min-h-[50vh] px-4 py-8">
-              {/* Col A: horizontal image (left) – 425px height, 5:4 aspect */}
-              <div
-                className="shrink-0 self-center h-[425px] w-[531px] min-h-[425px] min-w-[531px] overflow-hidden flex items-center justify-center"
-                style={{ boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)" }}
-              >
+        <>
+          {mobileLayout}
+          {/* Tablet: image top half, text bottom half */}
+          <div className="hidden md:block lg:hidden relative w-full min-h-[50vh]">
+            <div className="flex flex-col gap-4 h-full min-h-[50vh]">
+              <div className="flex-1 min-h-[50%] lg:min-h-[24vw] flex items-center justify-center overflow-hidden md:shadow-[0_0_0_15px_var(--artist-accent,#c96a4a)]">
                 {page.mediaSrc ? (
                   <img
                     src={page.mediaSrc}
@@ -566,50 +702,59 @@ export default function PageRenderer({
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  <div
-                    className="flex h-full w-full items-center justify-center text-sm"
-                    style={{
-                      color: "var(--artist-text, #faf7f2)",
-                      opacity: 0.6,
-                      boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)",
-                    }}
-                  >
+                  <div className="w-full aspect-video flex items-center justify-center text-sm" style={{ color: "var(--artist-text, #faf7f2)", opacity: 0.6 }}>
                     No media
                   </div>
                 )}
               </div>
-              {/* Col B: text (right) – same as HeroLayoutSquare01 */}
-              <div className="flex flex-col gap-4 min-w-0 self-stretch flex-1 min-h-0">
-                <div className="flex-1 min-h-[2rem]" aria-hidden />
-                <div className="flex flex-col gap-4">
-                  <h2
-                    className="text-4xl md:text-5xl font-bold leading-tight"
-                    style={{ color: "var(--artist-background, #11100e)" }}
-                  >
-                    {page.title || "Header"}
-                  </h2>
-                  <p
-                    className="text-xl whitespace-pre-line"
-                    style={{ color: "var(--artist-background, #11100e)", opacity: 0.8 }}
-                  >
-                    {page.title2 || "Subheader"}
-                  </p>
-                </div>
-                <div className="flex-1 min-h-[2rem]" aria-hidden />
+              <div className="flex-1 min-h-[50%] flex flex-col justify-center gap-4 px-4">
+                <h2 className="text-2xl md:text-3xl font-bold leading-tight" style={{ color: "var(--artist-background, #11100e)" }}>
+                  {page.title || "Header"}
+                </h2>
+                <p className="text-base md:text-lg whitespace-pre-line" style={{ color: "var(--artist-background, #11100e)", opacity: 0.8 }}>
+                  {page.title2 || "Subheader"}
+                </p>
               </div>
             </div>
           </div>
-        </div>
+          {/* Laptop: original layout */}
+          <div className="hidden lg:block relative w-full min-h-[50vh]">
+            <div className="absolute inset-0 flex justify-center items-start z-0">
+              <HeroLayoutHorizontal01Template className="w-full h-full max-w-7xl xl-lg:max-w-[1600px] pointer-events-none" />
+            </div>
+            <div className="relative z-10 w-full max-w-7xl xl-lg:max-w-[1600px] mx-auto px-0">
+              <div className="grid grid-cols-[auto_1fr] gap-4 md:gap-16 items-stretch min-h-[50vh] px-4 py-8">
+                <div className="shrink-0 self-center h-[425px] w-[531px] lg:h-[24vw] lg:w-[30vw] overflow-hidden flex items-center justify-center md:shadow-[0_0_0_15px_var(--artist-accent,#c96a4a)]">
+                  {page.mediaSrc ? (
+                    <img src={page.mediaSrc} alt="Portfolio media" className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-sm" style={{ color: "var(--artist-text, #faf7f2)", opacity: 0.6 }}>No media</div>
+                  )}
+                </div>
+                <div className="flex flex-col gap-4 min-w-0 self-stretch flex-1 min-h-0">
+                  <div className="flex-1 min-h-[2rem]" aria-hidden />
+                  <div className="flex flex-col gap-4">
+                    <h2 className="text-4xl md:text-5xl font-bold leading-tight" style={{ color: "var(--artist-background, #11100e)" }}>{page.title || "Header"}</h2>
+                    <p className="text-xl whitespace-pre-line" style={{ color: "var(--artist-background, #11100e)", opacity: 0.8 }}>{page.title2 || "Subheader"}</p>
+                  </div>
+                  <div className="flex-1 min-h-[2rem]" aria-hidden />
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
       );
 
     case "HeroLayoutSquare00":
       return (
-        <div
-          className="relative w-full"
-          style={{ backgroundColor: "var(--artist-background, #11100e)" }}
-        >
-          <HeroLayoutSquare00Template className="absolute inset-0 w-full h-full z-0 pointer-events-none" />
-          <div className="relative z-10 max-w-6xl mx-auto px-6 md:px-10 py-12 md:py-16 grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+        <>
+          {mobileLayout}
+          <div
+            className="hidden md:block relative w-full"
+            style={{ backgroundColor: "var(--artist-background, #11100e)" }}
+          >
+          <HeroLayoutSquare00Template className="absolute inset-0 w-full h-full z-0 pointer-events-none hidden lg:block" />
+          <div className="relative z-10 max-w-6xl xl:max-w-7xl xl-lg:max-w-[1600px] 2xl:max-w-[1600px] mx-auto px-6 md:px-10 py-12 md:py-16 grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
             {/* Left column: headline + paragraph */}
             <div className="md:col-span-5 flex flex-col gap-4">
               <div className="flex items-center gap-2">
@@ -643,7 +788,7 @@ export default function PageRenderer({
             <div className="md:col-span-7 flex justify-center items-center">
               <div className="relative w-full max-w-lg">
                 <div
-                  className="relative aspect-square w-full max-w-lg mx-auto overflow-hidden border-4"
+                  className="relative aspect-square w-full max-w-lg lg:max-w-[30vw] mx-auto overflow-hidden border-4"
                   style={{ borderColor: "var(--artist-accent, #c96a4a)" }}
                 >
                   {page.mediaSrc ? (
@@ -689,15 +834,21 @@ export default function PageRenderer({
             </div>
           </div>
         </div>
+        </>
       );
 
     default:
       // Fallback so unknown layout still shows *something*
       return (
-        <div className="flex flex-col gap-8 px-4 md:px-0">
-          <div className="order-1 md:order-none">{media}</div>
-          <div className="order-2 md:order-none">{text}</div>
-        </div>
+        <>
+          {mobileLayout}
+          <div className="hidden md:block">
+            <div className="flex flex-col gap-8 px-4 md:px-0">
+              <div className="order-1 md:order-none">{media}</div>
+              <div className="order-2 md:order-none">{text}</div>
+            </div>
+          </div>
+        </>
       );
   }
 }

@@ -13,7 +13,7 @@ export default function HeroLayoutSquare00Template({
   className?: string;
 }) {
   return (
-    <div>
+    <div className={className}>
       <svg width="110%" height="110%" viewBox="0 0 1700 625" fill="none" xmlns="http://www.w3.org/2000/svg"
       style={{zIndex: 5, position: "absolute", top: -35, left: 0, right: 0, bottom: 0}}>
         <rect x="1" y="1" width="1048" height="18" stroke="var(--artist-background)" stroke-width="2"/>

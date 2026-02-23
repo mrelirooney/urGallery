@@ -58,7 +58,16 @@ export default function SettingsPage() {
   }
 
   const handleCancel = () => {
-    router.back();
+    // On mobile: if we have a profile slug, go to profile and refresh so changes show
+    if (typeof window !== "undefined" && window.innerWidth < 768 && user?.slug) {
+      router.push(`/${user.slug}`);
+      setTimeout(() => router.refresh(), 200);
+    } else {
+      router.back();
+      if (typeof window !== "undefined" && window.innerWidth < 768) {
+        setTimeout(() => router.refresh(), 200);
+      }
+    }
   };
 
   const handleSelectSection = (section: SettingsSection) => {
@@ -67,13 +76,16 @@ export default function SettingsPage() {
   };
 
   const handleBackToMenu = async () => {
-    // Mobile: auto-save before returning to menu
-    if (activeSection === "profile" && profileSaveRef.current) {
-      await profileSaveRef.current();
-    } else if (activeSection === "contact" && contactSaveRef.current) {
-      await contactSaveRef.current();
-    } else if (activeSection === "customization" && customizationSaveRef.current) {
-      await customizationSaveRef.current();
+    // Phone only: auto-save before returning to menu so changes persist
+    const isPhone = typeof window !== "undefined" && window.innerWidth < 768;
+    if (isPhone) {
+      if (activeSection === "profile" && profileSaveRef.current) {
+        await profileSaveRef.current();
+      } else if (activeSection === "contact" && contactSaveRef.current) {
+        await contactSaveRef.current();
+      } else if (activeSection === "customization" && customizationSaveRef.current) {
+        await customizationSaveRef.current();
+      }
     }
     setShowMenu(true);
   };

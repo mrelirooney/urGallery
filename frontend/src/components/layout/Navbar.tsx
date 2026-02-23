@@ -164,40 +164,41 @@ export default function Navbar() {
         className="sticky top-0 z-55"
         style={{ backgroundColor: customColors?.background || 'var(--background)' }}
       >
-        <Container className="max-w-full px-0 h-12 sm:h-14 flex items-center justify-between gap-2">
-        {/* Left: Back arrow (mobile/tablet only) OR Logo + Hamburger (desktop) */}
+        <Container className="max-w-full px-0 h-12 sm:h-14">
+        <div className={`h-full flex items-center justify-between gap-2 ${isArtistPage ? "max-w-6xl xl:max-w-7xl 2xl:max-w-[1310px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-16 2xl:px-20" : ""}`}>
+        {/* Left: Back arrow (mobile only) OR Hamburger + Logo (tablet/desktop on artist pages) */}
         <div className="flex items-center">
-          {/* Mobile/Tablet: Back arrow (only on artist pages) */}
+          {/* Mobile only: Back arrow (only on artist pages) */}
           {isArtistPage && (
             <button
               onClick={() => router.push("/")}
-              className="lg:hidden rounded-md transition mr-3"
-              style={{ color: customColors?.accent || '#c96a4a' }}
+              className="md:hidden rounded-md transition mr-3"
+              style={{ color: 'var(--artist-text, #11100e)' }}
               aria-label="Back to home"
             >
               <ArrowLeft size={24} />
             </button>
           )}
           
-          {/* Desktop: Hamburger (only on artist pages) */}
+          {/* Tablet/Desktop: Hamburger (only on artist pages) */}
           {isArtistPage && (
             <button
               onClick={() => setOpen(!open)}
-              className="hidden lg:block rounded-md transition"
-              style={{ color: customColors?.text || '#c96a4a' }}
+              className="hidden md:block rounded-md transition"
+              style={{ color: 'var(--artist-text, #11100e)' }}
               aria-label="Portfolio menu"
             >
               {open ? <X size={28} /> : <Menu size={28} />}
             </button>
           )}
 
-          {/* Logo - hidden on mobile/tablet for artist profile pages, shown on desktop.
+          {/* Logo - hidden on mobile for artist profile pages, shown on tablet/desktop.
               Color: theme text on profile pages, var(--foreground) on home (light/dark auto) */}
           <Link 
             href="/" 
             aria-label="Home" 
-            className={`${isArtistPage ? "lg:ml-3" : ""} ${isArtistPage ? "hidden lg:block" : ""} ${!isArtistPage || !customColors?.text ? "text-[var(--foreground)]" : ""}`}
-            style={isArtistPage && customColors?.text ? { color: customColors.text } : undefined}
+            className={`${isArtistPage ? "md:ml-3" : ""} ${isArtistPage ? "hidden md:block" : ""} ${!isArtistPage ? "text-[var(--foreground)]" : ""}`}
+            style={isArtistPage ? { color: 'var(--artist-text, #11100e)' } : undefined}
           >
             <Logo className="h-10 sm:h-11 lg:h-12 w-auto" />
           </Link>
@@ -210,19 +211,20 @@ export default function Navbar() {
         ) : user ? (
           // --- Signed-in view ---
           <div className="flex items-center gap-3">
-            {/* Mobile/Tablet: Hamburger on right (only on artist pages) */}
+            {/* Mobile only: Hamburger on right (only on artist pages) */}
             {isArtistPage && (
               <button
                 onClick={() => setOpen(!open)}
-                className="lg:hidden rounded-md text-[var(--light-brown)] transition"
+                className="md:hidden rounded-md transition"
+                style={{ color: 'var(--artist-text, #11100e)' }}
                 aria-label="Portfolio menu"
               >
                 {open ? <X size={24} /> : <Menu size={24} />}
               </button>
             )}
             
-            {/* Desktop: Search + Avatar */}
-            <div className="hidden lg:flex items-center gap-3 lg:gap-4 xl:gap-5">
+            {/* Tablet/Desktop: Search + Avatar */}
+            <div className="hidden md:flex items-center gap-3 lg:gap-4 xl:gap-5">
               <div className="pl-2 lg:pl-4 xl:pl-6">
                 <SearchInput
                   variant="nav"
@@ -371,20 +373,21 @@ export default function Navbar() {
           </div>
         ) : (
           // --- Logged-out view ---
-          <nav className="flex items-center gap-3 sm:gap-4 text-body-sm">
-            {/* Mobile/Tablet: Hamburger on right (only on artist profile pages) */}
+          <nav className="flex items-center gap-3 sm:gap-4 text-body-sm md:pr-4">
+            {/* Mobile only: Hamburger on right (only on artist profile pages) */}
             {isArtistPage && (
               <button
                 onClick={() => setOpen(!open)}
-                className="lg:hidden rounded-md text-[var(--light-brown)] transition"
+                className="md:hidden rounded-md transition"
+                style={{ color: customColors?.text || '#11100e' }}
                 aria-label="Portfolio menu"
               >
                 {open ? <X size={24} /> : <Menu size={24} />}
               </button>
             )}
             
-            {/* Login/SignUp buttons - hidden on mobile/tablet for artist pages */}
-            <div className={isArtistPage ? "hidden lg:flex items-center gap-3 lg:gap-4 xl:gap-5" : "flex items-center gap-3 sm:gap-4"}>
+            {/* Login/SignUp buttons - hidden on mobile for artist pages, shown on tablet/desktop */}
+            <div className={isArtistPage ? "hidden md:flex items-center gap-3 lg:gap-4 xl:gap-5" : "flex items-center gap-3 sm:gap-4"}>
               <Link
                 href="/login"
                 className={`px-2 sm:px-3 py-1 sm:py-1.5 text-body rounded-xs bg-transparent border-2 transition-opacity hover:opacity-90 ${!isArtistPage ? "text-neutral-800 border-neutral-800/40 dark:text-neutral-100 dark:border-neutral-100/40" : ""} sm:border-white/30 sm:bg-(--foreground)/0 sm:text-white/30 sm:hover:bg-(--foreground)/90 sm:hover:text-black`}
@@ -402,6 +405,7 @@ export default function Navbar() {
             </div>
           </nav>
         )}
+        </div>
       </Container>
     </header>
     </>

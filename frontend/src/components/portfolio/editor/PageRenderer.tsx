@@ -281,7 +281,7 @@ export default function PageRenderer({
   if (isMediaOnly) {
     return (
       <div className="relative w-full min-h-[50vh]">
-        <MediaOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none" />
+        <MediaOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none hidden lg:block" />
         <div className="relative z-10 w-full max-w-7xl mx-auto flex justify-center items-center min-h-[50vh] py-8">
           <div
             className={`shrink-0 w-[425px] aspect-square overflow-hidden flex items-center justify-center ${isEditor ? "cursor-pointer" : ""}`}
@@ -324,7 +324,7 @@ export default function PageRenderer({
   if (isMediaOnlyVertical) {
     return (
       <div className="relative w-full min-h-[50vh]">
-        <MediaOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none" />
+        <MediaOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none hidden lg:block" />
         <div className="relative z-10 w-full max-w-7xl mx-auto flex justify-center items-center min-h-[50vh] py-8">
           <div
             className={`shrink-0 h-[425px] w-[340px] overflow-hidden flex items-center justify-center ${isEditor ? "cursor-pointer" : ""}`}
@@ -367,7 +367,7 @@ export default function PageRenderer({
   if (isMediaOnlyHorizontal) {
     return (
       <div className="relative w-full min-h-[50vh]">
-        <MediaOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none" />
+        <MediaOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none hidden lg:block" />
         <div className="relative z-10 w-full max-w-7xl mx-auto flex justify-center items-center min-h-[50vh] py-8">
           <div
             className={`shrink-0 w-[756px] h-[425px] overflow-hidden flex items-center justify-center ${isEditor ? "cursor-pointer" : ""}`}
@@ -410,7 +410,7 @@ export default function PageRenderer({
   if (isMediaOnlyWide) {
     return (
       <div className="relative w-full min-h-[50vh]">
-        <MediaOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none" />
+        <MediaOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none hidden lg:block" />
         <div className="relative z-10 w-full max-w-7xl mx-auto flex justify-center items-center min-h-[50vh] py-8">
           <div
             className={`shrink-0 w-[756px] h-[425px] overflow-hidden flex items-center justify-center ${isEditor ? "cursor-pointer" : ""}`}

@@ -28,7 +28,7 @@ export default function CompactNavHamburger() {
   return (
     <button
       onClick={() => setOpen(!open)}
-      className="rounded-md text-[var(--artist-text)] transition"
+      className="rounded-md text-[var(--artist-text,#11100e)] transition"
       aria-label="Portfolio menu"
     >
       <Menu size={24} />

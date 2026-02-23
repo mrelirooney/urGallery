@@ -167,13 +167,13 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
 
   return (
     <section 
-      className="mx-auto max-w-full md:max-w-6xl flex-col justify-between"
+      className="w-full flex flex-col justify-between"
       style={{ 
         backgroundColor: customColors?.text || '#11100e',
         color: customColors?.background || '#faf7f2',
        }}
     >
-      <div className="min-h-[85vh] md:min-h-[85vh] w-full max-w-7xl pt-8 pb-4 md:pt-8 md:pb-8 flex flex-col justify-between relative z-20">
+      <div className="min-h-[85vh] md:min-h-[85vh] w-full pt-0 pb-4 md:pt-8 md:pb-8 flex flex-col justify-between relative z-20">
         <div className="flex items-center justify-between hidden md:flex relative z-20">
           <div
             role="button"
@@ -205,13 +205,13 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
           <EditPortfolioButton artistSlug={artistSlug} portfolioSlug={slug} />
         </div>
 
-        <div className="max-h-[60vh] flex flex-col justify-start md:justify-center gap-6 relative z-10">
+        <div className="max-h-[60vh] xl-lg:max-h-[75vh] flex flex-col justify-start md:justify-center gap-6 relative z-10">
           <PageRenderer
             pages={pages}
             currentPageIndex={currentPageIndex}
           />
         </div>
-        <div className="justify-end relative z-20 top-5">
+        <div className="justify-end relative z-20 top-5 mb-6 md:mb-0">
           <Pagination
             totalPages={pages.length}
             currentPage={currentPageIndex + 1}

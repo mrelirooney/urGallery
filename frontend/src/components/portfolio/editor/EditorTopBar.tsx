@@ -90,10 +90,10 @@ export default function EditorTopBar({
             Redo
           </button>
 
-          <button onClick={onAdd} className="btn-small text-sm">
+          <button onClick={onAdd} className="btn-small text-sm hidden lg:inline-block">
             Add
           </button>
-          <button disabled={disableDelete} onClick={onDeletePage} className="btn-small text-sm">
+          <button disabled={disableDelete} onClick={onDeletePage} className="btn-small text-sm hidden lg:inline-block">
             Delete
           </button>
 
