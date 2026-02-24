@@ -30,7 +30,6 @@ export async function GET(req: Request) {
     }
 
     const data = await resp.json();
-    console.log("Search results:", data); // Debug: see what we're getting
     return NextResponse.json(data);
   } catch (error) {
     console.error("Search fetch error:", error);

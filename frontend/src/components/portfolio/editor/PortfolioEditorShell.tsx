@@ -247,7 +247,6 @@ export default function PortfolioEditorShell({
           errorText,
         );
       } else {
-        console.log("Page order synced successfully.");
       }
     } catch (err) {
       console.error("Error while syncing page order:", err);
@@ -457,7 +456,6 @@ export default function PortfolioEditorShell({
       }
 
       if (!options?.silent) {
-        console.log("Portfolio saved successfully");
       }
       return true;
     } catch (err) {
@@ -524,7 +522,6 @@ export default function PortfolioEditorShell({
       }
 
       const data = await res.json();
-        console.log("Portfolio published successfully!", data);
         alert("Portfolio published successfully!");
         // Navigate back to the artist's profile page with a full reload
         if (artistSlug) {

@@ -58,9 +58,6 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
 
   useEffect(() => {
     if (!slug) {
-      console.log(
-        "⚠️ Slug is not available yet, skipping portfolio load."
-      );
       return;
     }
 
@@ -70,7 +67,6 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
         setError(null);
 
         const url = `${API_BASE}/api/artists/${artistSlug}/portfolios/${slug}/`;
-        console.log("Fetching live portfolio:", url);
 
         const res = await fetch(url, {
           credentials: "include", // Send auth cookies
@@ -80,7 +76,6 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
         }
 
         const data: ApiPortfolio = await res.json();
-        console.log("📦 API Response:", data); // Debug: see what we're getting
         setPortfolioTitle(data.title ?? "");
         
         // Emit portfolio title update for compact navbar
@@ -135,7 +130,6 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
             };
           });
 
-        console.log("✅ Mapped pages:", mappedPages);
         setPages(mappedPages);
         setCurrentPageIndex(0);
       } catch (err) {

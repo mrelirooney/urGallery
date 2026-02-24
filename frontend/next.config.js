@@ -37,8 +37,14 @@ try {
   // fallback to defaults
 }
 
+const path = require("path");
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: "standalone",
+  turbopack: {
+    root: path.join(__dirname),
+  },
   images: {
     remotePatterns: [
       {

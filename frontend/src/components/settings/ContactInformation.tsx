@@ -226,7 +226,6 @@ export default function ContactInformation({ onSaveRef }: Props) {
       });
 
       if (response.ok) {
-        console.log("Contacts saved successfully");
       } else {
         const error = await response.json();
         console.error("Error saving contacts:", error);

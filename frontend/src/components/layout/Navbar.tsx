@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { usePathname, useSearchParams, useRouter } from "next/navigation";
+import { Suspense, useEffect, useRef, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import Logo from "@/components/layout/Logo";
 import Container from "@/components/layout/Container";
@@ -154,9 +154,11 @@ export default function Navbar() {
   // --- 4. Return JSX ---
   return (
     <>
-      {/* Portfolio Menu */}
+      {/* Portfolio Menu - wrapped in Suspense for useSearchParams (required for 404/prerender) */}
       {isArtistPage && (
-        <PortfolioMenu isOpen={open} onClose={() => setOpen(false)} customColors={customColors ?? undefined} />
+        <Suspense fallback={null}>
+          <PortfolioMenu isOpen={open} onClose={() => setOpen(false)} customColors={customColors ?? undefined} />
+        </Suspense>
       )}
 
       <header 
