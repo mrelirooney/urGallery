@@ -14,6 +14,8 @@ import ProfileSettingsButton from "@/components/artist/ProfileSettingsButton";
 import ColorThemeSetter from "@/components/artist/ColorThemeSetter";
 import GoogleFontsLoader from "@/components/artist/GoogleFontsLoader";
 import ThemePatternLayer from "../../components/artist/ThemePatternLayer";
+import EmptyPortfolioMessage from "@/components/artist/EmptyPortfolioMessage";
+import ScrollToPortfolioOnLoad from "@/components/artist/ScrollToPortfolioOnLoad";
 
 
 type RouteParams = { slug: string };
@@ -73,9 +75,10 @@ export default async function ArtistPage(
     process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
 
   let src: string;
+  const hasAvatar = Boolean(raw && raw.trim().length > 0);
 
   if (!raw) {
-    // fallback to default
+    // fallback to default (used in main ArtistHeader)
     src = "/default-avatar.png";
   } else if (raw.startsWith("http://") || raw.startsWith("https://")) {
     // already an absolute URL from the backend (/api/auth/me style)
@@ -89,6 +92,11 @@ export default async function ArtistPage(
       normalizedBase +
       (raw.startsWith("/") ? raw : `/${raw}`);
   }
+
+  const compactInitial = (profile?.display_name || profile?.slug || "?")
+    .trim()
+    .charAt(0)
+    .toUpperCase();
 
   // Get custom colors or use defaults
   const customColors = {
@@ -104,6 +112,7 @@ export default async function ArtistPage(
     <>
       <GoogleFontsLoader fontFamily={fontFamily} />
       <ColorThemeSetter colors={customColors} fontFamily={fontFamily} />
+      <ScrollToPortfolioOnLoad />
       <main className="flex flex-col relative z-50">
         <ArtistLandingMotion pagesCount={firstPortfolio?.pages_count ?? 1} />
 
@@ -132,7 +141,7 @@ export default async function ArtistPage(
         )}
         {/* Settings button - aligned with content padding so it stays within content area */}
         {profile?.banner_image_url && (
-          <div className="absolute top-4 right-4 sm:right-6 md:right-10 z-[60] lg:hidden">
+          <div className="absolute top-4 right-4 sm:right-6 z-[60] md:hidden">
             <ProfileSettingsButton profileSlug={profile.slug} customColors={customColors} />
           </div>
         )}
@@ -160,8 +169,12 @@ export default async function ArtistPage(
           <div className="flex items-center justify-between md:hidden">
             <BackArrowButton />
             <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-full overflow-hidden border border-neutral-300">
-                <img src={src} alt={`${profile?.display_name ?? "Artist"} avatar`} className="h-full w-full object-cover" />
+              <div className="h-9 w-9 rounded-full overflow-hidden border border-neutral-300 flex items-center justify-center bg-neutral-200 shrink-0">
+                {hasAvatar ? (
+                  <img src={src} alt={`${profile?.display_name ?? "Artist"} avatar`} className="h-full w-full object-cover" />
+                ) : (
+                  <span className="text-sm font-semibold text-neutral-700">{compactInitial}</span>
+                )}
               </div>
             </div>
             <CompactNavHamburger />
@@ -173,8 +186,12 @@ export default async function ArtistPage(
           {/* Tablet + Laptop: thin bar - pic + name left, contact buttons right */}
           <div className="hidden md:flex items-center justify-between gap-4 py-1">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="h-10 w-10 shrink-0 rounded-full overflow-hidden border border-neutral-300">
-                <img src={src} alt={`${profile?.display_name ?? "Artist"} avatar`} className="h-full w-full object-cover" />
+              <div className="h-10 w-10 shrink-0 rounded-full overflow-hidden border border-neutral-300 flex items-center justify-center bg-neutral-200">
+                {hasAvatar ? (
+                  <img src={src} alt={`${profile?.display_name ?? "Artist"} avatar`} className="h-full w-full object-cover" />
+                ) : (
+                  <span className="text-base font-semibold text-neutral-700">{compactInitial}</span>
+                )}
               </div>
               <span className="font-semibold truncate" style={{ color: customColors.text }}>
                 {profile?.display_name ?? "Loading..."}
@@ -217,11 +234,7 @@ export default async function ArtistPage(
               customColors={customColors}
             />
           ) : (
-            <div className="py-16 px-4 text-center">
-              <p className="text-neutral-400 text-lg">
-                This artist only has private portfolios. Ask them for a link to see their portfolio.
-              </p>
-            </div>
+            <EmptyPortfolioMessage profileSlug={profile.slug} customColors={customColors} />
           )}
         </div>
       </section>

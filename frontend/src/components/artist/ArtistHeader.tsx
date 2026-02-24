@@ -3,6 +3,7 @@
 
 import type { ArtistLanding } from "@/lib/types";
 import { parseContacts, copyToClipboard } from "@/lib/contactUtils";
+import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
 
 type Props = { 
@@ -17,6 +18,14 @@ type Props = {
 
 export default function ArtistHeader({ profile, customColors }: Props) {
   const [copiedEmail, setCopiedEmail] = useState(false);
+  const { user } = useAuth();
+  const isOwner = Boolean(user?.slug && profile?.slug && user.slug === profile.slug);
+  const initial =
+    (profile?.display_name || profile?.slug || "?")
+      .trim()
+      .charAt(0)
+      .toUpperCase();
+
   if (!profile)
     return (
       <div className="text-center text-neutral-500 py-8">
@@ -142,7 +151,10 @@ export default function ArtistHeader({ profile, customColors }: Props) {
             className="mt-1 text-sm sm:text-md md:text-lg leading-relaxed"
             style={{ color: customColors?.text || 'var(--foreground)' }}
           >
-            {profile.bio || "This artist hasn't added a bio yet."}
+            {profile.bio ||
+              (isOwner
+                ? `IT IS TIME TO GET CREATIVE! You can add a bio, profile picture, and banner picture by clicking the '${initial}' in the top right corner then clicking Settings. You can also customize your profile in Settings. DECORATE YOUR BLANK CANVAS NOW!`
+                : "This artist hasn't added a bio yet.")}
           </p>
         </div>
       </div>

@@ -29,12 +29,10 @@ export type EditorTopBarProps = {
   onSelectPage: (index: number) => void;
   onReorder: (fromIndex: number, toIndex: number) => void;
 
-  // open the layout picker for the current page
-  onChangeLayout: () => void;
-
-  // portfolio title (in bar below thumbnails)
+  // portfolio title + layout picker
   portfolioTitle: string;
   onChangePortfolioTitle: (value: string) => void;
+  onChangeLayout: () => void;
 };
 
 export default function EditorTopBar({
@@ -58,24 +56,23 @@ export default function EditorTopBar({
 
   onSelectPage,
   onReorder,
-  onChangeLayout,
   portfolioTitle,
   onChangePortfolioTitle,
+  onChangeLayout,
 }: EditorTopBarProps) {
   // index of the thumbnail currently being dragged
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   return (
-    <>
     <div
       className="w-full px-0 text-neutral-100 flex flex-col gap-0 relative z-50"
       style={{
-        backgroundColor: "var(--artist-background, #11100e)",
+        background: "linear-gradient(to bottom, var(--artist-background, #11100e) .5%, var(--artist-background, #11100e) .5%, transparent 0%)",
         color: "var(--artist-text, #faf7f2)",
       }}
     >
-      <div className="max-w-6xl mx-auto px-6 w-full flex flex-col gap-0">
+      <div className="max-w-6xl xl:max-w-7xl xl-lg:max-w-[1310px] 2xl:max-w-[1310px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-16 2xl:px-20 w-full flex flex-col gap-0">
       {/* --- Top row buttons --- */}
       <div className="flex items-center justify-between">
         <button onClick={onCancel} className="text-sm opacity-80 hover:opacity-100">
@@ -109,9 +106,8 @@ export default function EditorTopBar({
           </button>
         </div>
       </div>
-      </div>
       {/* --- Thumbnails row --- */}
-      <div className="flex gap-2 overflow-x-auto pt-2 pb-2 px-45 rounded-xs">
+      <div className="flex gap-2 overflow-x-auto pt-2 pb-2 justify-start rounded-xs">
         {pages.map((page, index) => {
           const isActive = index === currentPageIndex;
           const isDragged = index === dragIndex;
@@ -171,22 +167,14 @@ export default function EditorTopBar({
         })}
       </div>
       </div>
-      
-      <div
-        className="w-full text-neutral-100 flex flex-col gap-0 relative z-50"
-      >
-      {/* --- Portfolio title + Layouts (full-width strip, canvas background) --- */}
-      <div
-        className="w-full flex flex-wrap items-center justify-between gap-4 py-3.5 px-6 relative z-10"
-        style={{ backgroundColor: "transparent" }}
-      >
-        <div className="max-w-6xl px-6 mx-auto w-full flex flex-wrap items-center justify-between gap-4 relative z-7">
+      {/* --- Portfolio title + Layouts (same width as footer) --- */}
+      <div className="w-full max-w-6xl xl:max-w-7xl xl-lg:max-w-[1310px] 2xl:max-w-[1310px] mx-auto flex flex-wrap items-center justify-between gap-4 py-3.5 px-4 sm:px-6 md:px-10 lg:px-16 xl:px-16 2xl:px-20">
           <input
             type="text"
             value={portfolioTitle}
             onChange={(e) => onChangePortfolioTitle(e.target.value)}
             placeholder="Portfolio title"
-            className="min-w-[220px] rounded-xs border bg-transparent px-3 py-1 text-sm uppercase tracking-wide focus:border-neutral-500 focus:outline-none"
+            className="min-w-[21vw] rounded-xs border bg-transparent px-3 py-1 text-sm uppercase tracking-wide focus:border-neutral-500 focus:outline-none"
             style={{
               color: "var(--artist-background, #11100e)",
               borderColor: "var(--artist-background, #11100e)",
@@ -195,18 +183,17 @@ export default function EditorTopBar({
           <button
             type="button"
             onClick={onChangeLayout}
-            className="rounded-xs border px-3 py-1 text-sm"
+            className="rounded-xs border px-3 py-1 text-sm bg-transparent"
             style={{
               color: "var(--artist-background, #11100e)",
               borderColor: "var(--artist-background, #11100e)",
+              backgroundColor: "transparent",
             }}
           >
             Layouts
           </button>
-        </div>
       </div>
     </div>
-    </>
   );
   
 }

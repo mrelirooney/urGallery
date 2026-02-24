@@ -301,9 +301,9 @@ export default function Navbar() {
               </div>
             </div>
             
-            {/* Mobile/Tablet: Avatar only (when not on artist profile page) */}
+            {/* Mobile only: Avatar (when not on artist profile page; md+ shows Search+Avatar above) */}
             {!isArtistPage && (
-              <div className="lg:hidden relative" ref={menuRef}>
+              <div className="md:hidden relative" ref={menuRef}>
                 <AvatarButton
                   size={36}
                   onClick={() => setMenuOpen((v) => !v)}

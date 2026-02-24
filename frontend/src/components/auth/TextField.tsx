@@ -19,7 +19,7 @@ const TextField = forwardRef<HTMLInputElement, Props>(
           ref={ref}
           className={[
             "w-full rounded-xs ring-2 px-3 py-2 text-body bg-transparent",
-            "ring-[var(--foreground)]/10 md:ring-[var(--background)]/10 text-[var(--foreground)] placeholder:text-neutral-400",
+            "ring-[var(--foreground)]/10 md:ring-[var(--background)]/10 text-[var(--foreground)] md:text-[var(--background)] placeholder:text-neutral-400",
             "focus:outline-none focus:ring-2 focus:ring-[var(--light-brown)]/70",
             error ? "ring-red-400/70" : "",
             className,
@@ -27,7 +27,7 @@ const TextField = forwardRef<HTMLInputElement, Props>(
           {...rest}
         />
         {error && (
-          <span className="mt-1 block text-xs text-red-600">{error}</span>
+          <span className="mt-1 block text-sm text-red-600">{error}</span>
         )}
       </label>
     );

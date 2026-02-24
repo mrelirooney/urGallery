@@ -15,7 +15,7 @@ export default function HomePage() {
       <LogoPrimary className="h-12 sm:h-16 md:h-20 lg:h-24 xl:h-28 w-auto" />
       <SearchInput variant="hero" />
       {/* Responsive text sizing */}
-      <p className="text-xs sm:text-sm md:text-base text-neutral-500 text-center">
+      <p className="text-sm sm:text-sm md:text-base text-neutral-500 text-center">
         MVPs Loading - VIPs Only
       </p>
     </main>

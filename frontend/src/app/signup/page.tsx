@@ -16,8 +16,8 @@ export default function SignupPage() {
     setErr(undefined);
     try {
       await AuthAPI.signup({ email, password });
-      await AuthAPI.login({ email, password });  // optional auto-login
-      r.push("/");
+      await AuthAPI.login({ email, password });
+      r.push("/signup/complete");
     } catch (e: any) {
       setErr(e?.message ?? "Sign up failed");
     }
@@ -28,7 +28,7 @@ export default function SignupPage() {
     <main className="mx-auto max-w-md w-full py-14">
       <div className="mx-auto w-full max-w-md rounded-sm border-0 md:border border-neutral-200 bg-transparent md:bg-[var(--foreground)] px-0 py-6 md:p-6 shadow-sm">
         <h1 className="mb-6 text-center text-2xl font-bold text text-[var(--light-brown)]">Create Account</h1>
-        {err && <p className="mb-3 text-red-600">{err}</p>}
+        {err && <p className="mb-3 text-sm text-red-600">{err}</p>}
         <form onSubmit={onSubmit} className="grid gap-4">  
             <TextField 
             label="Email"    

@@ -357,7 +357,7 @@ export default function CustomizationSection({ onSaveRef }: CustomizationSection
                         setSelectedFont(f.family);
                         setFontDropdownOpen(false);
                       }}
-                      className={`w-full px-4 py-2.5 text-left hover:bg-neutral-50 transition-colors first:rounded-xs-t-md last:rounded-xs-b-md ${
+                      className={`w-full px-4 py-2.5 text-left hover:bg-[var(--light-brown)]/50 transition-colors first:rounded-xs-t-md last:rounded-xs-b-md ${
                         isSelected ? "bg-[var(--light-brown)] font-medium" : ""
                       }`}
                       style={{ fontFamily: `"${f.family}", sans-serif` }}
@@ -390,7 +390,11 @@ export default function CustomizationSection({ onSaveRef }: CustomizationSection
                         : "hover:bg-[var(--light-brown)/50]"
                     }`}
                   >
-                    <div className="w-full aspect-square min-w-0 rounded-xs overflow-hidden bg-neutral-200 flex items-center justify-center shrink-0">
+                    <div
+                      className={`w-full aspect-square min-w-0 rounded-xs overflow-hidden flex items-center justify-center shrink-0 ${
+                        opt.previewUrl ? "bg-neutral-200" : "bg-[var(--foreground)]"
+                      }`}
+                    >
                       {opt.previewUrl ? (
                         <img
                           src={opt.previewUrl}
@@ -398,7 +402,7 @@ export default function CustomizationSection({ onSaveRef }: CustomizationSection
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <span className="text-[var(--foreground)] opacity-70 text-sm font-medium">
+                        <span className="text-[var(--background)] text-sm font-medium">
                           {opt.name}
                         </span>
                       )}
@@ -426,12 +430,12 @@ export default function CustomizationSection({ onSaveRef }: CustomizationSection
               <ThemePatternLayer
                 svgUrl={absoluteSvgUrl}
                 colorOverrides={profileThemeOverrides}
-                opacity={0.15}
+                opacity={0.08}
               />
             )}
             <div className="relative z-10 p-6 pr-5 pl-5" style={{ fontFamily: previewFontFamily }}>
               <div 
-                className="w-20 h-20 rounded-xs-full mb-4 flex items-center justify-center"
+                className="w-20 h-20 rounded-full mb-4 flex items-center justify-center"
                 style={{ backgroundColor: colors.text }}
               >
               </div>

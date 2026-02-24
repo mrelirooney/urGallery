@@ -138,7 +138,7 @@ export default function SettingsPage() {
     <div className="min-h-screen bg-[var(--background)]">
       {/* Header */}
       <header className={`border-b border-neutral-200 dark:border-neutral-800 bg-[var(--background)] lg:fixed lg:top-0 lg:left-0 lg:right-0 lg:z-10 ${!showMenu ? "fixed top-0 left-0 right-0 z-10" : ""}`}>
-        <div className={`mx-auto max-w-7xl py-4 flex items-center justify-between ${!showMenu ? "px-4 sm:px-6 md:px-10 lg:px-16" : "px-0 lg:px-6"}`}>
+        <div className={`mx-auto max-w-7xl lg:max-w-6xl py-4 flex items-center justify-between ${!showMenu ? "px-4 sm:px-6 md:px-10 lg:px-16 xl:px-16 2xl:px-20" : "px-0 lg:px-0"}`}>
           {/* Mobile/tablet: Cancel | Settings when in menu; Back | Section | Done when in panel */}
           <div className="flex flex-1 min-w-0 items-center gap-4 lg:hidden">
             {showMenu ? (

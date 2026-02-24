@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 
 
 export type PrivacyModalProps = {
@@ -18,10 +18,23 @@ export default function PrivacyModal({
   onUpdatePrivacy,
   portfolioUrl,
 }: PrivacyModalProps) {
+  const [copied, setCopied] = useState(false);
+
   if (!isOpen) return null;
 
+  const handleCopy = async () => {
+    if (!portfolioUrl) return;
+    try {
+      await navigator.clipboard.writeText(portfolioUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // fallback for older browsers
+    }
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
       {/* MODAL */}
       <div className="w-full max-w-md rounded-lg bg-neutral-100 p-6 shadow-xl">
         {/* HEADER */}
@@ -58,7 +71,7 @@ export default function PrivacyModal({
         </div>
 
         {/* SHARE LINK */}
-        <div className="mb-6">
+        <div className="mb-6 relative">
           <label className="block text-sm font-medium text-neutral-700 mb-1">
             Shareable Link
           </label>
@@ -70,14 +83,17 @@ export default function PrivacyModal({
               className="w-full rounded-md border border-neutral-300 bg-neutral-50 px-3 py-2 text-neutral-800 text-sm"
             />
             <button
-              className="rounded-md bg-neutral-300 px-3 py-2 text-sm font-semibold text-neutral-800 hover:bg-neutral-400"
-              onClick={() => {
-                navigator.clipboard.writeText(portfolioUrl);
-              }}
+              className="rounded-md bg-neutral-300 px-3 py-2 text-sm font-semibold text-neutral-800 hover:bg-neutral-400 shrink-0"
+              onClick={handleCopy}
             >
-              Copy
+              {copied ? "Copied!" : "Copy"}
             </button>
           </div>
+          {copied && (
+            <p className="absolute -bottom-5 left-0 text-xs text-[var(--accent)] font-medium">
+              Link copied to clipboard
+            </p>
+          )}
         </div>
 
         {/* CLOSE BUTTON */}

@@ -67,8 +67,8 @@ export default function Footer() {
     /^\/[^/]+(\/[^/]+)*$/.test(pathname);
 
   const containerClass = isArtistPage
-    ? "h-auto md:h-14 flex flex-col md:flex-row items-center justify-space-between md:justify-between text-caption max-w-6xl xl:max-w-7xl 2xl:max-w-[1310px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-16 2xl:px-20 py-3 md:py-0 gap-3 sm:gap-4 md:gap-0 opacity-70"
-    : "h-auto md:h-14 flex flex-col md:flex-row items-center justify-space-between md:justify-between text-caption max-w-full px-0 py-3 md:py-0 gap-3 sm:gap-4 md:gap-0 opacity-70";
+    ? "h-auto md:h-14 flex flex-col md:flex-row items-center justify-space-between md:justify-between text-xs max-w-6xl xl:max-w-7xl xl-lg:max-w-[1310px] 2xl:max-w-[1310px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-16 2xl:px-20 py-3 md:py-0 gap-3 sm:gap-4 md:gap-0 opacity-70"
+    : "h-auto md:h-14 flex flex-col md:flex-row items-center justify-space-between md:justify-between text-xs max-w-full px-0 py-3 md:py-0 gap-3 sm:gap-4 md:gap-0 opacity-70";
 
   return (
     <footer style={{ backgroundColor: footerBg, position: 'relative', zIndex: 50 }}>
@@ -99,7 +99,7 @@ export default function Footer() {
         <div className="whitespace-nowrap order-2 md:order-1 text-center md:text-left" style={{ color: footerText }}>
           <span>&copy; urGallery {year} </span>
           <span 
-            className="rounded-sm px-2 py-0.5 text-caption leading-none inline-block"
+            className="rounded-sm px-2 py-0.5 text-xs leading-none inline-block"
             style={{
               backgroundColor: customColors?.text || '#5a3e36',
               color: footerBg,

@@ -107,7 +107,7 @@ function TextColumn({
           onChange={(e) => onChangeTitle?.(pageIndex, e.target.value)}
         />
         <textarea
-          className="w-full text-lg border border-neutral-500/60 px-6 py-3 outline-none focus:border-neutral-200 min-h-[300px] overflow-hidden resize-none"
+          className="w-full text-lg border border-neutral-500/60 px-6 py-3 outline-none focus:border-neutral-200 min-h-[45vh] overflow-hidden resize-none"
           style={{
             color: "var(--artist-background, #faf7f2)",
             background: "linear-gradient(to right, var(--artist-accent, #c96a4a) .5%, var(--artist-background, #11100e) .5%, transparent 0%)",
@@ -156,7 +156,7 @@ export default function PageRenderer({
 }: PageRendererProps) {
   if (!pages || pages.length === 0) {
     return (
-      <div className="flex h-64 items-center justify-center text-neutral-400">
+      <div className="flex h-[38vh] items-center justify-center text-neutral-400">
         No pages yet.
       </div>
     );
@@ -284,7 +284,7 @@ export default function PageRenderer({
         <MediaOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none hidden lg:block" />
         <div className="relative z-10 w-full max-w-7xl mx-auto flex justify-center items-center min-h-[50vh] py-8">
           <div
-            className={`shrink-0 w-[425px] aspect-square overflow-hidden flex items-center justify-center ${isEditor ? "cursor-pointer" : ""}`}
+            className={`shrink-0 w-[31vw] aspect-square overflow-hidden flex items-center justify-center ${isEditor ? "cursor-pointer" : ""}`}
             style={{ boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)" }}
             onClick={handleMediaClick}
           >
@@ -327,7 +327,7 @@ export default function PageRenderer({
         <MediaOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none hidden lg:block" />
         <div className="relative z-10 w-full max-w-7xl mx-auto flex justify-center items-center min-h-[50vh] py-8">
           <div
-            className={`shrink-0 h-[425px] w-[340px] overflow-hidden flex items-center justify-center ${isEditor ? "cursor-pointer" : ""}`}
+            className={`shrink-0 h-[48vh] w-[24vw] overflow-hidden flex items-center justify-center ${isEditor ? "cursor-pointer" : ""}`}
             style={{ boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)" }}
             onClick={handleMediaClick}
           >
@@ -370,7 +370,7 @@ export default function PageRenderer({
         <MediaOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none hidden lg:block" />
         <div className="relative z-10 w-full max-w-7xl mx-auto flex justify-center items-center min-h-[50vh] py-8">
           <div
-            className={`shrink-0 w-[756px] h-[425px] overflow-hidden flex items-center justify-center ${isEditor ? "cursor-pointer" : ""}`}
+            className={`shrink-0 w-[55vw] h-[48vh] overflow-hidden flex items-center justify-center ${isEditor ? "cursor-pointer" : ""}`}
             style={{ boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)" }}
             onClick={handleMediaClick}
           >
@@ -413,7 +413,7 @@ export default function PageRenderer({
         <MediaOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none hidden lg:block" />
         <div className="relative z-10 w-full max-w-7xl mx-auto flex justify-center items-center min-h-[50vh] py-8">
           <div
-            className={`shrink-0 w-[756px] h-[425px] overflow-hidden flex items-center justify-center ${isEditor ? "cursor-pointer" : ""}`}
+            className={`shrink-0 w-[55vw] h-[48vh] overflow-hidden flex items-center justify-center ${isEditor ? "cursor-pointer" : ""}`}
             style={{ boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)" }}
             onClick={handleMediaClick}
           >
@@ -487,7 +487,7 @@ export default function PageRenderer({
         </div>
         {/* Content wrapper: same max-w-6xl as footer, full height */}
         <div className="relative z-10 h-[50vh] md:h-[55vh] lg:h-[60vh] xl:h-[66vh] w-full pt-0">
-        <svg className="z-11 absolute top-0 left-170" width="39%" height="auto" viewBox="0 0 590 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg className="z-11 absolute top-0 left-[17vw]" width="39%" height="auto" viewBox="0 0 590 90" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect x="1.5" y="1.5" width="587" height="87" fill="var(--artist-text, #faf7f2)" stroke="var(--artist-background, #11100e)" stroke-width="2"/>
         </svg>
 
@@ -496,7 +496,7 @@ export default function PageRenderer({
             <div
               onClick={handleMediaClick}
               className={`
-                relative aspect-square w-[25vw] border-4
+                relative aspect-square w-[18.75vw] border-4
                 flex items-center justify-center overflow-hidden
                 ${isEditor ? "cursor-pointer pointer-events-auto" : ""}
               `}
@@ -529,7 +529,7 @@ export default function PageRenderer({
           </div>
 
           {/* Text layer: fixed width on left, same position as before (z-10) */}
-          <div className="absolute left-0 top-18 w-[360px] pl-0 pr-14 h-[49vh] flex flex-col gap-0 z-10">
+          <div className="absolute left-0 top-18 w-[26vw] pl-0 pr-[5vw] h-[49vh] flex flex-col gap-0 z-10">
             {heroHeadlineContent}
             {isEditor ? (
               <textarea
@@ -550,7 +550,7 @@ export default function PageRenderer({
           </div>
           {/* Subtitle overlay box - over the white rectangle area */}
           <div
-            className="z-12 absolute top-54 left-170 px-4 py-1 "
+            className="z-12 absolute top-[8vh] left-[17vw] px-4 py-1 "
             onClick={(e) => e.stopPropagation()}
             style={{
               color: "var(--artist-accent, #c96a4a)",
@@ -581,7 +581,7 @@ export default function PageRenderer({
 
   // HeroLayoutSquare01: Grid layout – text left, image right. Always side-by-side.
   // Copy-paste template: swap grid-cols to [auto_1fr] for image-left; change IMAGE_SIZE for media size.
-  const SQ_HERO01_IMAGE_SIZE = "w-[425px]"; // Fixed size – no flex weirdness. Change to w-[280px] or w-[400px] as needed.
+  const SQ_HERO01_IMAGE_SIZE = "w-[31vw]"; // 75% of 425px – editor preview scale
   if (layoutType === "HeroLayoutSquare01") {
     return (
       <div
@@ -591,7 +591,7 @@ export default function PageRenderer({
           <HeroLayoutSquare01Template className="w-full h-full max-w-7xl pointer-events-none" />
         </div>
         <div className="relative z-10 w-full max-w-7xl mx-auto px-6">
-        <div className="grid grid-cols-[auto_1fr] gap-8 md:gap-24 items-stretch min-h-[50vh] px-4 py-8">
+        <div className="grid grid-cols-[auto_1fr] gap-[3vw] md:gap-[9vw] items-stretch min-h-[50vh] px-[2vw] py-[4vh]">
             {/* Col A: image (left) – fixed size via SQ_HERO01_IMAGE_SIZE */}
             <div
               className={`shrink-0 self-center ${SQ_HERO01_IMAGE_SIZE} aspect-square overflow-hidden flex items-center justify-center ${isEditor ? "cursor-pointer" : ""}`}
@@ -628,11 +628,11 @@ export default function PageRenderer({
               )}
             </div>
             {/* Col B: text (right) – max-h matches image (425px), scrollbars hidden */}
-            <div className="flex flex-col gap-4 min-w-0 self-center flex-1 min-h-0 max-h-[425px] overflow-hidden">
-              {isEditor ? (
+            <div className="flex flex-col gap-4 min-w-0 self-center flex-1 min-h-0 max-h-[48vh] overflow-hidden">
+            {isEditor ? (
                 <>
                   {/* Top spacer: header grows upward into this; equal to bottom for vertical centering */}
-                  <div className="flex-1 min-h-[2rem] shrink-0" aria-hidden />
+                  <div className="flex-1 min-h-[4vh] shrink-0" aria-hidden />
                   <div className="flex flex-col gap-4 flex-1 min-h-0">
                     <textarea
                       ref={headerTextareaRef}
@@ -656,7 +656,7 @@ export default function PageRenderer({
                     />
                   </div>
                   {/* Bottom spacer: equal to top for vertical centering */}
-                  <div className="flex-1 min-h-[2rem] shrink-0" aria-hidden />
+                  <div className="flex-1 min-h-[4vh] shrink-0" aria-hidden />
                 </>
               ) : (
                 <>
@@ -682,7 +682,7 @@ export default function PageRenderer({
   }
 
   // HeroLayoutVertical01: Same as HeroLayoutSquare01 but vertical image (4:5, 425px height).
-  const VERT_HERO01_IMAGE = "h-[425px] w-[340px]"; // 4:5 portrait, same height as square
+  const VERT_HERO01_IMAGE = "h-[48vh] w-[24vw]"; // 4:5 portrait, 75% of 425×340
   if (layoutType === "HeroLayoutVertical01") {
     return (
       <div className="relative w-full min-h-[50vh]">
@@ -690,7 +690,7 @@ export default function PageRenderer({
           <HeroLayoutVertical01Template className="w-full h-full max-w-7xl pointer-events-none" />
         </div>
         <div className="relative z-10 w-full max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-[auto_1fr] gap-8 md:gap-24 items-stretch min-h-[50vh] px-4 py-8">
+          <div className="grid grid-cols-[auto_1fr] gap-[3vw] md:gap-[9vw] items-stretch min-h-[50vh] px-[2vw] py-[4vh]">
             {/* Col A: vertical image (left) – 425px height, 4:5 aspect */}
             <div
               className={`shrink-0 self-center ${VERT_HERO01_IMAGE} overflow-hidden flex items-center justify-center ${isEditor ? "cursor-pointer" : ""}`}
@@ -727,10 +727,10 @@ export default function PageRenderer({
               )}
             </div>
             {/* Col B: text (right) – max-h matches image (425px), scrollbars hidden */}
-            <div className="flex flex-col gap-4 min-w-0 self-center flex-1 min-h-0 max-h-[425px] overflow-hidden">
-              {isEditor ? (
+            <div className="flex flex-col gap-4 min-w-0 self-center flex-1 min-h-0 max-h-[48vh] overflow-hidden">
+            {isEditor ? (
                 <>
-                  <div className="flex-1 min-h-[2rem] shrink-0" aria-hidden />
+                  <div className="flex-1 min-h-[4vh] shrink-0" aria-hidden />
                   <div className="flex flex-col gap-4 flex-1 min-h-0">
                     <textarea
                       ref={headerTextareaRef}
@@ -753,7 +753,7 @@ export default function PageRenderer({
                       style={{ color: "var(--artist-background, #11100e)", opacity: 0.8 }}
                     />
                   </div>
-                  <div className="flex-1 min-h-[2rem] shrink-0" aria-hidden />
+                  <div className="flex-1 min-h-[4vh] shrink-0" aria-hidden />
                 </>
               ) : (
                 <>
@@ -779,7 +779,7 @@ export default function PageRenderer({
   }
 
   // HeroLayoutHorizontal01: Same as HeroLayoutSquare01 but horizontal image (5:4, 425px height, 531px width).
-  const HORIZ_HERO01_IMAGE = "h-[425px] w-[531px] min-h-[425px] min-w-[531px]"; // 5:4 landscape, enforce dimensions
+  const HORIZ_HERO01_IMAGE = "h-[48vh] w-[38vw] min-h-[48vh] min-w-[38vw]"; // 5:4 landscape, 75% of 425×531
   if (layoutType === "HeroLayoutHorizontal01") {
     return (
       <div className="relative w-full min-h-[50vh]">
@@ -787,7 +787,7 @@ export default function PageRenderer({
           <HeroLayoutHorizontal01Template className="w-full h-full max-w-7xl pointer-events-none" />
         </div>
         <div className="relative z-10 w-full max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-[auto_1fr] gap-8 md:gap-24 items-stretch min-h-[50vh] px-4 py-8">
+          <div className="grid grid-cols-[auto_1fr] gap-[3vw] md:gap-[9vw] items-stretch min-h-[50vh] px-[2vw] py-[4vh]">
             {/* Col A: horizontal image (left) – 425px height, 5:4 aspect */}
             <div
               className={`shrink-0 self-center ${HORIZ_HERO01_IMAGE} overflow-hidden flex items-center justify-center ${isEditor ? "cursor-pointer" : ""}`}
@@ -824,10 +824,10 @@ export default function PageRenderer({
               )}
             </div>
             {/* Col B: text (right) – same as HeroLayoutSquare01 */}
-            <div className="flex flex-col gap-4 min-w-0 self-center flex-1 min-h-0 max-h-[425px] overflow-hidden">
-              {isEditor ? (
+            <div className="flex flex-col gap-4 min-w-0 self-center flex-1 min-h-0 max-h-[48vh] overflow-hidden">
+            {isEditor ? (
                 <>
-                  <div className="flex-1 min-h-[2rem] shrink-0" aria-hidden />
+                  <div className="flex-1 min-h-[4vh] shrink-0" aria-hidden />
                   <div className="flex flex-col gap-4 flex-1 min-h-0">
                     <textarea
                       ref={headerTextareaRef}
@@ -850,7 +850,7 @@ export default function PageRenderer({
                       style={{ color: "var(--artist-background, #11100e)", opacity: 0.8 }}
                     />
                   </div>
-                  <div className="flex-1 min-h-[2rem] shrink-0" aria-hidden />
+                  <div className="flex-1 min-h-[4vh] shrink-0" aria-hidden />
                 </>
               ) : (
                 <>
@@ -878,7 +878,7 @@ export default function PageRenderer({
   // Fallback for any unknown layout
   return (
     <div className="w-full flex justify-center">
-      <div className="max-w-6xl mx-auto py-10">
+      <div className="max-w-6xl mx-auto py-[6vh]">
         <div className="text-center text-neutral-400">
           Layout type &quot;{layoutType}&quot; is not supported.
         </div>

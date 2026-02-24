@@ -15,6 +15,7 @@ const AvatarButton = forwardRef<HTMLButtonElement, Props>(
 
     const initial =
       (user?.display_name ||
+        user?.first_name ||
         user?.email ||
         "?")
         .trim()

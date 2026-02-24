@@ -77,9 +77,9 @@ export function useAuth() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Re-check auth whenever pathname changes (but not on login/signup)
+  // Re-check auth whenever pathname changes (but not on login/signup/complete)
   useEffect(() => {
-    if (pathname === "/login" || pathname === "/signup") return;
+    if (pathname === "/login" || pathname === "/signup" || pathname === "/signup/complete") return;
     refreshUser();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);

@@ -734,10 +734,10 @@ export default function PortfolioEditorShell({
         onOpenPrivacy={handleOpenPrivacy}
         onSaveDraft={handleDraft}
         onPublish={handlePublish}
-        onChangeLayout={handleOpenLayout}
         disableDelete={pages.length <= 1}
         portfolioTitle={title}
         onChangePortfolioTitle={handleChangePortfolioTitle}
+        onChangeLayout={handleOpenLayout}
       />
 
       {/* Canvas area */}
@@ -758,7 +758,7 @@ export default function PortfolioEditorShell({
             }}
           />
         )}
-        <div className="w-full max-w-6xl mx-auto shrink-0 relative z-10">
+        <div className="w-full max-w-6xl xl:max-w-7xl xl-lg:max-w-[1310px] 2xl:max-w-[1310px] mx-auto px-4 sm:px-6 md:px-10 lg:px-10 xl:px-8 2xl:px-20 shrink-0 relative z-10">
         {/* Actual page canvas */}
         <div className="flex justify-center">
           <div className="w-full">
@@ -795,7 +795,11 @@ export default function PortfolioEditorShell({
             onClose={handleClosePrivacy}
             currentPrivacy={privacy}
             onUpdatePrivacy={handleChangePrivacy}
-            portfolioUrl={portfolioSlug ?? ""}
+            portfolioUrl={
+              typeof window !== "undefined" && artistSlug && portfolioSlug
+                ? `${window.location.origin}/${artistSlug}?portfolio=${portfolioSlug}#portfolio-shell`
+                : portfolioSlug ?? ""
+            }
           />
         </>
       )}

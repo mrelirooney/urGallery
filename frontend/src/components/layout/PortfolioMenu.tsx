@@ -374,8 +374,8 @@ export default function PortfolioMenu({ isOpen, onClose, customColors }: Props) 
           )}
         </div>
 
-        {/* Add Portfolio button - hidden on mobile and tablet, laptop only */}
-        <div className="hidden lg:block p-page-sm sm:p-page">
+        {/* Add Portfolio button - hidden on mobile and tablet, laptop only; match portfolio item padding */}
+        <div className="hidden lg:block px-4 py-4 sm:p-page sm:pb-8">
           {isOwner && (
             <button
               onClick={handleAddPortfolio}

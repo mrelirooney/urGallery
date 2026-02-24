@@ -50,7 +50,7 @@ export default function MediaSlotC({
           ${alignClass}
           max-h-[50vh] lg:max-h-[20vw]  /* tablet: portrait; laptop: square slot ~30vw vibe */
           w-full
-          max-w-2xl lg:max-w-[20vw]  /* laptop 1024px+: matches square aspect */
+          max-w-[65vw] lg:max-w-[20vw]  /* laptop 1024px+: matches square aspect */
           ${shapeClass}      /* aspect ratio = shape */
           flex items-center justify-center
           bg-neutral-200
@@ -109,7 +109,7 @@ export function MediaSlotR({
           ${alignClass}
           max-h-[44vh] lg:max-h-[30vh]  /* tablet: portrait; laptop: matches 30vw vibe */
           w-full
-          max-w-md          /* smaller cap than the canvas version */
+          max-w-[43vw]          /* smaller cap than the canvas version */
           ${shapeClass}
           flex items-center justify-center
           bg-neutral-200

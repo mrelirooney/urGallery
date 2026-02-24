@@ -49,7 +49,7 @@ export default function LayoutPickerModal({
 
   return (
     <div
-      className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center"
+      className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[100] flex items-center justify-center"
       onClick={onClose}
     >
       <div
