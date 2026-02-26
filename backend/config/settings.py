@@ -129,6 +129,7 @@ SIMPLE_JWT = {
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -300,9 +301,20 @@ USE_TZ = True
 # This step must be completed BEFORE production launch.
 # ============================================================
 
-STATIC_URL = 'static/'
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+# Public API base URL for building media URLs (avatar, banner, etc.).
+# Required in Docker: backend receives requests from frontend with Host=backend:8000,
+# so request.build_absolute_uri() produces URLs the browser cannot reach.
+# Set to the URL the browser uses (e.g. http://localhost:8000 or https://api.yourdomain.com).
+PUBLIC_API_BASE = os.getenv("PUBLIC_API_BASE", "").strip().rstrip("/")
+
+# When True, Django serves media files (for local Docker when DEBUG=False).
+# In production, use nginx/CDN instead.
+SERVE_MEDIA = os.getenv("SERVE_MEDIA", "false").lower() == "true"
 
 # ============================================================
 # Switching Environments Step 6: DATABASE CONFIG (DEV vs UAT vs PROD)
@@ -344,25 +356,23 @@ MEDIA_ROOT = BASE_DIR / "media"
 # ============================================================
 
 # ============================================================
-# LOCAL DEVELOPMENT DATABASE (Active)
-# This configuration is for local development only
+# DATABASE
+# - Docker: use DATABASE_URL (set by docker-compose)
+# - Local dev: use localhost config
 # ============================================================
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'urgallery_dev',
-        'USER': 'postgres',
-        'PASSWORD': 'LittleIsland052121',
-        'HOST': 'localhost',
-        'PORT': '5432',
+if os.getenv("DATABASE_URL"):
+    DATABASES = {"default": dj_database_url.parse(os.getenv("DATABASE_URL"))}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": "urgallery_dev",
+            "USER": "postgres",
+            "PASSWORD": "LittleIsland052121",
+            "HOST": "localhost",
+            "PORT": "5432",
+        }
     }
-}
-
-# ============================================================
-# DOCKER ENVIRONMENT DATABASE (Commented out for local dev)
-# Uncomment this and comment out the above for Docker environment
-# ============================================================
-# DATABASES = {"default": dj_database_url.parse(os.getenv("DATABASE_URL"))}
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

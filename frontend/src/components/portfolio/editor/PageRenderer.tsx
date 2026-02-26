@@ -49,6 +49,8 @@ export interface PageRendererProps {
   pages: PortfolioPageData[];
   currentPageIndex: number;
   isEditor?: boolean;
+  /** When set, overrides page.layoutType for layout branching (used to force immediate layout update in editor) */
+  layoutOverride?: LayoutType | null;
   onChangeTitle?: (pageIndex: number, newTitle: string) => void;
   onChangeDescription?: (pageIndex: number, newDesc: string) => void;
   onChangeImage?: (pageIndex: number, file: File | null) => void;
@@ -149,6 +151,7 @@ export default function PageRenderer({
   pages,
   currentPageIndex,
   isEditor = false,
+  layoutOverride,
   onChangeTitle,
   onChangeDescription,
   onChangeImage,
@@ -172,7 +175,8 @@ export default function PageRenderer({
     return null;
   }
 
-  const { layoutType, mediaShape2 } = page;
+  const { mediaShape2 } = page;
+  const layoutType = layoutOverride ?? page.layoutType;
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const headerTextareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -327,8 +331,14 @@ export default function PageRenderer({
         <MediaOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none hidden lg:block" />
         <div className="relative z-10 w-full max-w-7xl mx-auto flex justify-center items-center min-h-[50vh] py-8">
           <div
-            className={`shrink-0 h-[48vh] w-[24vw] overflow-hidden flex items-center justify-center ${isEditor ? "cursor-pointer" : ""}`}
-            style={{ boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)" }}
+            className={`shrink-0 overflow-hidden flex items-center justify-center ${isEditor ? "cursor-pointer" : ""}`}
+            style={{
+              width: "24vw",
+              height: "48vh",
+              minWidth: "24vw",
+              minHeight: "48vh",
+              boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)",
+            }}
             onClick={handleMediaClick}
           >
             {page.mediaSrc ? (
@@ -682,7 +692,6 @@ export default function PageRenderer({
   }
 
   // HeroLayoutVertical01: Same as HeroLayoutSquare01 but vertical image (4:5, 425px height).
-  const VERT_HERO01_IMAGE = "h-[48vh] w-[24vw]"; // 4:5 portrait, 75% of 425×340
   if (layoutType === "HeroLayoutVertical01") {
     return (
       <div className="relative w-full min-h-[50vh]">
@@ -691,10 +700,16 @@ export default function PageRenderer({
         </div>
         <div className="relative z-10 w-full max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-[auto_1fr] gap-[3vw] md:gap-[9vw] items-stretch min-h-[50vh] px-[2vw] py-[4vh]">
-            {/* Col A: vertical image (left) – 425px height, 4:5 aspect */}
+            {/* Col A: vertical image (left) – 4:5 portrait */}
             <div
-              className={`shrink-0 self-center ${VERT_HERO01_IMAGE} overflow-hidden flex items-center justify-center ${isEditor ? "cursor-pointer" : ""}`}
-              style={{ boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)" }}
+              className={`shrink-0 self-center overflow-hidden flex items-center justify-center ${isEditor ? "cursor-pointer" : ""}`}
+              style={{
+                width: "24vw",
+                height: "48vh",
+                minWidth: "24vw",
+                minHeight: "48vh",
+                boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)",
+              }}
               onClick={handleMediaClick}
             >
               {page.mediaSrc ? (

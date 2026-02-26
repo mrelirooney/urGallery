@@ -9,7 +9,11 @@ function isConstrainedRoute(pathname: string | null): boolean {
     pathname.startsWith("/login") ||
     pathname.startsWith("/signup") ||
     pathname.startsWith("/settings") ||
-    pathname.startsWith("/sandbox")
+    pathname.startsWith("/sandbox") ||
+    pathname === "/about" ||
+    pathname === "/terms" ||
+    pathname === "/privacy" ||
+    pathname === "/help"
   );
 }
 

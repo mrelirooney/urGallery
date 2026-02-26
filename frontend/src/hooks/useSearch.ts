@@ -40,14 +40,16 @@ export function useSearch() {
       const data = await r.json();
 
       // 🔑 Map Django response -> SearchResult[]
-      // Django returns: { results: [{ slug, display_name, username, avatar_url }] }
+      // Django returns: { results: [{ slug, display_name, title, location, avatar_url }] }
       const mapped: SearchResult[] = (data.results ?? []).map((a: any) => ({
         id: a.slug ?? a.username ?? a.display_name,      // unique key
-        name: a.display_name ?? a.username ?? a.slug,    // main label
+        name: a.display_name ?? a.username ?? a.slug,    // display name
         blurb: a.username ? `@${a.username}` : "",
         slug: a.slug,
         username: a.username,
         avatar_url: a.avatar_url,
+        title: a.title ?? null,
+        location: a.location ?? null,
       }));
 
       setState({ loading: false, error: null, results: mapped });

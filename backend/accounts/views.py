@@ -7,6 +7,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
+from config.utils import build_media_url
 from .models import Profile
 from django.views.decorators.csrf import ensure_csrf_cookie
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -107,7 +108,7 @@ class MeView(APIView):
         # 1) Prefer the uploaded avatar file on the User model
         if user.avatar:
             try:
-                avatar_url = request.build_absolute_uri(user.avatar.url)
+                avatar_url = build_media_url(request, user.avatar.url)
             except Exception:
                 avatar_url = None
         # 2) Fallbacks: custom S3 key or default avatar from Profile

@@ -3,7 +3,9 @@ from accounts.models import User, Profile
 from themes.models import Theme
 from tags.models import Hashtag
 from portfolios.models import Portfolio, Page
+from config.utils import build_media_url
 import re
+
 
 class ThemeSerializer(serializers.ModelSerializer):
     svg_url = serializers.SerializerMethodField()
@@ -17,15 +19,13 @@ class ThemeSerializer(serializers.ModelSerializer):
         if not obj.svg_file:
             return None
         request = self.context.get("request")
-        url = obj.svg_file.url
-        return request.build_absolute_uri(url) if request else url
+        return build_media_url(request, obj.svg_file.url)
 
     def get_preview_url(self, obj):
         if not obj.preview_image:
             return None
         request = self.context.get("request")
-        url = obj.preview_image.url
-        return request.build_absolute_uri(url) if request else url
+        return build_media_url(request, obj.preview_image.url)
 
 class HashtagSerializer(serializers.ModelSerializer):
     class Meta:

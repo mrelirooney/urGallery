@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
+from config.utils import build_media_url
 from portfolios.models import Portfolio
 
 User = get_user_model()
@@ -68,25 +69,22 @@ def search_artists(request):
             avatar_url = ""
             if user.avatar:
                 try:
-                    # Build absolute URL for media files
-                    relative_url = user.avatar.url  # e.g., "/media/avatars/file.jpg"
-                    avatar_url = request.build_absolute_uri(relative_url)
-                except Exception as e:
+                    avatar_url = build_media_url(request, user.avatar.url)
+                except Exception:
                     avatar_url = ""
             # Fallback to profile avatar if user avatar doesn't exist
             elif hasattr(user, "profile") and user.profile:
                 if user.profile.avatar_s3_key:
-                    # If it's already a full URL, use it; otherwise build absolute URL
                     if user.profile.avatar_s3_key.startswith("http"):
                         avatar_url = user.profile.avatar_s3_key
                     else:
-                        avatar_url = request.build_absolute_uri(user.profile.avatar_s3_key)
+                        avatar_url = build_media_url(request, user.profile.avatar_s3_key)
                 elif user.profile.default_avatar:
                     s3_key = user.profile.default_avatar.s3_key or ""
                     if s3_key.startswith("http"):
                         avatar_url = s3_key
                     else:
-                        avatar_url = request.build_absolute_uri(s3_key) if s3_key else ""
+                        avatar_url = build_media_url(request, s3_key) if s3_key else ""
             
             # Only add if we have at least a display_name or slug
             if display_name or slug:
@@ -133,9 +131,9 @@ def artist_detail(request, slug):
 
     # Best-effort URL for avatar (handles raw string or ImageField)
     try:
-        avatar_url = user.avatar.url  # ImageField case
+        avatar_url = build_media_url(request, user.avatar.url) if user.avatar else ""
     except Exception:
-        avatar_url = (user.avatar or "")  # raw path / empty
+        avatar_url = ""
 
     # Pull a lightweight list of portfolios (only fields we actually use in UI)
     # NOTE: earlier crashes were from using non-existent fields like "cover" or "is_public".

@@ -2,6 +2,8 @@
 
 from rest_framework import serializers
 from accounts.models import Profile
+from config.utils import build_media_url
+
 
 class ArtistProfileSerializer(serializers.ModelSerializer):
     """
@@ -48,13 +50,11 @@ class ArtistProfileSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         result = {"id": theme.id, "key": theme.key, "name": theme.name}
         if theme.svg_file:
-            url = theme.svg_file.url
-            result["svg_url"] = request.build_absolute_uri(url) if request else url
+            result["svg_url"] = build_media_url(request, theme.svg_file.url)
         else:
             result["svg_url"] = None
         if theme.preview_image:
-            url = theme.preview_image.url
-            result["preview_url"] = request.build_absolute_uri(url) if request else url
+            result["preview_url"] = build_media_url(request, theme.preview_image.url)
         else:
             result["preview_url"] = None
         return result
@@ -63,23 +63,18 @@ class ArtistProfileSerializer(serializers.ModelSerializer):
         """
         Build an absolute URL for the avatar so the frontend can use it directly.
         """
-        # fallback to user.avatar
         user = getattr(obj, "user", None)
         avatar = getattr(user, "avatar", None) if user else None
         if not avatar:
             return None
-
         request = self.context.get("request")
-        url = avatar.url
-        return request.build_absolute_uri(url) if request else url
-    
+        return build_media_url(request, avatar.url)
+
     def get_banner_image_url(self, obj):
         """
         Build an absolute URL for the banner image.
         """
         if not obj.banner_image:
             return None
-        
         request = self.context.get("request")
-        url = obj.banner_image.url
-        return request.build_absolute_uri(url) if request else url
+        return build_media_url(request, obj.banner_image.url)

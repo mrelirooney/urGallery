@@ -392,14 +392,14 @@ export default function Navbar() {
             <div className={isArtistPage ? "hidden md:flex items-center gap-3 lg:gap-4 xl:gap-5" : "flex items-center gap-3 sm:gap-4"}>
               <Link
                 href="/login"
-                className={`px-2 sm:px-3 py-1 sm:py-1.5 text-body rounded-xs bg-transparent border-2 transition-opacity hover:opacity-90 ${!isArtistPage ? "text-neutral-800 border-neutral-800/40 dark:text-neutral-100 dark:border-neutral-100/40" : ""} sm:border-white/30 sm:bg-(--foreground)/0 sm:text-white/30 sm:hover:bg-(--foreground)/90 sm:hover:text-black`}
+                className={`px-2 sm:px-3 py-1 sm:py-1.5 text-body rounded-xs bg-transparent border-2 transition-opacity hover:opacity-90 ${!isArtistPage ? "text-[var(--foreground)]/40- border-[var(--foreground)]/40" : ""} sm:hover:bg-(--foreground)/90 sm:hover:text-[var(--background)]`}
                 style={isArtistPage && customColors?.text ? { color: customColors.text, borderColor: `${customColors.text}66` } : undefined}
               >
                 Login
               </Link>
               <Link
                 href="/signup"
-                className={`px-2 sm:px-3 py-1 sm:py-1.5 text-body rounded-xs bg-transparent border-2 transition-opacity hover:opacity-90 ${!isArtistPage ? "text-neutral-800 border-neutral-800/40 dark:text-neutral-100 dark:border-neutral-100/40" : ""} sm:border-white/30 sm:bg-(--foreground)/0 sm:text-white/30 sm:hover:bg-(--foreground)/90 sm:hover:text-black`}
+                className={`px-2 sm:px-3 py-1 sm:py-1.5 text-body rounded-xs bg-transparent border-2 transition-opacity hover:opacity-90 ${!isArtistPage ? "text-[var(--foreground)]/40- border-[var(--foreground)]/40" : ""} sm:hover:bg-(--foreground)/90 sm:hover:text-[var(--background)]`}
                 style={isArtistPage && customColors?.text ? { color: customColors.text, borderColor: `${customColors.text}66` } : undefined}
               >
                 Sign Up

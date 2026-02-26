@@ -6,7 +6,7 @@ export async function GET(req: Request) {
   const q = searchParams.get("q") ?? "";
   if (!q) return NextResponse.json({ results: [] });
 
-  const base = process.env.NEXT_PUBLIC_API_BASE || process.env.DJANGO_BASE_URL || "http://localhost:8000";
+  const base = process.env.DJANGO_BASE_URL || process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
   const normalizedBase = base.replace(/\/+$/, "").replace(/\/api$/, "");
   const url = `${normalizedBase}/api/artists/search/?q=${encodeURIComponent(q)}`;
 

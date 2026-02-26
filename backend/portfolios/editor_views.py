@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404
 from django.http import Http404
 from django.db import transaction
 from django.contrib.auth import get_user_model
+from django.core.files.base import ContentFile
 
 from rest_framework.decorators import (
     api_view,
@@ -289,22 +290,34 @@ def publish_portfolio(request, slug):
             # Handle case where draft has no pages (empty portfolio)
             portfolio.pages.all().delete()
             for dpage in draft.pages.all().order_by("order", "id"):
-                # Create the page - Django will handle the media_image field assignment
-                # Note: The file path will remain the same (draft_portfolio_pages/...)
-                # but that's okay - the file still exists and is accessible
-                Page.objects.create(
+                # Create the page first without media (direct assignment doesn't copy
+                # files between models with different upload_to paths)
+                new_page = Page.objects.create(
                     portfolio=portfolio,
                     title=dpage.title,
                     description=dpage.description,
                     layout=dpage.layout,
                     order=dpage.order,
-                    media_image=dpage.media_image if dpage.media_image else None,
+                    media_image=None,
                     media_shape=dpage.media_shape,
-                    media_image_2=dpage.media_image_2 if dpage.media_image_2 else None,
+                    media_image_2=None,
                     media_shape_2=dpage.media_shape_2,
                     title_2=dpage.title_2,
                     description_2=dpage.description_2,
                 )
+                # Explicitly copy media files to the live Page's upload_to path
+                if dpage.media_image:
+                    new_page.media_image.save(
+                        dpage.media_image.name,
+                        ContentFile(dpage.media_image.read()),
+                        save=True,
+                    )
+                if dpage.media_image_2:
+                    new_page.media_image_2.save(
+                        dpage.media_image_2.name,
+                        ContentFile(dpage.media_image_2.read()),
+                        save=True,
+                    )
 
             # 3) Mark draft as having no unpublished changes
             draft.has_unpublished_changes = False

@@ -50,6 +50,7 @@ export default function CustomizationSection({ onSaveRef }: CustomizationSection
   const [selectedThemeId, setSelectedThemeId] = useState<number | null>(null);
   const [themeOptions, setThemeOptions] = useState<ThemeOption[]>([]);
   const [selectedFont, setSelectedFont] = useState<string>(DEFAULT_FONT_FAMILY);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [hoveredFont, setHoveredFont] = useState<string | null>(null);
   const [fontDropdownOpen, setFontDropdownOpen] = useState(false);
   const fontDropdownRef = useRef<HTMLDivElement>(null);
@@ -141,6 +142,7 @@ export default function CustomizationSection({ onSaveRef }: CustomizationSection
   const handleSave = async () => {
     try {
       setSaving(true);
+      setSaveError(null);
       const c = colorsRef.current;
       const font = selectedFontRef.current;
       const themeId = selectedThemeIdRef.current;
@@ -167,9 +169,13 @@ export default function CustomizationSection({ onSaveRef }: CustomizationSection
         await refreshUser();
       } else {
         const errData = await res.json().catch(() => ({}));
+        const msg = (errData as { detail?: string })?.detail ?? (errData as { error?: string })?.error ?? "Failed to save. Please try again.";
+        setSaveError(msg);
         console.error("Failed to save:", errData);
       }
     } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to save. Please try again.";
+      setSaveError(msg);
       console.error("Error saving:", err);
     } finally {
       setSaving(false);
@@ -228,6 +234,11 @@ export default function CustomizationSection({ onSaveRef }: CustomizationSection
       {/* Left side - Colors, Font, Themes */}
       <div className="flex-1 px-0 py-4 md:py-6 lg:py-8 lg:pr-0.5 lg:pl-12 overflow-y-auto">
         <div className="w-full lg:max-w-none">
+        {saveError && (
+            <p className="mb-4 text-sm text-[var(--accent)]" role="alert">
+              {saveError}
+            </p>
+          )}
         <h3 className="block text-lg font-semibold text-[var(--foreground)] mb-2">
             Colors
           </h3>

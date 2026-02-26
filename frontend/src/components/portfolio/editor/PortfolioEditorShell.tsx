@@ -130,6 +130,9 @@ export default function PortfolioEditorShell({
   const [isLayoutModalOpen, setIsLayoutModalOpen] = useState(false);
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
 
+  // Force layout display when user selects a new layout (bypasses any state sync delay)
+  const [layoutOverride, setLayoutOverride] = useState<LayoutType | null>(null);
+
   // -------- Page thumbnails (snapshots for pagination menu) --------
   const [pageThumbnails, setPageThumbnails] = useState<(string | null)[]>([]);
 
@@ -157,6 +160,7 @@ export default function PortfolioEditorShell({
 
   // -------- Top bar actions --------
   const handleSelectPage = (index: number) => {
+    setLayoutOverride(null);
     updateState((prev) => ({
       ...prev,
       currentPageIndex: Math.min(
@@ -168,6 +172,7 @@ export default function PortfolioEditorShell({
 
   const handleReorder = async (fromIndex: number, toIndex: number) => {
     if (fromIndex === toIndex) return;
+    setLayoutOverride(null);
 
     let newPagesForApi: PortfolioPageData[] = [];
 
@@ -553,9 +558,40 @@ export default function PortfolioEditorShell({
     updatePage(pageIndex, (page) => ({ ...page, mediaShape2: newShape }));
   };
 
-  const handleChangeLayout = (pageIndex: number, newLayout: LayoutType) => {
-    updatePage(pageIndex, (page) => ({ ...page, layoutType: newLayout }));
-  };
+  const handleChangeLayout = useCallback(
+    async (pageIndex: number, newLayout: LayoutType) => {
+      const page = pages[pageIndex];
+      // 1) Force display of new layout immediately (bypasses any state sync)
+      setLayoutOverride(newLayout);
+      // 2) Update the UI state (optimistic update)
+      updatePage(pageIndex, (p) => ({ ...p, layoutType: newLayout }));
+
+      // 3) Persist to backend if we have a page id
+      if (!portfolioSlug || !page || typeof page.id !== "number") return;
+
+      try {
+        const res = await fetch(
+          `${API_BASE}/api/portfolios/${encodeURIComponent(portfolioSlug)}/editor/pages/${page.id}/`,
+          {
+            method: "PATCH",
+            credentials: "include",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+              "X-CSRFToken": getCsrfToken(),
+            },
+            body: JSON.stringify({ layout: newLayout }),
+          }
+        );
+        if (!res.ok) {
+          console.warn("Failed to persist layout change", res.status);
+        }
+      } catch (err) {
+        console.warn("Failed to persist layout change", err);
+      }
+    },
+    [pages, portfolioSlug, updatePage]
+  );
 
   const handleChangeImage = async (pageIndex: number, file: File | null) => {
     const page = pages[pageIndex];
@@ -760,9 +796,11 @@ export default function PortfolioEditorShell({
         <div className="flex justify-center">
           <div className="w-full">
             <PageRenderer
+              key={`page-${currentPage?.id ?? currentPageIndex}-${layoutOverride ?? currentPage?.layoutType ?? "default"}`}
               pages={pages}
               currentPageIndex={currentPageIndex}
               isEditor
+              layoutOverride={layoutOverride}
               onChangeTitle={handleChangePageTitle}
               onChangeDescription={handleChangePageDescription}
               onChangeImage={handleChangeImage}
@@ -781,7 +819,7 @@ export default function PortfolioEditorShell({
           <LayoutPickerModal
             isOpen={isLayoutModalOpen}
             onClose={handleCloseLayout}
-            currentLayout={currentPage.layoutType}
+            currentLayout={layoutOverride ?? currentPage.layoutType}
             onSelectLayout={(layout) =>
               handleChangeLayout(currentPageIndex, layout)
             }

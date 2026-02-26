@@ -189,16 +189,14 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
                 className="h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 lg:h-11 lg:w-11 rounded-full object-cover shrink-0"
               />
               <div className="flex-1 min-w-0">
-                <div className="text-body-sm sm:text-body font-medium text-neutral-900 truncate">{r.name}</div>
+                <div className="text-body-sm sm:text-body font-medium text-neutral-900 truncate" title={[r.name, r.title].filter(Boolean).join(" - ")}>
+                  {r.name}
+                  {r.title ? " - " : ""}
+                  {r.title || ""}
+                </div>
                 {(r as any).username && (
                   <div className="text-caption sm:text-body-sm text-neutral-500 truncate">@{(r as any).username}</div>
                 )}
-              </div>
-              {/* Hide location/title on very small screens */}
-              <div className="hidden sm:block text-caption sm:text-body-sm text-neutral-500 text-right shrink-0">
-                {r.title || "—"}
-                {r.title && r.location ? " • " : ""}
-                {r.location || ""}
               </div>
             </li>
           ))}

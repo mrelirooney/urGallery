@@ -27,6 +27,8 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.conf import settings
 from django.core.mail import send_mail
 
+from config.utils import build_media_url
+
 User = get_user_model()
 
 
@@ -151,7 +153,7 @@ class MyProfileView(generics.RetrieveUpdateAPIView):
         # Add avatar URL if exists
         if user.avatar:
             try:
-                data['avatar_url'] = request.build_absolute_uri(user.avatar.url)
+                data['avatar_url'] = build_media_url(request, user.avatar.url)
             except Exception:
                 data['avatar_url'] = None
         else:
@@ -160,7 +162,7 @@ class MyProfileView(generics.RetrieveUpdateAPIView):
         # Add banner image URL if exists
         if profile.banner_image:
             try:
-                data['banner_image_url'] = request.build_absolute_uri(profile.banner_image.url)
+                data['banner_image_url'] = build_media_url(request, profile.banner_image.url)
             except Exception:
                 data['banner_image_url'] = None
         else:
@@ -198,7 +200,7 @@ class MyProfileView(generics.RetrieveUpdateAPIView):
         
         if user.avatar:
             try:
-                response_data['avatar_url'] = request.build_absolute_uri(user.avatar.url)
+                response_data['avatar_url'] = build_media_url(request, user.avatar.url)
             except Exception:
                 response_data['avatar_url'] = None
         else:
@@ -207,7 +209,7 @@ class MyProfileView(generics.RetrieveUpdateAPIView):
         # Add banner image URL
         if profile.banner_image:
             try:
-                response_data['banner_image_url'] = request.build_absolute_uri(profile.banner_image.url)
+                response_data['banner_image_url'] = build_media_url(request, profile.banner_image.url)
             except Exception:
                 response_data['banner_image_url'] = None
         else:
