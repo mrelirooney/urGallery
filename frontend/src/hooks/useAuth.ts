@@ -56,7 +56,7 @@ export function useAuth() {
       console.error("Error logging out:", err);
     } finally {
       setUser(null);
-      router.push("/login");
+      router.push("/");
     }
   }, [router]);
 

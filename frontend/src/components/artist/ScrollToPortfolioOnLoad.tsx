@@ -3,14 +3,17 @@
 import { useEffect } from "react";
 
 /**
- * When the page loads with #portfolio-shell in the URL (e.g. from a shared
- * portfolio link), scroll the portfolio section into view after a brief delay
- * so content is fully rendered.
+ * When the page loads with a portfolio link (e.g. ?portfolio=<slug> or #portfolio-shell),
+ * scroll the portfolio section into view so the portfolio is shown first. User can scroll up
+ * to see the profile section.
  */
 export default function ScrollToPortfolioOnLoad() {
   useEffect(() => {
     if (typeof window === "undefined") return;
-    if (window.location.hash !== "#portfolio-shell") return;
+
+    const hasPortfolioHash = window.location.hash === "#portfolio-shell";
+    const hasPortfolioParam = new URLSearchParams(window.location.search).has("portfolio");
+    if (!hasPortfolioHash && !hasPortfolioParam) return;
 
     const el = document.getElementById("portfolio-shell");
     if (!el) return;

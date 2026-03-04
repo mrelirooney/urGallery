@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { X, Edit2, Trash2, Plus } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "";
 
 interface Portfolio {
   id: number;
@@ -67,6 +68,7 @@ export default function PortfolioMenu({ isOpen, onClose, customColors }: Props) 
         const res = await fetch(`${API_BASE}/api/artists/${artistSlug}/`, {
           credentials: "include",
           cache: "no-store",
+          headers: { "ngrok-skip-browser-warning": "true" },
         });
 
         if (!res.ok) {
@@ -143,6 +145,7 @@ export default function PortfolioMenu({ isOpen, onClose, customColors }: Props) 
         credentials: "include",
         headers: {
           "X-CSRFToken": csrfToken,
+          "ngrok-skip-browser-warning": "true",
         },
       });
 
@@ -156,6 +159,7 @@ export default function PortfolioMenu({ isOpen, onClose, customColors }: Props) 
         const refreshRes = await fetch(`${API_BASE}/api/artists/${artistSlug}/`, {
           credentials: "include",
           cache: "no-store",
+          headers: { "ngrok-skip-browser-warning": "true" },
         });
         if (refreshRes.ok) {
           const data: ArtistData = await refreshRes.json();
@@ -177,6 +181,7 @@ export default function PortfolioMenu({ isOpen, onClose, customColors }: Props) 
         headers: {
           "Content-Type": "application/json",
           "X-CSRFToken": csrfToken,
+          "ngrok-skip-browser-warning": "true",
         },
         body: JSON.stringify({
           title: "Untitled Portfolio",
@@ -200,17 +205,20 @@ export default function PortfolioMenu({ isOpen, onClose, customColors }: Props) 
     }
   };
 
-  // Build avatar URL
+  // Build avatar URL - only use when user has set a custom picture
   const rawAvatar = artistData?.profile?.avatar_url;
-  let avatarUrl = "/default-avatar.png";
-  if (rawAvatar) {
-    if (rawAvatar.startsWith("http://") || rawAvatar.startsWith("https://")) {
-      avatarUrl = rawAvatar;
+  const hasAvatar = Boolean(rawAvatar && rawAvatar.trim().length > 0);
+  let avatarUrl = "";
+  if (hasAvatar) {
+    if (rawAvatar!.startsWith("http://") || rawAvatar!.startsWith("https://")) {
+      avatarUrl = rawAvatar!;
     } else {
       const normalizedBase = API_BASE.replace(/\/+$/, "").replace(/\/api$/, "");
-      avatarUrl = normalizedBase + (rawAvatar.startsWith("/") ? rawAvatar : `/${rawAvatar}`);
+      avatarUrl = normalizedBase + (rawAvatar!.startsWith("/") ? rawAvatar! : `/${rawAvatar}`);
     }
   }
+  const displayName = artistData?.profile?.display_name || "";
+  const initial = displayName.trim().charAt(0).toUpperCase() || "?";
 
   return (
     <>
@@ -241,16 +249,22 @@ export default function PortfolioMenu({ isOpen, onClose, customColors }: Props) 
           {/* Profile section */}
           <div className="flex items-center gap-3">
             <div
-              className="h-10 w-10 sm:h-12 sm:w-12 rounded-full overflow-hidden border shrink-0"
-              style={{ borderColor: `${bg}40`, backgroundColor: `${bg}10` }}
+              className={`h-10 w-10 sm:h-12 sm:w-12 rounded-full overflow-hidden border shrink-0 flex items-center justify-center ${
+                hasAvatar ? "" : "border-neutral-300 bg-neutral-200"
+              }`}
+              style={hasAvatar ? { borderColor: `${bg}40`, backgroundColor: `${bg}10` } : undefined}
             >
-              <img
-                src={avatarUrl}
-                alt={artistData?.profile?.display_name || "Profile"}
-                className="h-full w-full object-cover"
-              />
+              {hasAvatar ? (
+                <img
+                  src={avatarUrl}
+                  alt={artistData?.profile?.display_name || "Profile"}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <span className="text-body font-semibold text-neutral-700">{initial}</span>
+              )}
             </div>
-            <div>
+            <div className="flex-1 min-w-0">
               <div className="font-medium truncate text-body sm:text-body-lg" style={{ color: bg }}>
                 {artistData?.profile?.display_name || "Loading..."}
               </div>
@@ -258,6 +272,16 @@ export default function PortfolioMenu({ isOpen, onClose, customColors }: Props) 
                 {artistData?.portfolios?.length || 0} portfolio
                 {artistData?.portfolios?.length !== 1 ? "s" : ""}
               </div>
+              {isOwner && (
+                <Link
+                  href="/settings"
+                  onClick={onClose}
+                  className="mt-2 inline-block text-body-sm font-medium underline underline-offset-2 transition-opacity hover:opacity-80"
+                  style={{ color: bg }}
+                >
+                  Edit Profile
+                </Link>
+              )}
             </div>
           </div>
 

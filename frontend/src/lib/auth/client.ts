@@ -60,6 +60,9 @@ export async function initCsrf() {
   await fetch(`${API_BASE}/api/auth/csrf/`, {
     credentials: "include",
     cache: "no-store",
+    headers: {
+      "ngrok-skip-browser-warning": "true",
+    },
   });
 }
 
@@ -68,6 +71,7 @@ async function postJSON<T>(path: string, body: unknown) {
 
   const headers: HeadersInit = {
     "Content-Type": "application/json",
+    "ngrok-skip-browser-warning": "true",
   };
   if (csrfToken) {
     headers["X-CSRFToken"] = csrfToken;
@@ -92,6 +96,9 @@ async function getJSON<T>(path: string) {
   const res = await fetch(`${API_BASE}${path}`, {
     credentials: "include",      // ✅ send cookies
     cache: "no-store",
+    headers: {
+      "ngrok-skip-browser-warning": "true",
+    },
   });
   const data = (await res.json().catch(() => ({}))) as T;
   if (!res.ok) throw new Error((data as any)?.detail || "Request failed");

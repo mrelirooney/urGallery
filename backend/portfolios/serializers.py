@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from config.utils import build_media_url
 from .models import (
     Portfolio,
     Page,
@@ -16,6 +17,8 @@ class PageSummarySerializer(serializers.ModelSerializer):
     """
     Used inside the editor portfolio payload to show a list of draft pages.
     """
+    media_image = serializers.SerializerMethodField()
+    media_image_2 = serializers.SerializerMethodField()
 
     class Meta:
         model = DraftPage
@@ -34,6 +37,18 @@ class PageSummarySerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+
+    def get_media_image(self, obj):
+        if not obj.media_image:
+            return None
+        request = self.context.get("request")
+        return build_media_url(request, obj.media_image.url)
+
+    def get_media_image_2(self, obj):
+        if not obj.media_image_2:
+            return None
+        request = self.context.get("request")
+        return build_media_url(request, obj.media_image_2.url)
 
 
 class PortfolioDetailSerializer(serializers.ModelSerializer):
@@ -76,6 +91,7 @@ class PortfolioUpdateSerializer(serializers.ModelSerializer):
 class PageEditorSerializer(serializers.ModelSerializer):
     """
     Serializer used by the editor when working on a single draft page.
+    Uses ImageField for write (PATCH with FormData), to_representation for read (relative URLs).
     """
 
     class Meta:
@@ -99,6 +115,21 @@ class PageEditorSerializer(serializers.ModelSerializer):
             "media_image": {"required": False, "allow_null": True},
             "media_image_2": {"required": False, "allow_null": True},
         }
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        request = self.context.get("request")
+        data["media_image"] = (
+            build_media_url(request, instance.media_image.url)
+            if instance.media_image
+            else None
+        )
+        data["media_image_2"] = (
+            build_media_url(request, instance.media_image_2.url)
+            if instance.media_image_2
+            else None
+        )
+        return data
 
 
 class PageEditorInputSerializer(serializers.Serializer):
@@ -315,6 +346,9 @@ class ArtistProfileSerializer(serializers.Serializer):
     pass
 
 class PublicPageSerializer(serializers.ModelSerializer):
+    media_image = serializers.SerializerMethodField()
+    media_image_2 = serializers.SerializerMethodField()
+
     class Meta:
         model = Page
         fields = [
@@ -331,6 +365,18 @@ class PublicPageSerializer(serializers.ModelSerializer):
             "description_2",
             "created_at",
         ]
+
+    def get_media_image(self, obj):
+        if not obj.media_image:
+            return None
+        request = self.context.get("request")
+        return build_media_url(request, obj.media_image.url)
+
+    def get_media_image_2(self, obj):
+        if not obj.media_image_2:
+            return None
+        request = self.context.get("request")
+        return build_media_url(request, obj.media_image_2.url)
 
 class PublicPortfolioSerializer(serializers.ModelSerializer):
     pages = PublicPageSerializer(many=True, read_only=True)

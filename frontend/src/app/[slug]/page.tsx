@@ -72,7 +72,7 @@ export default async function ArtistPage(
   
   const raw = profile?.avatar_url;
   const base =
-    process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+    process.env.NEXT_PUBLIC_API_BASE ?? "";
 
   let src: string;
   const hasAvatar = Boolean(raw && raw.trim().length > 0);

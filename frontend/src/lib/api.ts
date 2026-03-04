@@ -1,4 +1,4 @@
-export const API_URL = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+export const API_URL = process.env.NEXT_PUBLIC_API_BASE ?? "";
 
 export function getAccessToken(): string | null {
   if (typeof window === "undefined") return null;

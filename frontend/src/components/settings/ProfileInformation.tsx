@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { Camera } from "lucide-react";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "";
 
 const getCsrfToken = (): string => {
   if (typeof document === "undefined") return "";
@@ -49,6 +49,7 @@ export default function ProfileInformation({ onSaveRef, onSaveComplete }: Profil
           credentials: "include",
           headers: {
             "X-CSRFToken": getCsrfToken(),
+            "ngrok-skip-browser-warning": "true",
           },
         });
 
@@ -154,6 +155,7 @@ export default function ProfileInformation({ onSaveRef, onSaveComplete }: Profil
         credentials: "include",
         headers: {
           "X-CSRFToken": getCsrfToken(),
+          "ngrok-skip-browser-warning": "true",
         },
         body: formDataToSend,
       });
@@ -201,12 +203,14 @@ export default function ProfileInformation({ onSaveRef, onSaveComplete }: Profil
     }
   }, [formData, avatarFile, bannerFile, onSaveRef]);
 
-  // Build avatar URL
-  const avatarUrl = profileImage
-    ? profileImage.startsWith("http") || profileImage.startsWith("data:")
-      ? profileImage
-      : `${API_BASE}${profileImage.startsWith("/") ? "" : "/"}${profileImage}`
-    : "/default-avatar.png";
+  // Build avatar URL - when no image, show grey circle with initial
+  const hasAvatar = Boolean(profileImage);
+  const avatarUrl = hasAvatar
+    ? profileImage!.startsWith("http") || profileImage!.startsWith("data:")
+      ? profileImage!
+      : `${API_BASE}${profileImage!.startsWith("/") ? "" : "/"}${profileImage}`
+    : "";
+  const initial = (formData.displayName || user?.display_name || "?").trim().charAt(0).toUpperCase();
 
   if (loading) {
     return (
@@ -224,12 +228,20 @@ export default function ProfileInformation({ onSaveRef, onSaveComplete }: Profil
         <div className="flex md:w-[13vw] md:shrink-0 justify-center md:justify-start">
           <div className="flex flex-col items-center gap-3">
             <div className="relative">
-              <div className="h-32 w-32 rounded-full overflow-hidden border-2 border-[var(--foreground)]/30 bg-neutral-100">
-                <img
-                  src={avatarUrl}
-                  alt="Profile"
-                  className="h-full w-full object-cover"
-                />
+              <div
+                className={`h-32 w-32 rounded-full overflow-hidden border-2 flex items-center justify-center ${
+                  hasAvatar ? "border-[var(--foreground)]/30 bg-neutral-100" : "border-neutral-300 bg-neutral-200"
+                }`}
+              >
+                {hasAvatar ? (
+                  <img
+                    src={avatarUrl}
+                    alt="Profile"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <span className="text-4xl font-semibold text-neutral-700">{initial}</span>
+                )}
               </div>
               <button
                 onClick={handleImageClick}

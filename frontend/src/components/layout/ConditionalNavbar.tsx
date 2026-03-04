@@ -7,8 +7,9 @@ export default function ConditionalNavbar() {
   const pathname = usePathname();
   const isEditorPage = pathname?.includes("/edit");
   const isSettingsPage = pathname?.startsWith("/settings");
-  
-  if (isEditorPage || isSettingsPage) {
+  const isSvgLayoutTest = pathname?.startsWith("/svg-layout-test");
+
+  if (isEditorPage || isSettingsPage || isSvgLayoutTest) {
     return null;
   }
   

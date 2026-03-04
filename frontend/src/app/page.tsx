@@ -13,7 +13,13 @@ export default function HomePage() {
       {/* 7rem ~= sticky header(3.5rem) + footer(3.5rem); tweak if needed */}
       {/* Responsive logo sizing: mobile (h-12), small (h-16), medium (h-20), large+ (h-24) */}
       <LogoPrimary className="h-12 sm:h-16 md:h-20 lg:h-24 xl:h-28 w-auto" />
-      <SearchInput variant="hero" />
+      <SearchInput
+        variant="hero"
+        backgroundColor="var(--background)"
+        foregroundColor="var(--foreground)"
+        textColor="var(--foreground)"
+        accentColor="var(--light-brown)"
+      />
       {/* Responsive text sizing */}
       <p className="text-sm sm:text-sm md:text-base text-neutral-500 text-center">
         MVPs Loading - VIPs Only

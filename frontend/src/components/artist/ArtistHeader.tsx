@@ -33,16 +33,7 @@ export default function ArtistHeader({ profile, customColors }: Props) {
       </div>
     );
 
-  const origin =
-    (process.env.NEXT_PUBLIC_API_BASE ?? "")
-      .replace(/\/+$/, "")
-      .replace(/\/api$/, "") || "http://localhost:8000";
-
-  const src =
-  profile?.avatar_url && profile.avatar_url.length > 0
-    ? profile.avatar_url            // use it as-is
-    : "/avatars/default-avatar.png"; // your existing fallback
-  
+  const hasAvatar = Boolean(profile?.avatar_url && profile.avatar_url.length > 0);
   const bannerSrc = profile?.banner_image_url || null;
   
   // Parse contacts from profile
@@ -74,11 +65,20 @@ export default function ArtistHeader({ profile, customColors }: Props) {
           <div className="h-25 w-25 md:h-56 md:w-56 rounded-full overflow-hidden border-3"
             style={{ borderColor: customColors?.background || '#11100e' }}
           >
-            <img
-              src={src}
-              alt={`${profile?.display_name ?? "Artist"} avatar`}
-              className="object-cover w-full h-full"
-            />
+            {hasAvatar ? (
+              <img
+                src={profile!.avatar_url!}
+                alt={`${profile?.display_name ?? "Artist"} avatar`}
+                className="object-cover w-full h-full"
+              />
+            ) : (
+              <div
+                className="w-full h-full"
+                style={{
+                  backgroundColor: customColors?.background || '#faf7f2',
+                }}
+              />
+            )}
           </div>
         </div>
         <br></br>
@@ -153,8 +153,9 @@ export default function ArtistHeader({ profile, customColors }: Props) {
           >
             {profile.bio ||
               (isOwner
-                ? `IT IS TIME TO GET CREATIVE! You can add a bio, profile picture, and banner picture by clicking the '${initial}' in the top right corner then clicking Settings. You can also customize your profile in Settings. DECORATE YOUR BLANK CANVAS NOW!`
+                ? `IT IS TIME TO GET CREATIVE! You can add a bio, profile picture, and banner picture by clicking the '${initial}' in the top right corner then clicking Settings. You can also customize your profile in Settings.`
                 : "This artist hasn't added a bio yet.")}
+              
           </p>
         </div>
       </div>

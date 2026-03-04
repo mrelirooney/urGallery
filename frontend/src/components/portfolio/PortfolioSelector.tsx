@@ -48,7 +48,6 @@ export default function PortfolioSelector({
       const portfolioSlug = customEvent.detail;
       if (portfolioSlug) {
         setSelectedSlug(portfolioSlug);
-        document.getElementById("portfolio-shell")?.scrollIntoView({ behavior: "smooth", block: "start" });
         // Update URL without triggering Next.js navigation (no reload, no scroll jump)
         const newUrl = `/${artistSlug}?portfolio=${portfolioSlug}`;
         window.history.replaceState(null, '', newUrl);

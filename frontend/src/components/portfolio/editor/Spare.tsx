@@ -212,7 +212,7 @@ export default function EditorTopBar({
 
 
   return (
-    <header className="w-full border-b border-neutral-800 bg-neutral-900/95 backdrop-blur px-6 py-3 flex flex-col gap-3">
+    <header className="w-full border-b border-neutral-800 bg-neutral-900/95 backdrop-blur px-6 py-6 flex flex-col gap-3">
       {/* Top row: Cancel / controls / Publish */}
       <div className="flex items-center gap-3 justify-between">
         <button
@@ -272,7 +272,7 @@ export default function EditorTopBar({
           type="button"
           onClick={onPublish}
           className="rounded-full bg-white text-black px-4 py-1 text-sm font-semibold hover:bg-neutral-100"
-        >
+        > 
           Publish
         </button>
       </div>

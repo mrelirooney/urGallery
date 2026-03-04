@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "";
 
 function getCsrfToken(): string {
   if (typeof document === "undefined") return "";
@@ -30,6 +30,7 @@ export default function HelpSection() {
         headers: {
           "Content-Type": "application/json",
           "X-CSRFToken": getCsrfToken(),
+          "ngrok-skip-browser-warning": "true",
         },
         credentials: "include",
         body: JSON.stringify({

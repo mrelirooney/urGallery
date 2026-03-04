@@ -23,7 +23,7 @@ const DEFAULT_COLORS = {
 export const dynamic = "force-dynamic";
 
 // Base URL for turning /media/... paths into full URLs
-const API_BASE = (process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8000")
+const API_BASE = (process.env.NEXT_PUBLIC_API_BASE ?? "")
   .replace(/\/+$/, "")
   .replace(/\/api$/, "");
 
@@ -76,7 +76,7 @@ export default function EditPortfolioPage() {
   useEffect(() => {
     if (!slug || typeof slug !== "string") return;
     let cancelled = false;
-    const base = (process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8000")
+    const base = (process.env.NEXT_PUBLIC_API_BASE ?? "")
       .replace(/\/+$/, "")
       .replace(/\/api$/, "");
     fetch(`${base}/api/artists/${slug}/`, { credentials: "include", cache: "no-store" })

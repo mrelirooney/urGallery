@@ -11,7 +11,7 @@ import PageRenderer, {
 import EditPortfolioButton from "@/components/portfolio/EditPortfolioButton";
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8000";
+  process.env.NEXT_PUBLIC_API_BASE ?? "";
 
 
 type PortfolioWrapperProps = {
@@ -70,6 +70,7 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
 
         const res = await fetch(url, {
           credentials: "include", // Send auth cookies
+          headers: { "ngrok-skip-browser-warning": "true" },
         });
         if (!res.ok) {
           throw new Error(`Failed to fetch portfolio: ${res.status}`);

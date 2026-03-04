@@ -144,7 +144,7 @@ export default function Navbar() {
     try {
       await logout();          // clear cookies/state
       setMenuOpen(false);
-      router.push("/login");   // send user to login
+      router.push("/");        // redirect to home page
       router.refresh();        // ensure navbar re-renders w/ logged-out view
     } catch {
       // no-op; you could toast here if you want
@@ -233,6 +233,8 @@ export default function Navbar() {
                   placeholder="Search…"
                   textColor={isArtistPage ? customColors?.text : undefined}
                   accentColor={isArtistPage ? customColors?.accent : undefined}
+                  backgroundColor={isArtistPage ? customColors?.background : undefined}
+                  foregroundColor={isArtistPage ? customColors?.foreground : undefined}
                 />
               </div>
               <div className="relative " ref={menuRef}>
@@ -388,22 +390,33 @@ export default function Navbar() {
               </button>
             )}
             
-            {/* Login/SignUp buttons - hidden on mobile for artist pages, shown on tablet/desktop */}
-            <div className={isArtistPage ? "hidden md:flex items-center gap-3 lg:gap-4 xl:gap-5" : "flex items-center gap-3 sm:gap-4"}>
+            {/* Search + Login/SignUp - hidden on mobile for artist pages, shown on tablet/desktop */}
+            <div className={`flex items-center gap-3 sm:gap-4 ${isArtistPage ? "hidden md:flex lg:gap-4 xl:gap-5" : ""}`}>
+              <div className={isArtistPage ? "pl-2 lg:pl-4 xl:pl-6 min-w-0 flex-1" : "min-w-0 flex-1 max-w-[180px] sm:max-w-[220px] md:max-w-[260px]"}>
+                <SearchInput
+                  variant="nav"
+                  placeholder="Search…"
+                  textColor={isArtistPage ? customColors?.text : undefined}
+                  accentColor={isArtistPage ? customColors?.accent : undefined}
+                  backgroundColor={isArtistPage ? customColors?.background : undefined}
+                  foregroundColor={isArtistPage ? customColors?.foreground : undefined}
+                />
+              </div>
+              <div className="flex items-center gap-2 sm:gap-3 shrink-0">
               <Link
                 href="/login"
-                className={`px-2 sm:px-3 py-1 sm:py-1.5 text-body rounded-xs bg-transparent border-2 transition-opacity hover:opacity-90 ${!isArtistPage ? "text-[var(--foreground)]/40- border-[var(--foreground)]/40" : ""} sm:hover:bg-(--foreground)/90 sm:hover:text-[var(--background)]`}
-                style={isArtistPage && customColors?.text ? { color: customColors.text, borderColor: `${customColors.text}66` } : undefined}
+                className={`px-2 sm:px-3 py-1 sm:py-1.5 text-body rounded-xs bg-transparent transition-opacity hover:opacity-90 ${!isArtistPage ? "text-[var(--foreground)]/90" : ""} sm:hover:bg-(--light-brown) sm:hover:text-[var(--background)]`}
               >
                 Login
               </Link>
               <Link
                 href="/signup"
-                className={`px-2 sm:px-3 py-1 sm:py-1.5 text-body rounded-xs bg-transparent border-2 transition-opacity hover:opacity-90 ${!isArtistPage ? "text-[var(--foreground)]/40- border-[var(--foreground)]/40" : ""} sm:hover:bg-(--foreground)/90 sm:hover:text-[var(--background)]`}
+                className={`px-2 sm:px-3 py-1 sm:py-1.5 text-body rounded-xs bg-transparent transition-opacity hover:opacity-90 ${!isArtistPage ? "text-[var(--foreground)]/90" : ""} sm:hover:bg-(--light-brown) sm:hover:text-[var(--background)]`}
                 style={isArtistPage && customColors?.text ? { color: customColors.text, borderColor: `${customColors.text}66` } : undefined}
               >
                 Sign Up
               </Link>
+              </div>
             </div>
           </nav>
         )}

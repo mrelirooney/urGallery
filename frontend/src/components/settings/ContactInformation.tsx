@@ -20,7 +20,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "";
 
 // Get CSRF token from cookies
 function getCsrfToken(): string {
@@ -107,6 +107,7 @@ export default function ContactInformation({ onSaveRef }: Props) {
           credentials: "include",
           headers: {
             "X-CSRFToken": getCsrfToken(),
+            "ngrok-skip-browser-warning": "true",
           },
         });
 
@@ -220,6 +221,7 @@ export default function ContactInformation({ onSaveRef }: Props) {
         headers: {
           "Content-Type": "application/json",
           "X-CSRFToken": getCsrfToken(),
+          "ngrok-skip-browser-warning": "true",
         },
         credentials: "include",
         body: JSON.stringify(payload),

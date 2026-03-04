@@ -8,7 +8,7 @@ import AuthCard from "@/components/auth/AuthCard";
 import TextField from "@/components/auth/TextField";
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+  process.env.NEXT_PUBLIC_API_BASE ?? process.env.NEXT_PUBLIC_API_URL ?? "";
 
 function getCsrfToken(): string {
   if (typeof document === "undefined") return "";

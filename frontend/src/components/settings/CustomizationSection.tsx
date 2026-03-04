@@ -7,7 +7,7 @@ import GoogleFontsLoader from "../artist/GoogleFontsLoader";
 import GoogleFontsAllLoader from "../artist/GoogleFontsAllLoader";
 import { GOOGLE_FONTS, DEFAULT_FONT_FAMILY } from "@/lib/constants";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "";
 
 const getCsrfToken = (): string => {
   if (typeof document === "undefined") return "";
@@ -89,9 +89,15 @@ export default function CustomizationSection({ onSaveRef }: CustomizationSection
         const [profileRes, themesRes] = await Promise.all([
           fetch(`${API_BASE}/api/my/profile/`, {
             credentials: "include",
-            headers: { "X-CSRFToken": getCsrfToken() },
+            headers: {
+              "X-CSRFToken": getCsrfToken(),
+              "ngrok-skip-browser-warning": "true",
+            },
           }),
-          fetch(`${API_BASE}/api/themes/`, { credentials: "include" }),
+          fetch(`${API_BASE}/api/themes/`, {
+            credentials: "include",
+            headers: { "ngrok-skip-browser-warning": "true" },
+          }),
         ]);
 
         if (profileRes.ok) {
@@ -161,6 +167,7 @@ export default function CustomizationSection({ onSaveRef }: CustomizationSection
         headers: {
           "X-CSRFToken": getCsrfToken(),
           "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true",
         },
         body: JSON.stringify(payload),
       });

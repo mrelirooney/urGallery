@@ -1,7 +1,8 @@
 # backend/artists/api.py
 
 from django.contrib.auth import get_user_model
-from django.db.models import Q, F
+from django.db.models import Q, F, Value, Case, When, IntegerField
+from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -27,20 +28,45 @@ def search_artists(request):
         return Response({"results": []})
 
     try:
-        # Search users - check BOTH User fields AND Profile fields
+        # Relevance score: 4=name starts with q, 3=name contains q, 2=title contains q, 1=location/slug contains q
+        relevance = Case(
+            When(
+                Q(display_name__istartswith=q) | Q(profile__display_name__istartswith=q),
+                then=Value(4),
+            ),
+            When(
+                Q(display_name__icontains=q) | Q(profile__display_name__icontains=q),
+                then=Value(3),
+            ),
+            When(
+                Q(title__icontains=q) | Q(profile__title__icontains=q),
+                then=Value(2),
+            ),
+            When(
+                Q(location__icontains=q)
+                | Q(profile__location__icontains=q)
+                | Q(profile__slug__icontains=q),
+                then=Value(1),
+            ),
+            default=Value(0),
+            output_field=IntegerField(),
+        )
+        effective_name = Coalesce(F("display_name"), F("profile__display_name"), Value(""))
+
         rows = (
             User.objects.filter(
                 Q(display_name__icontains=q)
                 | Q(title__icontains=q)
                 | Q(location__icontains=q)
-                | Q(profile__display_name__icontains=q)  # Profile display_name
-                | Q(profile__title__icontains=q)  # Profile title
-                | Q(profile__location__icontains=q)  # Profile location
-                | Q(profile__slug__icontains=q)  # Profile slug
+                | Q(profile__display_name__icontains=q)
+                | Q(profile__title__icontains=q)
+                | Q(profile__location__icontains=q)
+                | Q(profile__slug__icontains=q)
             )
             .select_related("profile")
-            .distinct()  # Avoid duplicates from joins
-            .order_by("display_name", "profile__display_name")[:12]
+            .distinct()
+            .annotate(relevance_score=relevance, _effective_name=effective_name)
+            .order_by("-relevance_score", "_effective_name")[:12]
         )
 
         results = []

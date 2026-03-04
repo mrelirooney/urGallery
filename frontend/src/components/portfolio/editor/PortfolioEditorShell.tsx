@@ -16,7 +16,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+  process.env.NEXT_PUBLIC_API_BASE ?? process.env.NEXT_PUBLIC_API_URL ?? "";
 
 const getCsrfToken = (): string => {
   if (typeof document === "undefined") return "";
@@ -236,6 +236,7 @@ export default function PortfolioEditorShell({
           headers: {
             "Content-Type": "application/json",
             "X-CSRFToken": getCsrfToken(),
+            "ngrok-skip-browser-warning": "true",
           },
           body: JSON.stringify({
             // ✅ Django expects `page_ids`
@@ -288,7 +289,8 @@ export default function PortfolioEditorShell({
           headers: {
             Accept: "application/json",
             "Content-Type": "application/json",
-            "X-CSRFToken": getCsrfToken(), // ✅ new
+            "X-CSRFToken": getCsrfToken(),
+            "ngrok-skip-browser-warning": "true",
           },
           body: JSON.stringify({}),
         }
@@ -363,7 +365,8 @@ export default function PortfolioEditorShell({
           method: "DELETE",
           credentials: "include",
           headers: {
-            "X-CSRFToken": getCsrfToken(), // ✅ new
+            "X-CSRFToken": getCsrfToken(),
+            "ngrok-skip-browser-warning": "true",
           },
         }
       );
@@ -429,7 +432,8 @@ export default function PortfolioEditorShell({
           headers: {
             Accept: "application/json",
             "Content-Type": "application/json",
-            "X-CSRFToken": getCsrfToken(), // ✅ new
+            "X-CSRFToken": getCsrfToken(),
+            "ngrok-skip-browser-warning": "true",
           },
           body: JSON.stringify(payload),
         }
@@ -508,6 +512,7 @@ export default function PortfolioEditorShell({
           headers: {
             "Content-Type": "application/json",
             "X-CSRFToken": getCsrfToken(),
+            "ngrok-skip-browser-warning": "true",
           },
         },
       );
@@ -579,6 +584,7 @@ export default function PortfolioEditorShell({
               Accept: "application/json",
               "Content-Type": "application/json",
               "X-CSRFToken": getCsrfToken(),
+              "ngrok-skip-browser-warning": "true",
             },
             body: JSON.stringify({ layout: newLayout }),
           }
@@ -632,7 +638,8 @@ export default function PortfolioEditorShell({
           method: "PATCH",
           credentials: "include",          // ✅ new
           headers: {
-            "X-CSRFToken": getCsrfToken(), // ✅ new
+            "X-CSRFToken": getCsrfToken(),
+            "ngrok-skip-browser-warning": "true",
           },
           body: formData,
         },
@@ -694,6 +701,7 @@ export default function PortfolioEditorShell({
           credentials: "include",
           headers: {
             "X-CSRFToken": getCsrfToken(),
+            "ngrok-skip-browser-warning": "true",
           },
           body: formData,
         }

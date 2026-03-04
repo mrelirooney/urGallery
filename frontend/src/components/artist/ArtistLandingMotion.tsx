@@ -60,17 +60,11 @@ export default function ArtistLandingMotion({ pagesCount = 1 }: ArtistLandingMot
       if (compact && y <= compactEnterY - getScrollUpThreshold()) return toExpanded();
     };
 
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key.toLowerCase() === "t") (compact ? toExpanded : toCompact)();
-    };
-
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("keydown", onKey);
 
     return () => {
       window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("keydown", onKey);
     };
   }, [pagesCount]);
 

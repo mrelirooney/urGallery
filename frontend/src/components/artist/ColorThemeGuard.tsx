@@ -17,7 +17,8 @@ export default function ColorThemeGuard() {
       !pathname.startsWith("/login") &&
       !pathname.startsWith("/signup") &&
       !pathname.startsWith("/settings") &&
-      !pathname.startsWith("/sandbox");
+      !pathname.startsWith("/sandbox") &&
+      !pathname.startsWith("/svg-layout-test");
 
     if (!isArtistPage) {
       const root = document.documentElement;

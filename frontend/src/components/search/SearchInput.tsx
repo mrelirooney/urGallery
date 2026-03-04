@@ -27,12 +27,15 @@ type Props = {
   variant?: "hero" | "navbar" | string; // optional, ignored for now
   textColor?: string; // default ring/icon color (used at 50% opacity)
   accentColor?: string; // hover/focus ring/icon color (used at 100%)
+  backgroundColor?: string; // input background (theme)
+  foregroundColor?: string; // input text color (theme)
 };
 
-export default function SearchInput({ placeholder = "Search artists...", onSelect, variant, textColor, accentColor }: Props) {
+export default function SearchInput({ placeholder = "Search artists...", onSelect, variant, textColor, accentColor, backgroundColor, foregroundColor }: Props) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<number | null>(null);
 
     // local query state (your hook returns run/results/loading/clear)
@@ -43,6 +46,7 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
     const [isHovered, setIsHovered] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
     const hasTheme = Boolean(textColor && accentColor);
+    const hasInputTheme = Boolean(backgroundColor && foregroundColor);
     const useAccent = hasTheme && (isHovered || isFocused);
   
     const { run, results, loading, clear } = useSearch();
@@ -51,6 +55,20 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
     useEffect(() => {
       setMounted(true);
     }, []);
+
+  // Close dropdown when clicking outside the search component
+  useEffect(() => {
+    if (!mounted) return;
+    function handleClickOutside(e: MouseEvent) {
+      const target = e.target as Node;
+      if (containerRef.current && !containerRef.current.contains(target)) {
+        setOpen(false);
+        setActive(-1);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [mounted]);
   
     // Debounce searches when query changes
     useEffect(() => {
@@ -100,17 +118,18 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
       setOpen(false);
       return;
     }
-    if (!open || results.length === 0) return;
+    const shown = results.slice(0, 6);
+    if (!open || shown.length === 0) return;
 
     if (e.key === "ArrowDown") {
       e.preventDefault();
-      setActive((i) => Math.min(i + 1, results.length - 1));
+      setActive((i) => Math.min(i + 1, shown.length - 1));
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
       setActive((i) => Math.max(i - 1, 0));
     } else if (e.key === "Enter") {
       e.preventDefault();
-      const r = results[active] ?? results[0];
+      const r = shown[active] ?? shown[0];
       if (r) handleSelect(r);
     }
   }
@@ -119,19 +138,24 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
     ? "max-w-[90vw] sm:max-w-[85vw] md:max-w-none lg:max-w-2xl xl:max-w-wide 2xl:max-w-wide"
     : "max-w-xs sm:max-w-md md:max-w-medium lg:max-w-2xl xl:max-w-wide 2xl:max-w-wide";
 
+  const displayedResults = results.slice(0, 6);
+
   return (
-    <div className={`relative w-full ${widthClasses}`}>
+    <div ref={containerRef} className={`relative w-full ${widthClasses}`}>
       <div
-        className={`flex items-center gap-2 sm:gap-3 md:gap-4 rounded-xs ring-2 ring-[var(--foreground)]/10 px-3 sm:px-4 md:px-5 transition-all ${
+        className={`flex items-center gap-2 sm:gap-3 md:gap-4 rounded-xs ring-1 ring-[var(--foreground)]/90 px-3 sm:px-4 md:px-5 transition-all ${
           variant === "hero" ? "py-1.5 sm:py-2" : "py-0.5 sm:py-1"
         } ${
           !hasTheme ? "hover:ring-[var(--light-brown)]/100 focus-within:ring-[var(--light-brown)]/70" : ""
         } ${
           variant === "hero"
-            ? "shadow-lg shadow-[var(--light-brown)]/90 hover:shadow-xl hover:shadow-[var(--light-brown)]/40 focus-within:shadow-xl focus-within:shadow-[var(--light-brown)]/50"
+            ? "shadow-lg shadow-[var(--light-brown)]/90 ring-1 hover:shadow-xl hover:shadow-[var(--light-brown)]/40 focus-within:shadow-xl focus-within:shadow-[var(--light-brown)]/50"
             : ""
         }`}
-        style={hasTheme ? { boxShadow: `0 0 0 2px ${useAccent ? accentColor : withOpacity50(textColor!)}` } : undefined}
+        style={{
+          ...(hasTheme ? { boxShadow: `0 0 0 2px ${useAccent ? accentColor : withOpacity50(textColor!)}` } : {}),
+          ...(hasInputTheme ? { backgroundColor, color: foregroundColor } : {}),
+        }}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -140,13 +164,14 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => {
-            results.length > 0 && setOpen(true);
+            displayedResults.length > 0 && setOpen(true);
             setIsFocused(true);
           }}
           onBlur={() => setIsFocused(false)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className="w-full outline-none text-neutral-300 text-body-sm sm:text-body bg-transparent"
+          className={`w-full outline-none text-body-sm sm:text-body bg-transparent placeholder:opacity-90 ${!hasInputTheme ? "text-[var(--foreground)]" : ""}`}
+          style={hasInputTheme ? { color: foregroundColor } : undefined}
           aria-label="Search"
         />
         <button
@@ -160,46 +185,67 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
             });
           }}
           className="shrink-0 rounded-full text-[var(--foreground)] px-1.5 py-1.5 text-sm font-medium transition-all active:scale-95"
-          style={hasTheme ? { color: useAccent ? accentColor : withOpacity50(textColor!) } : undefined}
+          style={hasTheme ? { color: useAccent ? accentColor : (hasInputTheme ? foregroundColor : withOpacity50(textColor!)) } : hasInputTheme ? { color: foregroundColor } : undefined}
         >
           <Search size={18} />
         </button>
       </div>
 
       {/* Results dropdown - Responsive */}
-      {mounted && open && results.length > 0 && (
+      {mounted && open && displayedResults.length > 0 && (
         <ul
           ref={listRef}
-          className="absolute z-20 mt-1 w-full rounded-xs bg-[var(--light-brown)] shadow-lg ring-1 ring-black/10 overflow-hidden max-h-[50vh] xs:max-h-[60vh] sm:max-h-[70vh] md:max-h-[75vh] overflow-y-auto"
+          className={`absolute z-20 mt-1 w-full rounded-xs shadow-lg ring-1 ring-black/90 overflow-hidden ${!hasInputTheme ? "bg-[var(--light-brown)]" : ""}`}
+          style={
+            hasInputTheme
+              ? ({ backgroundColor: foregroundColor, "--search-accent": accentColor ?? "var(--light-brown)" } as React.CSSProperties)
+              : undefined
+          }
         >
-          {results.map((r, i) => (
-            <li
-              key={r.id}
-              onMouseDown={(e) => {
-                e.preventDefault(); // prevent input blur from swallowing click
-                handleSelect(r);
-              }}
-              className={`flex items-center gap-2 sm:gap-3 md:gap-4 px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 md:py-3.5 bg-[var(--foreground)] cursor-pointer 
-                ${ i === active ? "bg-[var(--light-brown)]/50" : "bg-[var(--foreground)]"} 
-                hover:bg-[var(--light-brown)]/50 active:bg-[var(--light-brown)] transition-colors`}
-            >
-              <img
-                src={(r as any).avatar_url || "/avatars/astra-chat-profilepic.jpeg"}
-                alt=""
-                className="h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 lg:h-11 lg:w-11 rounded-full object-cover shrink-0"
-              />
-              <div className="flex-1 min-w-0">
-                <div className="text-body-sm sm:text-body font-medium text-neutral-900 truncate" title={[r.name, r.title].filter(Boolean).join(" - ")}>
-                  {r.name}
-                  {r.title ? " - " : ""}
-                  {r.title || ""}
+          {displayedResults.map((r, i) => {
+            const isActive = i === active;
+            return (
+              <li
+                key={r.id}
+                onMouseDown={(e) => {
+                  e.preventDefault(); // prevent input blur from swallowing click
+                  handleSelect(r);
+                }}
+                className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 cursor-pointer transition-colors ${
+                  !hasInputTheme ? "bg-[var(--foreground)] hover:bg-[var(--light-brown)]/50" : "hover:bg-[var(--search-accent)]"
+                }`}
+                style={
+                  hasInputTheme
+                    ? {
+                        backgroundColor: isActive ? accentColor : undefined,
+                        color: backgroundColor,
+                      }
+                    : undefined
+                }
+              >
+                <img
+                  src={(r as any).avatar_url || "/avatars/astra-chat-profilepic.jpeg"}
+                  alt=""
+                  className="h-8 w-8 sm:h-9 sm:w-9 rounded-full object-cover shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <div
+                    className={`text-body-sm sm:text-body font-medium truncate ${!hasInputTheme ? "text-[var(--background)]" : ""}`}
+                    title={[r.name, r.title].filter(Boolean).join(" - ")}
+                  >
+                    {r.name}
+                    {r.title ? " - " : ""}
+                    {r.title || ""}
+                  </div>
+                  {(r as any).username && (
+                    <div className={`text-caption sm:text-body-sm truncate ${!hasInputTheme ? "text-[var(--background)] opacity-80" : "opacity-80"}`}>
+                      @{(r as any).username}
+                    </div>
+                  )}
                 </div>
-                {(r as any).username && (
-                  <div className="text-caption sm:text-body-sm text-neutral-500 truncate">@{(r as any).username}</div>
-                )}
-              </div>
-            </li>
-          ))}
+              </li>
+            );
+          })}
         </ul>
       )}
 

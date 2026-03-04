@@ -224,66 +224,79 @@ export default function SettingsPage() {
 
       {/* Main Content - pt offsets for fixed header (panel view on mobile, always on desktop) */}
       <div className={`flex min-h-[calc(100vh-73px)] ${showMenu ? "lg:pt-[73px]" : "pt-[73px]"}`}>
-        {/* Mobile/Tablet: Menu or Panel */}
+        {/* Mobile/Tablet: Menu or Panel - both kept mounted to preserve section state */}
         <div className="lg:hidden flex-1 flex flex-col min-w-0">
-          {showMenu ? (
-            <div className="flex-1 bg-[var(--background)] overflow-y-auto">
-              <ul className="pb-4">
-                {MENU_ITEMS.map((item) => (
-                  <li key={item.id}>
-                    <button
-                      onClick={() => handleSelectSection(item.id)}
-                      className="w-full flex items-center justify-between px-0 py-4 lg:px-6 text-left text-[var(--foreground)] border-b border-neutral-200 dark:border-neutral-800"
-                    >
-                      <span>{item.label}</span>
-                      <ChevronRight size={20} className="opacity-50" />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : (
-            <div className="flex-1 bg-[var(--background)] overflow-y-auto min-w-0">
-              {activeSection === "profile" && (
-                <ProfileInformation 
+          <div className={`flex-1 bg-[var(--background)] overflow-y-auto ${showMenu ? "" : "hidden"}`}>
+            <ul className="pb-4">
+              {MENU_ITEMS.map((item) => (
+                <li key={item.id}>
+                  <button
+                    onClick={() => handleSelectSection(item.id)}
+                    className="w-full flex items-center justify-between px-0 py-4 lg:px-6 text-left text-[var(--foreground)] border-b border-neutral-200 dark:border-neutral-800"
+                  >
+                    <span>{item.label}</span>
+                    <ChevronRight size={20} className="opacity-50" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className={`flex-1 bg-[var(--background)] overflow-y-auto min-w-0 ${showMenu ? "hidden" : ""}`}>
+              <div className={activeSection === "profile" ? "" : "hidden"}>
+                <ProfileInformation
                   onSaveRef={(saveFn) => { profileSaveRef.current = saveFn; }}
                   onSaveComplete={() => {}}
                 />
-              )}
-              {activeSection === "contact" && (
+              </div>
+              <div className={activeSection === "contact" ? "" : "hidden"}>
                 <ContactInformation onSaveRef={(saveFn) => { contactSaveRef.current = saveFn; }} />
-              )}
-              {activeSection === "customization" && (
+              </div>
+              <div className={activeSection === "customization" ? "" : "hidden"}>
                 <CustomizationSection onSaveRef={(saveFn) => { customizationSaveRef.current = saveFn; }} />
-              )}
-              {activeSection === "about" && <AboutSection />}
-              {activeSection === "terms" && <TermsSection />}
-              {activeSection === "privacy" && <PrivacySection />}
-              {activeSection === "help" && <HelpSection />}
-            </div>
-          )}
+              </div>
+              <div className={activeSection === "about" ? "" : "hidden"}>
+                <AboutSection />
+              </div>
+              <div className={activeSection === "terms" ? "" : "hidden"}>
+                <TermsSection />
+              </div>
+              <div className={activeSection === "privacy" ? "" : "hidden"}>
+                <PrivacySection />
+              </div>
+              <div className={activeSection === "help" ? "" : "hidden"}>
+                <HelpSection />
+              </div>
+          </div>
         </div>
 
         {/* Desktop: Left Navigation + Right Content - full width to align with nav bar and footer */}
         <div className="hidden lg:flex flex-1 min-w-0">
           <SettingsNav activeSection={activeSection} onSectionChange={setActiveSection} />
           <div className="flex-1 bg-[var(--background)] min-w-0 overflow-y-auto">
-            {activeSection === "profile" && (
-              <ProfileInformation 
+            <div className={activeSection === "profile" ? "" : "hidden"}>
+              <ProfileInformation
                 onSaveRef={(saveFn) => { profileSaveRef.current = saveFn; }}
                 onSaveComplete={() => {}}
               />
-            )}
-            {activeSection === "contact" && (
+            </div>
+            <div className={activeSection === "contact" ? "" : "hidden"}>
               <ContactInformation onSaveRef={(saveFn) => { contactSaveRef.current = saveFn; }} />
-            )}
-            {activeSection === "customization" && (
+            </div>
+            <div className={activeSection === "customization" ? "" : "hidden"}>
               <CustomizationSection onSaveRef={(saveFn) => { customizationSaveRef.current = saveFn; }} />
-            )}
-            {activeSection === "about" && <AboutSection />}
-            {activeSection === "terms" && <TermsSection />}
-            {activeSection === "privacy" && <PrivacySection />}
-            {activeSection === "help" && <HelpSection />}
+            </div>
+            <div className={activeSection === "about" ? "" : "hidden"}>
+              <AboutSection />
+            </div>
+            <div className={activeSection === "terms" ? "" : "hidden"}>
+              <TermsSection />
+            </div>
+            <div className={activeSection === "privacy" ? "" : "hidden"}>
+              <PrivacySection />
+            </div>
+            <div className={activeSection === "help" ? "" : "hidden"}>
+              <HelpSection />
+            </div>
           </div>
         </div>
       </div>
