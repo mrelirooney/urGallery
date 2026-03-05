@@ -18,6 +18,7 @@ from api.views import (
     MyPortfolioDetailView,
     help_form_view,
 )
+from api.hashtag_views import my_hashtags_list, my_hashtags_add, my_hashtags_remove
 from saves.views import MySavesView, SaveArtistView, SavePortfolioView
 
 urlpatterns = [
@@ -44,6 +45,9 @@ urlpatterns = [
 
     # ── MY (authenticated) ────────────────────────────────────────────
     path("my/profile/",                MyProfileView.as_view(),              name="my-profile"),
+    path("my/hashtags/",               my_hashtags_list,                     name="my-hashtags-list"),
+    path("my/hashtags/add/",           my_hashtags_add,                      name="my-hashtags-add"),
+    path("my/hashtags/<int:pk>/",      my_hashtags_remove,                   name="my-hashtags-remove"),
     path("my/portfolios/",             MyPortfolioListCreateView.as_view(),  name="my-portfolio-list"),
     path("my/portfolios/<slug:slug>/", MyPortfolioDetailView.as_view(),      name="my-portfolio-detail"),
 

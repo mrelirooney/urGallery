@@ -69,6 +69,14 @@ class MyProfileView(generics.RetrieveUpdateAPIView):
         else:
             data["banner_image_url"] = None
 
+        if profile.resume_file:
+            try:
+                data["resume_url"] = build_media_url(request, profile.resume_file.url)
+            except Exception:
+                data["resume_url"] = None
+        else:
+            data["resume_url"] = None
+
         return Response(data)
 
     def update(self, request, *args, **kwargs):
@@ -82,6 +90,20 @@ class MyProfileView(generics.RetrieveUpdateAPIView):
         if "banner_image" in request.FILES:
             profile.banner_image = request.FILES["banner_image"]
             profile.save()
+
+        if "resume_file" in request.FILES:
+            f = request.FILES["resume_file"]
+            if f.content_type != "application/pdf" and not (f.name or "").lower().endswith(".pdf"):
+                return Response(
+                    {"error": "Only PDF files are allowed. Please upload a PDF resume."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            profile.resume_file = f
+            profile.save()
+
+        if request.data.get("remove_resume") in (True, "true", "1"):
+            profile.resume_file = None
+            profile.save(update_fields=["resume_file"])
 
         serializer = self.get_serializer(profile, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
@@ -108,6 +130,14 @@ class MyProfileView(generics.RetrieveUpdateAPIView):
                 response_data["banner_image_url"] = None
         else:
             response_data["banner_image_url"] = None
+
+        if profile.resume_file:
+            try:
+                response_data["resume_url"] = build_media_url(request, profile.resume_file.url)
+            except Exception:
+                response_data["resume_url"] = None
+        else:
+            response_data["resume_url"] = None
 
         return Response(response_data)
 

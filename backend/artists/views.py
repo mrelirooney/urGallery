@@ -43,12 +43,8 @@ class ArtistLandingView(APIView):
         # 3) Base queryset = this user's portfolios
         portfolios_qs = Portfolio.objects.filter(user=profile.user)
 
-        # 4) Privacy rules:
-        #    - If the viewer is the owner → show all portfolios
-        #    - Otherwise → show public AND link_only portfolios
-        is_owner = request.user.is_authenticated and request.user == profile.user
-        if not is_owner:
-            portfolios_qs = portfolios_qs.filter(privacy__in=["public", "link_only"])
+        # 4) Privacy rules: show all portfolios to everyone (private appear in menu;
+        #    frontend blurs private content for non-owners)
         
         # 5) Order portfolios: public first, then by order_index, then by id
         # This ensures the first public portfolio shows by default
@@ -105,14 +101,8 @@ class ArtistPortfolioDetailView(RetrieveAPIView):
     def get_queryset(self):
         artist_slug = self.kwargs["artist_slug"]
         owner = get_object_or_404(Profile, slug=artist_slug).user
-
-        if self.request.user.is_authenticated and self.request.user == owner:
-            return Portfolio.objects.filter(user=owner)
-
-        return Portfolio.objects.filter(
-            user=owner,
-            privacy__in=["public", "link_only"],
-        )
+        # Return all portfolios (frontend blurs private for non-owners)
+        return Portfolio.objects.filter(user=owner)
 
 
 # ---------- COMMENTS ----------
@@ -144,7 +134,9 @@ class PortfolioCommentListCreateView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         portfolio = self._get_portfolio()
-        return Comment.objects.filter(portfolio=portfolio).select_related("author__profile")
+        return Comment.objects.filter(portfolio=portfolio).select_related(
+            "author__profile", "author__profile__default_avatar"
+        )
 
     def perform_create(self, serializer):
         portfolio = self._get_portfolio()
@@ -160,11 +152,9 @@ class PortfolioCommentDeleteView(generics.DestroyAPIView):
 
     def get_object(self):
         comment = get_object_or_404(Comment, pk=self.kwargs["pk"])
-        artist_slug = self.kwargs["artist_slug"]
-        owner = get_object_or_404(Profile, slug=artist_slug).user
         user = self.request.user
-        if user != comment.author and user != owner:
+        if user != comment.author:
             from rest_framework.exceptions import PermissionDenied
-            raise PermissionDenied("Not your comment.")
+            raise PermissionDenied("Only the author can delete their comment.")
         return comment
 

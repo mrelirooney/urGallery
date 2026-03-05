@@ -1,5 +1,5 @@
 export interface ArtistProfile {
-  id: number;
+  id?: number;
   slug: string;
   display_name: string;
   title: string;
@@ -7,6 +7,7 @@ export interface ArtistProfile {
   bio: string;
   avatar_url: string | null;
   banner_image_url?: string | null;
+  resume_url?: string | null;
   avatar_s3_key?: string | null;
   website_url?: string;
   instagram_url?: string;

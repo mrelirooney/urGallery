@@ -198,7 +198,11 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
           className={`absolute z-20 mt-1 w-full rounded-xs shadow-lg ring-1 ring-black/90 overflow-hidden ${!hasInputTheme ? "bg-[var(--light-brown)]" : ""}`}
           style={
             hasInputTheme
-              ? ({ backgroundColor: foregroundColor, "--search-accent": accentColor ?? "var(--light-brown)" } as React.CSSProperties)
+              ? ({
+                  backgroundColor: foregroundColor,
+                  "--search-accent": accentColor ?? "var(--light-brown)",
+                  "--search-hover-text": textColor ?? "var(--foreground)",
+                } as React.CSSProperties)
               : undefined
           }
         >
@@ -211,7 +215,7 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
                   e.preventDefault(); // prevent input blur from swallowing click
                   handleSelect(r);
                 }}
-                className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 cursor-pointer transition-colors ${
+                className={`group flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 cursor-pointer transition-colors ${
                   !hasInputTheme ? "bg-[var(--foreground)] hover:bg-[var(--light-brown)]/50" : "hover:bg-[var(--search-accent)]"
                 }`}
                 style={
@@ -230,7 +234,11 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
                 />
                 <div className="flex-1 min-w-0">
                   <div
-                    className={`text-body-sm sm:text-body font-medium truncate ${!hasInputTheme ? "text-[var(--background)]" : ""}`}
+                    className={`text-body-sm sm:text-body font-medium truncate transition-colors ${
+                      !hasInputTheme
+                        ? "text-[var(--background)] group-hover:text-[var(--foreground)]"
+                        : "group-hover:text-[var(--search-hover-text)]"
+                    }`}
                     title={[r.name, r.title].filter(Boolean).join(" - ")}
                   >
                     {r.name}
@@ -238,7 +246,13 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
                     {r.title || ""}
                   </div>
                   {(r as any).username && (
-                    <div className={`text-caption sm:text-body-sm truncate ${!hasInputTheme ? "text-[var(--background)] opacity-80" : "opacity-80"}`}>
+                    <div
+                      className={`text-caption sm:text-body-sm truncate transition-colors ${
+                        !hasInputTheme
+                          ? "text-[var(--background)] opacity-80 group-hover:text-[var(--foreground)] group-hover:opacity-80"
+                          : "opacity-80 group-hover:text-[var(--search-hover-text)] group-hover:opacity-80"
+                      }`}
+                    >
                       @{(r as any).username}
                     </div>
                   )}

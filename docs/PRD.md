@@ -15,8 +15,8 @@
 
 ## Core Features
 
-- User registration and login (email [or display name] + password). Email format validation on registration (V1). **Forgot password** link on login page (mandatory V1).
-- Artist profile with display name, title, location, bio, avatar, banner, hashtags. Optional resume upload (minimal V1).
+- User registration and login (email [or display name] + password). Registration form includes confirm password (passwords must match). Email format validation on registration (V1). **Forgot password** link on login page (mandatory V1).
+- Artist profile with display name, title, location, bio, avatar, banner. Hashtags used for search/discoverability only (not displayed on profile). Optional resume upload (minimal V1).
 - Multiple portfolios per user; each portfolio has multiple pages.
 - Comments on portfolios: any user with access can post; portfolios receive, store, and display comments (all tiers).
 - Draft-based editor: edits go to `DraftPortfolio`/`DraftPage`; publish copies to live `Portfolio`/`Page`.
@@ -25,7 +25,7 @@
 - Category section on homepage: browse artists by title and location (complements search for discovery).
 - Save artists and portfolios: all users can save for later; no public metrics (not social-media-like). Saves page with chronological/alphabetical sort and search.
 - Subscription tiers: Free, Pro, Premium (monthly billing via Stripe).
-- Settings: profile, contact links, **resume upload** (optional), customization (colors, theme, font), hashtags, **Security** (change password, change email), billing (manage subscription, cancel, downgrade), help form.
+- Settings: profile, **Discoverability** (contact links, hashtags), **resume upload** (optional), customization (colors, theme, font), **Security** (change password, change email), billing (manage subscription, cancel, downgrade), help form.
 - Public artist landing page with theme patterns, custom colors, and custom fonts.
 
 ---
@@ -40,19 +40,23 @@
 
 ---
 
-## Comments
+## Comments — ✅ Implemented (laptop)
 
 - **Scope:** Each portfolio can receive, store, and display comments. Available on all tiers (Free, Pro, Premium).
 - **Who can comment:** Any authenticated user who has access to the portfolio (public = any logged-in user; private = users who have unlocked it).
-- **Placement:** Comments shown on the portfolio view (e.g. below portfolio content or in a comments section).
-- **Data:** Comment = author (user), portfolio, body, created_at. Owner can moderate (delete/hide) if needed.
+- **Placement:** Slide-in panel from left (same z-index as portfolio menu); portal-rendered so it overlays footer/compact profile. Scroll lock via `overflow: hidden` on html/body.
+- **Data:** Comment = author (user), portfolio, body, created_at. Author can delete own comments.
+- **UI:** Chronological order (oldest at top, newest at bottom); list anchored at bottom, auto-scrolls to newest. Send button: transparent by default; Color #3 background + Color #2 icon on hover. Sign-in prompt for guests.
 
 ---
 
-## Resume (minimal V1)
+## Resume (minimal V1) — ✅ Implemented
 
-- **What:** Optional resume upload (PDF). Users can add a resume in Settings (Profile section).
-- **Display:** "Resume" link on artist profile (e.g. near contact buttons). Click opens modal showing the PDF.
+- **What:** Optional resume upload (PDF). Users add a resume in Settings → Resume section.
+- **Settings flow:** Resume section in Settings nav. Upload PDF; file selection shows "Selected: [filename].pdf — click Done to save." Cancel and Done buttons on all viewports (mobile, tablet, desktop). When uploaded, displays "Resume uploaded — [filename]" with Remove option.
+- **Display:** "Resume" button on artist profile (near contact buttons; `rounded-xs`). Click opens modal with PDF viewer.
+- **Modal:** Rendered via portal (above navbar); `z-index: 9999`; `rounded-xs`; body scroll locked while open; closes on backdrop click.
+- **Technical:** Backend `X_FRAME_OPTIONS = "SAMEORIGIN"` for PDF iframe; `PUBLIC_API_BASE` empty so media URLs are relative; frontend normalizes localhost URLs for ngrok compatibility.
 - **Storage:** `resumes/`; one file per user. Replace on re-upload.
 - **All tiers.** Keep minimal for V1.
 
@@ -157,7 +161,9 @@
 
 ### Hashtags & Search priority
 
-- **Hashtag limits:** Free 3, Pro 5, Premium 10. Hashtags help on-site discoverability and SEO; relevance matters more than quantity.
+- **Hashtag management (V1):** Settings → Discoverability. "Contact Links" sub-header above contact fields; "Hashtags" subsection below. Add up to 5 hashtags (fixed `#` prefix, submit on Enter or Add button). Normalize input (strip special chars, keep spaces); block duplicates. Hashtag boxes: `rounded-xs`, light-brown background, X to delete. API: `GET/POST /api/my/hashtags/`, `POST /api/my/hashtags/add/`, `DELETE /api/my/hashtags/<id>/`.
+- **Search integration (V1):** Hashtags have weight in artist search but rank below name, display name, title, and location. Relevance tiers: 5=name starts with, 4=name contains, 3=title contains, 2=location/slug, 1=hashtag match, 0=no match. Multi-word hashtags (e.g. "after effects") match via name and slug.
+- **Hashtag limits (tier):** Free 3, Pro 5, Premium 10. Relevance matters more than quantity.
 - **Search priority:** Pro and Premium get an automatic boost in urGallery on-site search results. When relevance is similar, paid users appear higher. Free users have no boost.
 - **Category visibility:** Pro users get more automatic visibility in category sections than Free; Premium gets more than Pro. Exact boost values TBD when category page is built.
 - **Category featured section:** Premium accounts only. Pro excluded.
@@ -227,6 +233,12 @@
   - `font_family` (Google Font name).
   - `theme` (FK to Theme).
 - **DefaultAvatar**: predefined avatar options (s3_key, label).
+
+### Password Reset Flow (Implemented)
+
+- **Forgot password** (`/forgot-password`): User enters email → backend sends reset link (or prints to console in local dev). Link format: `{FRONTEND_BASE_URL}/reset-password?uid={uid}&token={token}`. Token is unique per request; expires when password is changed.
+- **Reset password** (`/reset-password`): User lands via email link with `uid` and `token` in query string. Form: email (optional, for records), new password, confirm password. Backend validates token, rejects if new password equals current password, then updates password. Success: "Your password has been changed" + Login button.
+- **Email delivery:** Local dev uses `django.core.mail.backends.console.EmailBackend` (emails print to Django terminal). Production requires SMTP/SES configured via `EMAIL_BACKEND`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, etc.
 
 ---
 
@@ -393,12 +405,13 @@
 | POST | `change-password/` | Change password (authenticated; body: `current_password`, `new_password`; requires current password) |
 | POST | `change-email/` | Change email (authenticated; body: `new_email`, `current_password`; requires current password) |
 | POST | `forgot-password/` | Request password reset; sends email with reset link (body: `email`) |
+| POST | `reset-password/` | Complete password reset (body: `uid`, `token`, `new_password`); rejects if new password equals current password |
 
 ### Artists (`/api/artists/`)
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `search/?q=<term>` | Search by display_name, title, location, slug; returns `{ results: [...] }` |
+| GET | `search/?q=<term>` | Search by display_name, title, location, slug, hashtags (weighted: name > title > location > hashtag); returns `{ results: [...] }` |
 | GET | `categories/` | List categories (by type: `title` or `location`); returns `{ titles: [...], locations: [...] }` or similar |
 | GET | `categories/<category_value>/` | List artists in category (filtered by title or location) |
 | GET | `<artist_slug>/` | Artist landing: profile + portfolios (owner sees all; visitor sees public; private listed but locked) |
@@ -428,6 +441,9 @@
 |--------|------|-------------|
 | GET | `profile/` | Current user's profile (full) |
 | PATCH | `profile/` | Update profile; supports FormData for avatar, banner_image, resume_file |
+| GET | `hashtags/` | List current user's hashtags |
+| POST | `hashtags/add/` | Add hashtag (body: `{ name: "..." }`) |
+| DELETE | `hashtags/<id>/` | Remove hashtag by UserHashtag id |
 | GET | `portfolios/` | List user's portfolios |
 | POST | `portfolios/` | Create portfolio |
 | GET | `portfolios/<portfolio_slug>/` | Portfolio detail |
@@ -465,10 +481,11 @@
 |------|-------------|
 | `/` | Home; hero logo + search + category section |
 | `/login` | Login form; **Forgot password** link (mandatory V1) |
-| `/forgot-password` | Request password reset (email input); sends reset link |
-| `/signup` | Registration |
+| `/forgot-password` | Request password reset (email input); sends reset link; success message "Check your email" |
+| `/reset-password` | Set new password (from email link); form: email, new password, confirm password; success: "Your password has been changed" + Login button; validates new ≠ current password |
+| `/signup` | Registration (email, password, confirm password; validates passwords match) |
 | `/signup/complete` | Post-signup profile completion |
-| `/settings` | Settings (profile, contact, customization, **Security**, billing, about, terms, privacy, help) |
+| `/settings` | Settings (profile, **Discoverability**, customization, **Security**, billing, about, terms, privacy, help) |
 | `/saves` | Saved artists and portfolios (chronological/alphabetical, search) |
 | `/{artist_slug}` | Artist landing (profile + portfolio section); `?portfolio=<portfolio_slug>` for specific portfolio |
 | `/{artist_slug}/{portfolio_slug}` | Redirects to `/{artist_slug}?portfolio={portfolio_slug}#portfolio-shell` |
@@ -483,6 +500,31 @@
 - See [ARCHITECTURE.md](./ARCHITECTURE.md) for full config, CORS, CSRF, and deployment.
 
 
+
+---
+
+## MVP Implementation Status
+
+| Feature | Status |
+|---------|--------|
+| Auth (login, register, forgot/reset password, change password, change email) | ✅ |
+| Artist profile (display name, title, location, bio, avatar, banner) | ✅ |
+| **Resume upload & display** | ✅ |
+| Multiple portfolios per user | ✅ |
+| Portfolio editor (draft-based, publish) | ✅ |
+| Privacy levels (public, private with password) | ✅ |
+| Artist search on homepage (incl. hashtag-weighted relevance) | ✅ |
+| Public artist landing page (theme, colors, fonts) | ✅ |
+| Settings (profile, **Discoverability** (contact links, hashtags), resume, customization, Security, help) | ✅ |
+| Search result hover styling (background Color 3, text Color 2) | ✅ |
+| Comments on portfolios | ✅ (laptop) |
+| Category section (browse by title/location) | ⬜ |
+| Saves (save artists/portfolios, Saves page) | ⬜ |
+| Subscription tiers (Stripe billing) | ⬜ |
+| **Hashtags** (Settings management + search integration) | ✅ |
+| Tier-based limits (portfolios, pages, storage) | ⬜ |
+
+**Remaining MVP features: 4** — Category section, Saves, Subscription/billing, Tier limits.
 
 ---
 

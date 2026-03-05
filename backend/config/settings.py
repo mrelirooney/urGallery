@@ -138,6 +138,9 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+# Allow same-origin framing (needed for resume PDF in iframe)
+X_FRAME_OPTIONS = "SAMEORIGIN"
+
 # ============================================================
 # Switching Environments Step 3a: BACKEND — CORS + CSRF + Cookies
 # Purpose:

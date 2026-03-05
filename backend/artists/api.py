@@ -19,33 +19,40 @@ User = get_user_model()
 @api_view(["GET"])
 def search_artists(request):
     """
-    Lightweight search. Matches display_name, title, location, or slug.
-    Searches both User and Profile fields.
-    Returns only the fields the UI needs.
+    Lightweight search. Matches display_name, title, location, slug, or hashtags.
+    Hashtags have lower weight than name, title, location.
     """
     q = (request.GET.get("q") or "").strip()
     if not q:
         return Response({"results": []})
 
+    q_slug = q.replace(" ", "-").lower()
+
     try:
-        # Relevance score: 4=name starts with q, 3=name contains q, 2=title contains q, 1=location/slug contains q
+        # Relevance: 5=name starts, 4=name contains, 3=title, 2=location/slug, 1=hashtag, 0=no match
         relevance = Case(
             When(
                 Q(display_name__istartswith=q) | Q(profile__display_name__istartswith=q),
-                then=Value(4),
+                then=Value(5),
             ),
             When(
                 Q(display_name__icontains=q) | Q(profile__display_name__icontains=q),
-                then=Value(3),
+                then=Value(4),
             ),
             When(
                 Q(title__icontains=q) | Q(profile__title__icontains=q),
-                then=Value(2),
+                then=Value(3),
             ),
             When(
                 Q(location__icontains=q)
                 | Q(profile__location__icontains=q)
                 | Q(profile__slug__icontains=q),
+                then=Value(2),
+            ),
+            When(
+                Q(user_hashtags__hashtag__name__icontains=q)
+                | Q(user_hashtags__hashtag__slug__icontains=q)
+                | Q(user_hashtags__hashtag__slug__icontains=q_slug),
                 then=Value(1),
             ),
             default=Value(0),
@@ -62,6 +69,9 @@ def search_artists(request):
                 | Q(profile__title__icontains=q)
                 | Q(profile__location__icontains=q)
                 | Q(profile__slug__icontains=q)
+                | Q(user_hashtags__hashtag__name__icontains=q)
+                | Q(user_hashtags__hashtag__slug__icontains=q)
+                | Q(user_hashtags__hashtag__slug__icontains=q_slug)
             )
             .select_related("profile")
             .distinct()

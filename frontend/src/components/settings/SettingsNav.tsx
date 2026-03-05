@@ -1,11 +1,11 @@
 "use client";
 
-import { GripVertical, X } from "lucide-react";
-
 type SettingsSection = 
   | "profile" 
   | "customization" 
   | "contact" 
+  | "security" 
+  | "resume" 
   | "about" 
   | "terms" 
   | "privacy" 
@@ -19,7 +19,9 @@ type Props = {
 const menuItems: { id: SettingsSection; label: string }[] = [
   { id: "profile", label: "Profile" },
   { id: "customization", label: "Customization" },
-  { id: "contact", label: "Contact" },
+  { id: "contact", label: "Discoverability" },
+  { id: "security", label: "Security" },
+  { id: "resume", label: "Resume" },
   { id: "about", label: "About" },
   { id: "terms", label: "Terms" },
   { id: "privacy", label: "Privacy" },

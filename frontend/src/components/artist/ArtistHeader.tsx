@@ -4,7 +4,9 @@
 import type { ArtistLanding } from "@/lib/types";
 import { parseContacts, copyToClipboard } from "@/lib/contactUtils";
 import { useAuth } from "@/hooks/useAuth";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { FileText, X } from "lucide-react";
 
 type Props = { 
   profile?: ArtistLanding["profile"];
@@ -18,7 +20,37 @@ type Props = {
 
 export default function ArtistHeader({ profile, customColors }: Props) {
   const [copiedEmail, setCopiedEmail] = useState(false);
+  const [resumeModalOpen, setResumeModalOpen] = useState(false);
   const { user } = useAuth();
+
+  // Lock page scroll when resume modal is open (position: fixed freezes everything)
+  useEffect(() => {
+    if (resumeModalOpen) {
+      const scrollY = window.scrollY;
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.left = "0";
+      document.body.style.right = "0";
+      document.body.style.overflow = "hidden";
+    } else {
+      const scrollY = document.body.style.top;
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.left = "";
+      document.body.style.right = "";
+      document.body.style.overflow = "";
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || "0", 10) * -1);
+      }
+    }
+    return () => {
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.left = "";
+      document.body.style.right = "";
+      document.body.style.overflow = "";
+    };
+  }, [resumeModalOpen]);
   const isOwner = Boolean(user?.slug && profile?.slug && user.slug === profile.slug);
   const initial =
     (profile?.display_name || profile?.slug || "?")
@@ -35,6 +67,12 @@ export default function ArtistHeader({ profile, customColors }: Props) {
 
   const hasAvatar = Boolean(profile?.avatar_url && profile.avatar_url.length > 0);
   const bannerSrc = profile?.banner_image_url || null;
+
+  // Convert localhost URLs to relative so iframe loads from same origin (Next.js /media/* proxy)
+  const resumeSrc =
+    profile?.resume_url?.replace(/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/, "") ||
+    profile?.resume_url ||
+    "";
   
   // Parse contacts from profile
   const contacts = parseContacts(profile);
@@ -142,6 +180,63 @@ export default function ArtistHeader({ profile, customColors }: Props) {
           </div>
         )}
 
+        {/* Resume button - only when profile has resume */}
+        {profile?.resume_url && (
+          <div className="mt-3 mb-2 md:mt-2 flex md:justify-start">
+            <button
+              onClick={() => setResumeModalOpen(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xs text-sm font-medium transition-colors"
+              style={{
+                backgroundColor: customColors?.text || '#11100e',
+                color: customColors?.background || '#faf7f2',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = customColors?.accent || '#c96a4a';
+                e.currentTarget.style.color = customColors?.text || '#11100e';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = customColors?.text || '#11100e';
+                e.currentTarget.style.color = customColors?.background || '#faf7f2';
+              }}
+            >
+              <FileText size={18} />
+              Resume
+            </button>
+          </div>
+        )}
+
+        {/* Resume modal - rendered via portal so it appears above navbar */}
+        {resumeModalOpen &&
+          resumeSrc &&
+          typeof document !== "undefined" &&
+          createPortal(
+            <div
+              className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 p-4"
+              onClick={() => setResumeModalOpen(false)}
+            >
+              <div
+                className="relative w-full max-w-4xl h-[90vh] bg-white dark:bg-neutral-900 rounded-xs overflow-hidden flex flex-col"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between p-3 border-b border-neutral-200 dark:border-neutral-700">
+                  <span className="font-medium text-[var(--foreground)]">Resume</span>
+                  <button
+                    onClick={() => setResumeModalOpen(false)}
+                    className="p-2 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                    aria-label="Close"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+                <iframe
+                  src={resumeSrc}
+                  title="Resume"
+                  className="flex-1 w-full min-h-0"
+                />
+              </div>
+            </div>,
+            document.body
+          )}
         
       </div>
 

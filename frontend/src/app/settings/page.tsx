@@ -9,6 +9,8 @@ import AboutSection from "@/components/settings/AboutSection";
 import TermsSection from "@/components/settings/TermsSection";
 import PrivacySection from "@/components/settings/PrivacySection";
 import HelpSection from "@/components/settings/HelpSection";
+import SecuritySection from "@/components/settings/SecuritySection";
+import ResumeSection from "@/components/settings/ResumeSection";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { ChevronRight, ArrowLeft } from "lucide-react";
@@ -17,6 +19,8 @@ type SettingsSection =
   | "profile" 
   | "customization" 
   | "contact" 
+  | "security" 
+  | "resume" 
   | "about" 
   | "terms" 
   | "privacy" 
@@ -25,7 +29,9 @@ type SettingsSection =
 const MENU_ITEMS: { id: SettingsSection; label: string }[] = [
   { id: "profile", label: "Profile" },
   { id: "customization", label: "Customization" },
-  { id: "contact", label: "Contact" },
+  { id: "contact", label: "Discoverability" },
+  { id: "security", label: "Security" },
+  { id: "resume", label: "Resume" },
   { id: "about", label: "About" },
   { id: "terms", label: "Terms" },
   { id: "privacy", label: "Privacy" },
@@ -35,7 +41,9 @@ const MENU_ITEMS: { id: SettingsSection; label: string }[] = [
 const SECTION_LABELS: Record<SettingsSection, string> = {
   profile: "Profile",
   customization: "Customization",
-  contact: "Contact",
+  contact: "Discoverability",
+  security: "Security",
+  resume: "Resume",
   about: "About",
   terms: "Terms",
   privacy: "Privacy",
@@ -47,9 +55,19 @@ export default function SettingsPage() {
   const router = useRouter();
   const [activeSection, setActiveSection] = useState<SettingsSection>("profile");
   const [showMenu, setShowMenu] = useState(true); // mobile/tablet: true = menu, false = panel
-  const profileSaveRef = useRef<(() => Promise<void>) | null>(null);
-  const contactSaveRef = useRef<(() => Promise<void>) | null>(null);
-  const customizationSaveRef = useRef<(() => Promise<void>) | null>(null);
+  const profileSaveRefMobile = useRef<(() => Promise<void>) | null>(null);
+  const profileSaveRefDesktop = useRef<(() => Promise<void>) | null>(null);
+  const contactSaveRefMobile = useRef<(() => Promise<void>) | null>(null);
+  const contactSaveRefDesktop = useRef<(() => Promise<void>) | null>(null);
+  const customizationSaveRefMobile = useRef<(() => Promise<void>) | null>(null);
+  const customizationSaveRefDesktop = useRef<(() => Promise<void>) | null>(null);
+  const securitySaveRefMobile = useRef<(() => Promise<void>) | null>(null);
+  const securitySaveRefDesktop = useRef<(() => Promise<void>) | null>(null);
+  const securityResetRef = useRef<(() => void) | null>(null);
+  const resumeSaveRefMobile = useRef<(() => Promise<void>) | null>(null);
+  const resumeSaveRefDesktop = useRef<(() => Promise<void>) | null>(null);
+
+  const isMobileViewport = () => typeof window !== "undefined" && window.innerWidth < 1024;
 
   // Redirect to login if not authenticated
   if (!loading && !user) {
@@ -58,6 +76,9 @@ export default function SettingsPage() {
   }
 
   const handleCancel = () => {
+    if (activeSection === "security" && securityResetRef.current) {
+      securityResetRef.current();
+    }
     // On mobile: if we have a profile slug, go to profile and refresh so changes show
     if (typeof window !== "undefined" && window.innerWidth < 768 && user?.slug) {
       router.push(`/${user.slug}`);
@@ -75,60 +96,33 @@ export default function SettingsPage() {
     setShowMenu(false);
   };
 
-  const handleBackToMenu = async () => {
-    // Phone only: auto-save before returning to menu so changes persist
-    const isPhone = typeof window !== "undefined" && window.innerWidth < 768;
-    if (isPhone) {
-      if (activeSection === "profile" && profileSaveRef.current) {
-        await profileSaveRef.current();
-      } else if (activeSection === "contact" && contactSaveRef.current) {
-        await contactSaveRef.current();
-      } else if (activeSection === "customization" && customizationSaveRef.current) {
-        await customizationSaveRef.current();
-      }
+  const getSaveRef = () => {
+    const mobile = isMobileViewport();
+    switch (activeSection) {
+      case "profile": return mobile ? profileSaveRefMobile.current : profileSaveRefDesktop.current;
+      case "contact": return mobile ? contactSaveRefMobile.current : contactSaveRefDesktop.current;
+      case "customization": return mobile ? customizationSaveRefMobile.current : customizationSaveRefDesktop.current;
+      case "security": return mobile ? securitySaveRefMobile.current : securitySaveRefDesktop.current;
+      case "resume": return mobile ? resumeSaveRefMobile.current : resumeSaveRefDesktop.current;
+      default: return null;
+    }
+  };
+
+  const handleCancelToMenu = () => {
+    if (activeSection === "security" && securityResetRef.current) {
+      securityResetRef.current();
     }
     setShowMenu(true);
   };
 
-  const handleCancelToMenu = () => {
-    setShowMenu(true);
-  };
-
   const handleDone = async () => {
-    // Call save handler if it exists (for profile section)
-    if (activeSection === "profile" && profileSaveRef.current) {
-      await profileSaveRef.current();
-      
-      // Navigate to user's profile page and refresh
-      if (user?.slug) {
-        router.push(`/${user.slug}`);
-        // Refresh the page after navigation completes
-        setTimeout(() => {
-          router.refresh();
-        }, 200);
-      } else {
-        router.back();
-      }
-    } else if (activeSection === "contact" && contactSaveRef.current) {
-      await contactSaveRef.current();
-      if (user?.slug) {
-        router.push(`/${user.slug}`);
-        setTimeout(() => {
-          router.refresh();
-        }, 200);
-      } else {
-        router.back();
-      }
-    } else if (activeSection === "customization" && customizationSaveRef.current) {
-      await customizationSaveRef.current();
-      if (user?.slug) {
-        router.push(`/${user.slug}`);
-        setTimeout(() => {
-          router.refresh();
-        }, 200);
-      } else {
-        router.back();
-      }
+    const saveFn = getSaveRef();
+    if (saveFn) {
+      await saveFn();
+    }
+    if (user?.slug) {
+      router.push(`/${user.slug}`);
+      setTimeout(() => router.refresh(), 200);
     } else {
       router.back();
     }
@@ -169,36 +163,24 @@ export default function SettingsPage() {
                 </div>
               </>
             ) : (
-              <>
-                {/* Mobile (< md): Back left + title right, auto-save on Back */}
-                <div className="flex items-center w-full md:hidden">
-                  <button
-                    onClick={handleBackToMenu}
-                    className="p-2 -ml-2 text-[var(--foreground)] opacity-70 shrink-0"
-                    aria-label="Back"
-                  >
-                    <ArrowLeft size={24} />
-                  </button>
-                  <div className="flex-1 min-w-0" />
-                  <h1 className="text-2xl font-bold text-[var(--light-brown)] shrink-0">{SECTION_LABELS[activeSection]}</h1>
-                </div>
-                {/* Tablet+ (md to lg): Cancel + title + Done */}
-                <div className="hidden md:flex items-center gap-4 w-full">
-                  <button
-                    onClick={handleCancelToMenu}
-                    className="px-0 py-2] text-[var(--foreground)] opacity-70 rounded-xs"
-                  >
-                    Cancel
-                  </button>
-                  <h1 className="flex-1 text-center text-2xl font-bold text-[var(--light-brown)]">{SECTION_LABELS[activeSection]}</h1>
-                  <button
-                    onClick={handleDone}
-                    className="px-4 py-2 bg-[color:var(--light-brown)] text-[var(--background)] rounded-xs font-medium shrink-0"
-                  >
-                    Done
-                  </button>
-                </div>
-              </>
+              /* Mobile & tablet: Cancel + title + Done */
+              <div className="flex items-center gap-4 w-full">
+                <button
+                  onClick={handleCancelToMenu}
+                  className="px-2 py-2 text-[var(--foreground)] opacity-70 rounded-xs shrink-0"
+                >
+                  Cancel
+                </button>
+                <h1 className="flex-1 text-center text-lg sm:text-xl md:text-2xl font-bold text-[var(--light-brown)] min-w-0 truncate">
+                  {SECTION_LABELS[activeSection]}
+                </h1>
+                <button
+                  onClick={handleDone}
+                  className="px-4 py-2 bg-[color:var(--light-brown)] text-[var(--foreground)] rounded-xs font-medium shrink-0"
+                >
+                  Done
+                </button>
+              </div>
             )}
           </div>
           {/* Desktop: Settings | Cancel + Done */}
@@ -213,7 +195,7 @@ export default function SettingsPage() {
               </button>
               <button
                 onClick={handleDone}
-                className="px-4 py-2 bg-[color:var(--light-brown)] text-[var(--background)] rounded-xs font-medium"
+                className="px-4 py-2 bg-[color:var(--light-brown)] text-[var(--foreground)] rounded-xs font-medium"
               >
                 Done
               </button>
@@ -244,15 +226,24 @@ export default function SettingsPage() {
           <div className={`flex-1 bg-[var(--background)] overflow-y-auto min-w-0 ${showMenu ? "hidden" : ""}`}>
               <div className={activeSection === "profile" ? "" : "hidden"}>
                 <ProfileInformation
-                  onSaveRef={(saveFn) => { profileSaveRef.current = saveFn; }}
+                  onSaveRef={(saveFn) => { profileSaveRefMobile.current = saveFn; }}
                   onSaveComplete={() => {}}
                 />
               </div>
               <div className={activeSection === "contact" ? "" : "hidden"}>
-                <ContactInformation onSaveRef={(saveFn) => { contactSaveRef.current = saveFn; }} />
+                <ContactInformation onSaveRef={(saveFn) => { contactSaveRefMobile.current = saveFn; }} />
+              </div>
+              <div className={activeSection === "security" ? "" : "hidden"}>
+                <SecuritySection
+                  onSaveRef={(saveFn) => { securitySaveRefMobile.current = saveFn; }}
+                  onResetRef={(resetFn) => { securityResetRef.current = resetFn; }}
+                />
+              </div>
+              <div className={activeSection === "resume" ? "" : "hidden"}>
+                <ResumeSection instanceId="mobile" onSaveRef={(saveFn) => { resumeSaveRefMobile.current = saveFn; }} />
               </div>
               <div className={activeSection === "customization" ? "" : "hidden"}>
-                <CustomizationSection onSaveRef={(saveFn) => { customizationSaveRef.current = saveFn; }} />
+                <CustomizationSection onSaveRef={(saveFn) => { customizationSaveRefMobile.current = saveFn; }} />
               </div>
               <div className={activeSection === "about" ? "" : "hidden"}>
                 <AboutSection />
@@ -275,15 +266,24 @@ export default function SettingsPage() {
           <div className="flex-1 bg-[var(--background)] min-w-0 overflow-y-auto">
             <div className={activeSection === "profile" ? "" : "hidden"}>
               <ProfileInformation
-                onSaveRef={(saveFn) => { profileSaveRef.current = saveFn; }}
+                onSaveRef={(saveFn) => { profileSaveRefDesktop.current = saveFn; }}
                 onSaveComplete={() => {}}
               />
             </div>
             <div className={activeSection === "contact" ? "" : "hidden"}>
-              <ContactInformation onSaveRef={(saveFn) => { contactSaveRef.current = saveFn; }} />
+              <ContactInformation onSaveRef={(saveFn) => { contactSaveRefDesktop.current = saveFn; }} />
+            </div>
+            <div className={activeSection === "security" ? "" : "hidden"}>
+              <SecuritySection
+                onSaveRef={(saveFn) => { securitySaveRefDesktop.current = saveFn; }}
+                onResetRef={(resetFn) => { securityResetRef.current = resetFn; }}
+              />
+            </div>
+            <div className={activeSection === "resume" ? "" : "hidden"}>
+              <ResumeSection instanceId="desktop" onSaveRef={(saveFn) => { resumeSaveRefDesktop.current = saveFn; }} />
             </div>
             <div className={activeSection === "customization" ? "" : "hidden"}>
-              <CustomizationSection onSaveRef={(saveFn) => { customizationSaveRef.current = saveFn; }} />
+              <CustomizationSection onSaveRef={(saveFn) => { customizationSaveRefDesktop.current = saveFn; }} />
             </div>
             <div className={activeSection === "about" ? "" : "hidden"}>
               <AboutSection />

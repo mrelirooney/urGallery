@@ -11,6 +11,7 @@ class ArtistProfileSerializer(serializers.ModelSerializer):
     """
     avatar_url = serializers.SerializerMethodField()
     banner_image_url = serializers.SerializerMethodField()
+    resume_url = serializers.SerializerMethodField()
     theme = serializers.SerializerMethodField()
 
     class Meta:
@@ -23,6 +24,7 @@ class ArtistProfileSerializer(serializers.ModelSerializer):
             "bio",
             "avatar_url",
             "banner_image_url",
+            "resume_url",
             "website_url",
             "instagram_url",
             "twitter_url",
@@ -78,3 +80,12 @@ class ArtistProfileSerializer(serializers.ModelSerializer):
             return None
         request = self.context.get("request")
         return build_media_url(request, obj.banner_image.url)
+
+    def get_resume_url(self, obj):
+        """
+        Build an absolute URL for the resume PDF.
+        """
+        if not obj.resume_file:
+            return None
+        request = self.context.get("request")
+        return build_media_url(request, obj.resume_file.url)

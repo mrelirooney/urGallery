@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   DndContext,
   closestCenter,
@@ -18,7 +18,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical } from "lucide-react";
+import { GripVertical, X } from "lucide-react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "";
 
@@ -37,6 +37,167 @@ type ContactItem = {
   id: string;
   value: string;
 };
+
+
+function normalizeHashtagInput(raw: string): string {
+  return (raw || "").replace(/[^\w\s]/g, "").trim();
+}
+
+function HashtagsSubsection() {
+  const [hashtags, setHashtags] = useState<{ id: number; name: string }[]>([]);
+  const [inputValue, setInputValue] = useState("#");
+  const [loading, setLoading] = useState(true);
+  const [addError, setAddError] = useState<string | null>(null);
+  const MAX_HASHTAGS = 5;
+
+  const fetchHashtags = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/my/hashtags/`, {
+        credentials: "include",
+        headers: { "ngrok-skip-browser-warning": "true" },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setHashtags(data);
+      }
+    } catch (err) {
+      console.error("Error fetching hashtags:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchHashtags();
+  }, [fetchHashtags]);
+
+  const handleSubmit = async () => {
+    const raw = inputValue.trim().replace(/^#+/, "");
+    const normalized = normalizeHashtagInput(raw);
+    if (!normalized) {
+      setInputValue("#");
+      return;
+    }
+    if (hashtags.length >= MAX_HASHTAGS) {
+      setAddError(`You can add up to ${MAX_HASHTAGS} hashtags.`);
+      return;
+    }
+    const existing = hashtags.some((h) => h.name.toLowerCase() === normalized.toLowerCase());
+    if (existing) {
+      setAddError("You already have this hashtag.");
+      return;
+    }
+    setAddError(null);
+    try {
+      const res = await fetch(`${API_BASE}/api/my/hashtags/add/`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCsrfToken(),
+          "ngrok-skip-browser-warning": "true",
+        },
+        body: JSON.stringify({ name: normalized }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setHashtags((prev) => [...prev, { id: data.id, name: data.name }]);
+        setInputValue("#");
+      } else {
+        setAddError(data.error || "Failed to add hashtag.");
+      }
+    } catch (err) {
+      setAddError("Failed to add hashtag.");
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleSubmit();
+    }
+  };
+
+  const handleRemove = async (id: number) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/my/hashtags/${id}/`, {
+        method: "DELETE",
+        credentials: "include",
+        headers: {
+          "X-CSRFToken": getCsrfToken(),
+          "ngrok-skip-browser-warning": "true",
+        },
+      });
+      if (res.ok) {
+        setHashtags((prev) => prev.filter((h) => h.id !== id));
+      }
+    } catch (err) {
+      console.error("Error removing hashtag:", err);
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let v = e.target.value;
+    if (!v.startsWith("#")) v = "#" + v;
+    setInputValue(v);
+  };
+
+  if (loading) {
+    return (
+      <div>
+        <h3 className="text-lg font-semibold text-[var(--foreground)] mb-2">Hashtags</h3>
+        <p className="text-sm text-[var(--foreground)] opacity-60">Loading hashtags...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <h3 className="text-lg font-semibold text-[var(--foreground)] mb-2">Hashtags</h3>
+      <p className="text-sm text-[var(--foreground)] opacity-80 mb-4">
+        The right hashtags help people discover your profile in search. Add up to {MAX_HASHTAGS} hashtags that describe your work.
+      </p>
+      <div className="flex gap-2 mb-4">
+        <input
+          type="text"
+          value={inputValue}
+          onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
+          placeholder="#"
+          className="flex-1 px-4 py-2 text-[var(--foreground)] bg-[var(--background)] border border-neutral-300 dark:border-neutral-600 rounded-xs focus:outline-none focus:ring-2 focus:ring-[var(--light-brown)] focus:border-transparent placeholder:opacity-60"
+        />
+        <button
+          type="button"
+          onClick={handleSubmit}
+          className="px-4 py-2 bg-[var(--light-brown)] text-[var(--foreground)] rounded-xs font-medium shrink-0 hover:opacity-90 transition-opacity"
+        >
+          Add
+        </button>
+      </div>
+      {addError && (
+        <p className="text-sm text-red-600 dark:text-red-400 mb-4">{addError}</p>
+      )}
+      <div className="flex flex-wrap gap-2">
+        {hashtags.map((h) => (
+          <div
+            key={h.id}
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-xs bg-[var(--light-brown)] text-[var(--foreground)]"
+          >
+            <span>#{h.name}</span>
+            <button
+              type="button"
+              onClick={() => handleRemove(h.id)}
+              className="p-0.5 rounded hover:bg-black/10 transition-colors text-[var(--foreground)]"
+              aria-label="Remove hashtag"
+            >
+              <X size={14} />
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function SortableContactItem({ id, value, index, onChange }: { id: string; value: string; index: number; onChange: (value: string) => void }) {
   const {
@@ -275,9 +436,12 @@ export default function ContactInformation({ onSaveRef }: Props) {
 
   return (
     <div className="px-0 py-4 md:py-6 lg:py-8 lg:pr-0.5 lg:pl-12">
-      <div className="flex gap-8">
-        {/* Contact Inputs */}
-        <div className="flex-1 w-full min-w-0 ">
+      <div className="flex flex-col gap-8 max-w-xl">
+        {/* Contact Links subsection */}
+        <div className="flex-1 w-full min-w-0">
+          <h3 className="text-lg font-semibold text-[var(--foreground)] mb-2">
+            Contact Links
+          </h3>
           <p className="text-sm text-[var(--foreground)] opacity-80 mb-4 ">
             Add up to 5 contact links. Drag the grip icon to reorder. We'll automatically detect the platform (Instagram, YouTube, LinkedIn, Email, etc.)
           </p>
@@ -310,17 +474,20 @@ export default function ContactInformation({ onSaveRef }: Props) {
             <p>Instagram, YouTube, Twitter/X, LinkedIn, Twitch, GitHub, Behance, Dribbble, TikTok, Email, Website</p>
             <p className="mt-2 text-[var(--light-brown)]">Note: Phone numbers are not allowed.</p>
           </div>
-
-          {/* Hidden save button - parent component will call this */}
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="hidden"
-            id="contact-save-btn"
-          >
-            {saving ? "Saving..." : "Save"}
-          </button>
         </div>
+
+        {/* Hashtags subsection */}
+        <HashtagsSubsection />
+
+        {/* Hidden save button - parent component will call this */}
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="hidden"
+          id="contact-save-btn"
+        >
+          {saving ? "Saving..." : "Save"}
+        </button>
       </div>
     </div>
   );

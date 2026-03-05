@@ -395,15 +395,44 @@ class PublicPortfolioSerializer(serializers.ModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     author_display_name = serializers.SerializerMethodField()
+    author_id = serializers.SerializerMethodField()
+    author_avatar_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Comment
-        fields = ["id", "body", "author_display_name", "created_at"]
-        read_only_fields = ["id", "author_display_name", "created_at"]
+        fields = ["id", "body", "author_id", "author_display_name", "author_avatar_url", "created_at"]
+        read_only_fields = ["id", "author_id", "author_display_name", "author_avatar_url", "created_at"]
 
     def get_author_display_name(self, obj):
         profile = getattr(obj.author, "profile", None)
         if profile:
             return profile.display_name or obj.author.email
         return obj.author.email
+
+    def get_author_id(self, obj):
+        return obj.author_id
+
+    def get_author_avatar_url(self, obj):
+        from config.utils import build_media_url
+        request = self.context.get("request")
+        user = obj.author
+        if not user:
+            return None
+        if getattr(user, "avatar", None):
+            try:
+                return build_media_url(request, user.avatar.url)
+            except Exception:
+                pass
+        profile = getattr(user, "profile", None)
+        if profile:
+            if profile.avatar_s3_key:
+                if profile.avatar_s3_key.startswith("http"):
+                    return profile.avatar_s3_key
+                return build_media_url(request, profile.avatar_s3_key)
+            if profile.default_avatar:
+                s3_key = profile.default_avatar.s3_key or ""
+                if s3_key.startswith("http"):
+                    return s3_key
+                return build_media_url(request, s3_key) if s3_key else ""
+        return None
 

@@ -8,6 +8,8 @@ function isConstrainedRoute(pathname: string | null): boolean {
     pathname === "/" ||
     pathname.startsWith("/login") ||
     pathname.startsWith("/signup") ||
+    pathname.startsWith("/forgot-password") ||
+    pathname.startsWith("/reset-password") ||
     pathname.startsWith("/settings") ||
     pathname.startsWith("/sandbox") ||
     pathname.startsWith("/svg-layout-test") ||

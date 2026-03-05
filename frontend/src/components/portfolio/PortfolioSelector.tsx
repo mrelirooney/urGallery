@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import PortfolioWrapper from "./PortfolioWrapper";
+import { useAuth } from "@/hooks/useAuth";
 import type { ArtistLanding } from "@/lib/types";
 
 type Props = {
@@ -27,6 +28,8 @@ export default function PortfolioSelector({
 }: Props) {
   const router = useRouter();
   const pathname = usePathname();
+  const { user } = useAuth();
+  const isOwner = Boolean(user?.slug && user.slug === artistSlug);
   const [selectedSlug, setSelectedSlug] = useState<string | null>(
     initialPortfolioSlug || portfolios[0]?.slug || null
   );
@@ -79,6 +82,8 @@ export default function PortfolioSelector({
       artistName={profile.display_name}
       artistAvatarUrl={profile.avatar_url}
       customColors={customColors}
+      privacy={selectedPortfolio.privacy}
+      isOwner={isOwner}
     />
   );
 }

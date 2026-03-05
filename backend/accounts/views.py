@@ -186,6 +186,11 @@ class ChangePasswordView(APIView):
                 {"error": "New password must be at least 8 characters"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        if request.user.check_password(new_password):
+            return Response(
+                {"error": "New password cannot be the same as your current password"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         request.user.set_password(new_password)
         request.user.save()
@@ -310,6 +315,12 @@ class ResetPasswordView(APIView):
 
         if not default_token_generator.check_token(user, token):
             return Response({"error": "Reset link has expired or is invalid"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if user.check_password(new_password):
+            return Response(
+                {"error": "New password cannot be the same as your current password"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         user.set_password(new_password)
         user.save()

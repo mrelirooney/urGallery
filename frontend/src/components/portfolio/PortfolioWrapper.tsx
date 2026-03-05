@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { MoreVertical } from "lucide-react";
+import { MoreVertical, Share2, Bookmark, MessageCircle } from "lucide-react";
 import PortfolioTitle from "./primitives/PortfolioTitle";
 import Pagination from "./primitives/Pagination";
 import PageRenderer, {
@@ -9,6 +9,7 @@ import PageRenderer, {
   MediaShapeType,
 } from "./PageRenderer";
 import EditPortfolioButton from "@/components/portfolio/EditPortfolioButton";
+import CommentsSection from "@/components/portfolio/CommentsSection";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE ?? "";
@@ -25,6 +26,8 @@ type PortfolioWrapperProps = {
     text: string;
     accent: string;
   };
+  privacy?: "public" | "link_only" | "private";
+  isOwner?: boolean;
 };
 
 type ApiPage = {
@@ -48,13 +51,37 @@ type ApiPortfolio = {
   pages: ApiPage[];
 };
 
-export default function PortfolioWrapper({ slug, artistSlug, artistName, artistAvatarUrl, customColors }: PortfolioWrapperProps) {
+const IDLE_HIDE_MS = 1000;
+
+export default function PortfolioWrapper({ slug, artistSlug, artistName, artistAvatarUrl, customColors, privacy = "public", isOwner = false }: PortfolioWrapperProps) {
   const [portfolioTitle, setPortfolioTitle] = useState<string>("");
   const [pages, setPages] = useState<PortfolioPageData[]>([]);
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+  const [controlsVisible, setControlsVisible] = useState(true);
+  const [shareCopied, setShareCopied] = useState(false);
+  const [commentsOpen, setCommentsOpen] = useState(false);
+  const idleRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const shareCopiedTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Hide controls after 1s of no mouse/touch movement
+  useEffect(() => {
+    function scheduleHide() {
+      if (idleRef.current) clearTimeout(idleRef.current);
+      setControlsVisible(true);
+      idleRef.current = setTimeout(() => setControlsVisible(false), IDLE_HIDE_MS);
+    }
+    window.addEventListener("mousemove", scheduleHide);
+    window.addEventListener("touchmove", scheduleHide);
+    scheduleHide(); // initial schedule
+    return () => {
+      window.removeEventListener("mousemove", scheduleHide);
+      window.removeEventListener("touchmove", scheduleHide);
+      if (idleRef.current) clearTimeout(idleRef.current);
+      if (shareCopiedTimeoutRef.current) clearTimeout(shareCopiedTimeoutRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (!slug) {
@@ -160,6 +187,8 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
     );
   }
 
+  const isPrivateBlurred = privacy === "private" && !isOwner;
+
   return (
     <section 
       className="w-full flex flex-col justify-between"
@@ -168,8 +197,8 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
         color: customColors?.background || '#faf7f2',
        }}
     >
-      <div className="min-h-[85vh] md:min-h-[85vh] w-full pt-0 pb-4 md:pt-8 md:pb-8 flex flex-col justify-between relative z-20">
-        <div className="flex items-center justify-between hidden md:flex relative z-20">
+      <div className={`min-h-[85vh] md:min-h-[85vh] w-full pt-0 pb-4 md:pt-8 md:pb-8 flex flex-col justify-between relative z-20 ${isPrivateBlurred ? "select-none" : ""}`}>
+        <div className={`flex items-center justify-between hidden md:flex relative z-20 mb-6 transition-opacity duration-300 ${controlsVisible ? "opacity-100" : "opacity-0 pointer-events-none"} ${isPrivateBlurred ? "pointer-events-none" : ""}`}>
           <div
             role="button"
             tabIndex={0}
@@ -196,17 +225,64 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
             />
           </div>
 
-          {/* Only shows for the owner (logic is inside EditPortfolioButton) */}
-          <EditPortfolioButton artistSlug={artistSlug} portfolioSlug={slug} />
+          <div className="flex items-center gap-1">
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => {
+                  const origin = typeof window !== "undefined" ? window.location.origin : "";
+                  const url = `${origin}/${artistSlug}?portfolio=${slug}#portfolio-shell`;
+                  navigator.clipboard?.writeText(url).then(() => {
+                    if (shareCopiedTimeoutRef.current) clearTimeout(shareCopiedTimeoutRef.current);
+                    setShareCopied(true);
+                    shareCopiedTimeoutRef.current = setTimeout(() => {
+                      setShareCopied(false);
+                      shareCopiedTimeoutRef.current = null;
+                    }, 2000);
+                  });
+                }}
+                className="rounded-xs p-2.5 flex items-center justify-center text-[var(--artist-background)] hover:bg-[var(--artist-accent)] hover:text-[var(--artist-text)] transition"
+                aria-label="Share portfolio"
+              >
+                <Share2 size={18} />
+              </button>
+              {shareCopied && (
+                <div
+                  className="absolute left-1/2 -translate-x-1/2 -bottom-8 whitespace-nowrap px-2 py-1 text-xs rounded-xs bg-[var(--artist-accent)] text-[var(--artist-text)] shadow-lg"
+                  role="status"
+                >
+                  Portfolio link copied
+                </div>
+              )}
+            </div>
+            <button
+              type="button"
+              className="rounded-xs p-2.5 flex items-center justify-center text-[var(--artist-background)] hover:bg-[var(--artist-accent)] hover:text-[var(--artist-text)] transition"
+              aria-label="Save portfolio"
+            >
+              <Bookmark size={18} />
+            </button>
+            <EditPortfolioButton artistSlug={artistSlug} portfolioSlug={slug} />
+          </div>
         </div>
 
-        <div className="max-h-[60vh] xl-lg:max-h-[75vh] flex flex-col justify-start md:justify-center gap-6 relative z-10">
+        <div className={`max-h-[60vh] xl-lg:max-h-[75vh] flex flex-col justify-start md:justify-center gap-6 relative z-10 ${isPrivateBlurred ? "blur-md pointer-events-none" : ""}`}>
           <PageRenderer
             pages={pages}
             currentPageIndex={currentPageIndex}
           />
         </div>
-        <div className="justify-end relative z-20 top-5 mb-6 md:mb-0">
+        <div className={`flex items-center justify-between relative z-20 top-5 mb-6 md:mb-0 transition-opacity duration-300 ${controlsVisible ? "opacity-100" : "opacity-0 pointer-events-none"} ${isPrivateBlurred ? "pointer-events-none" : ""}`}>
+          <button
+            type="button"
+            onClick={() => setCommentsOpen((v) => !v)}
+            className={`rounded-xs p-2.5 flex items-center justify-center transition ${commentsOpen ? "bg-[var(--artist-accent)] text-[var(--artist-text)]" : "text-[var(--artist-background)] hover:bg-[var(--artist-accent)] hover:text-[var(--artist-text)]"}`}
+            aria-label="Comments"
+            aria-expanded={commentsOpen}
+          >
+            <MessageCircle size={18} />
+          </button>
+          <div className="flex-1" />
           <Pagination
             totalPages={pages.length}
             currentPage={currentPageIndex + 1}
@@ -214,6 +290,14 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
             customColors={customColors}
           />
         </div>
+
+        <CommentsSection
+          isOpen={commentsOpen}
+          onClose={() => setCommentsOpen(false)}
+          artistSlug={artistSlug}
+          portfolioSlug={slug}
+          customColors={customColors}
+        />
       </div>
     </section>
   );
