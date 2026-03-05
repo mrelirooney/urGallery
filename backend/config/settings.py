@@ -97,7 +97,7 @@ INSTALLED_APPS = [
     "tags", #Added this for the Hashtags models
     'themes', #Added this for the Themes models
     "notifications", #Added this for the Notifications models
-    
+    "saves",          # SavedArtist and SavedPortfolio
 ]
 
 AUTH_USER_MODEL = "accounts.User" #Added this for the users models
@@ -386,6 +386,10 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Recipient for help form: HELP_EMAIL_RECIPIENT
 # ============================================================
 HELP_EMAIL_RECIPIENT = os.getenv("HELP_EMAIL_RECIPIENT", "mrelirooney@gmail.com")
+
+# Base URL of the frontend (used in password reset emails).
+# Dev: http://localhost:3000 | Prod: https://urgallery.io
+FRONTEND_BASE_URL = os.getenv("FRONTEND_BASE_URL", "http://localhost:3000")
 EMAIL_BACKEND = os.getenv(
     "EMAIL_BACKEND",
     "django.core.mail.backends.console.EmailBackend" if DEBUG else "django.core.mail.backends.smtp.EmailBackend",

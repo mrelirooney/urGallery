@@ -22,18 +22,23 @@
 
 ### Structure
 
-- `src/app/` — App Router pages (/, /login, /signup, /settings, /[slug], /[slug]/[portfolioSlug], /[slug]/[portfolioSlug]/edit)
-- `src/components/` — React components (artist, portfolio, layout, auth, settings)
+- `src/app/` — App Router pages (`/`, `/login`, `/signup`, `/settings`, `/saves`, `/[slug]`, `/[slug]/[portfolioSlug]`, `/[slug]/[portfolioSlug]/edit`, `/forgot-password`, `/reset-password`)
+- `src/components/` — React components (`artist/`, `portfolio/`, `layout/`, `auth/`, `settings/`)
 - `src/lib/` — API client, auth client, types, helpers
-- `src/hooks/` — useAuth, useSearch, useHistory
+  - `lib/api.ts` — thin `apiFetch` wrapper (cookies + CSRF, no localStorage)
+  - `lib/auth/client.ts` — **all** frontend → backend API calls (`AuthAPI`, `EditorAPI`)
+  - `lib/api/artistLanding.ts` — server-side artist landing fetch
+  - `lib/types.ts` — shared TypeScript interfaces
+- `src/hooks/` — `useAuth`, `useSearch`, `useHistory`
 
-### API Integration
+### API Integration Rules
 
 - `NEXT_PUBLIC_API_BASE` — backend base URL (e.g. `http://localhost:8000`)
 - `BACKEND_INTERNAL_URL` — used for Next.js rewrites (proxy target)
 - Rewrites: `/api/*` and `/media/*` proxied to Django (avoids CORS with single origin)
-- `credentials: "include"` on fetch for cookies
-- `X-CSRFToken` header on mutations (read from `csrftoken` cookie)
+- `credentials: "include"` on all fetch calls for HttpOnly cookies
+- `X-CSRFToken` header on all mutations (read from `csrftoken` cookie)
+- **Tokens are in HttpOnly cookies. Never read them from localStorage.**
 
 ### Build & Deploy
 
@@ -58,24 +63,56 @@
 | App | Purpose |
 |-----|---------|
 | `config` | Settings, URLs, WSGI |
-| `api` | Auth, My profile/portfolios, themes, help |
+| `api` | Profile (my), My portfolios, themes, help |
 | `accounts` | User, Profile, DefaultAvatar, auth views |
-| `artists` | Artist landing, portfolio detail, search |
-| `portfolios` | Portfolio/Page models, draft editor, publish |
-| `themes` | Theme model, admin |
+| `artists` | Artist landing, portfolio detail, search, comments |
+| `portfolios` | Portfolio/Page models, Comment model, draft editor, publish |
+| `saves` | SavedArtist, SavedPortfolio |
+| `themes` | Theme model |
 | `tags` | Hashtag, UserHashtag |
 | `notifications` | Notification model |
 
-### URL Structure
+### URL Map
 
-- `/api/auth/` — login, register, me, logout, refresh, csrf
-- `/api/artists/` — search, landing, portfolio detail
-- `/api/portfolios/` — editor (draft CRUD, reorder, publish), public portfolio
-- `/api/my/` — profile, portfolios (authenticated)
-- `/api/themes/` — list themes
-- `/api/help/` — help form
-- `/admin/` — Django admin
-- `/media/` — user uploads (when `SERVE_MEDIA` or DEBUG)
+```
+/api/auth/
+  csrf/                       GET   → set CSRF cookie
+  login/                      POST  → JWT login (sets HttpOnly cookies)
+  refresh/                    POST  → rotate tokens
+  register/                   POST  → create account
+  me/                         GET   → current user + profile
+  logout/                     POST  → clear cookies
+  change-password/            POST  → requires current_password + new_password
+  change-email/               POST  → requires new_email + current_password
+  forgot-password/            POST  → send reset email (unauthenticated)
+  reset-password/             POST  → complete reset with uid + token
+
+/api/artists/
+  search/?q=<term>            GET   → search artists
+  <artist_slug>/              GET   → artist landing (profile + portfolios)
+  <artist_slug>/portfolios/<portfolio_slug>/              GET
+  <artist_slug>/portfolios/<portfolio_slug>/comments/     GET, POST
+  <artist_slug>/portfolios/<portfolio_slug>/comments/<id>/  DELETE
+
+/api/portfolios/
+  <portfolio_slug>/editor/               GET, PATCH
+  <portfolio_slug>/editor/pages/         POST
+  <portfolio_slug>/editor/pages/<id>/    GET, PATCH, DELETE
+  <portfolio_slug>/editor/reorder/       PATCH
+  <portfolio_slug>/editor/publish/       POST
+
+/api/my/
+  profile/                    GET, PATCH  (FormData: avatar, banner_image, resume_file)
+  portfolios/                 GET, POST
+  portfolios/<slug>/          GET, PATCH, DELETE
+  saves/                      GET   (?sort=alpha, ?q=<term>)
+  saves/artists/<artist_slug>/                           POST, DELETE
+  saves/portfolios/<artist_slug>/<portfolio_slug>/       POST, DELETE
+
+/api/themes/                  GET
+
+/api/help/                    POST  (authenticated)
+```
 
 ### Middleware
 
@@ -95,27 +132,27 @@
 - `dj-database-url` for `DATABASE_URL` (Docker / production)
 - Fallback: local Postgres (`urgallery_dev`, `localhost:5432`)
 
-### Schema
+### Key Models
 
-- Managed via Django migrations
-- Models: User, Profile, DefaultAvatar, Portfolio, Page, DraftPortfolio, DraftPage, Theme, Media, PageMedia, Hashtag, UserHashtag, Notification
-- `AUTH_USER_MODEL = "accounts.User"`
-
-### Docker
-
-- `postgres:15` image
-- Volume: `postgres_data` for persistence
-- `DATABASE_URL` passed to backend service
+| Model | Key Fields |
+|-------|------------|
+| **User** | email, first_name, last_name, display_name, title, location, bio, avatar |
+| **Profile** | user (1:1), slug, tier (free\|pro\|premium), display_name, title, location, bio, default_avatar, avatar_s3_key, banner_image, resume_file, social URLs, contact_order, color fields, font_family, theme |
+| **Portfolio** | user, title, slug, privacy, password (hashed, for private), order_index, pages_count, cover_page |
+| **Page** | portfolio, title, description, order, layout, media_image, media_shape, media_image_2, media_shape_2, title_2, description_2 |
+| **DraftPortfolio** | user, slug, title, privacy, has_unpublished_changes |
+| **DraftPage** | draft_portfolio, (same fields as Page) |
+| **Comment** | portfolio, author (user), body, created_at |
+| **SavedArtist** | user (saver), profile (saved), created_at |
+| **SavedPortfolio** | user (saver), portfolio (saved), created_at |
+| **Theme** | key, name, version, is_active, svg_file, preview_image, css_vars_json |
+| **Hashtag** | name, slug |
+| **UserHashtag** | user, hashtag |
+| **Notification** | user, type, title, body, action_url, read_at |
 
 ---
 
 ## Storage
-
-### Media Files
-
-- **Backend**: Django `FileField` / `ImageField`
-- **Root**: `backend/media/` (`MEDIA_ROOT`)
-- **URL**: `/media/` (`MEDIA_URL`)
 
 ### Upload Paths
 
@@ -123,11 +160,11 @@
 |------|---------|
 | `avatars/` | User avatar images |
 | `banners/` | Profile banner images |
+| `resumes/` | Optional resume PDFs (one per user) |
 | `portfolio_pages/` | Live page media |
 | `draft_portfolio_pages/` | Draft page media |
 | `themes/svg/` | Theme SVG patterns |
 | `themes/previews/` | Theme preview thumbnails |
-| `media/covers/`, `media/files/` | Media model (if used) |
 
 ### URL Resolution
 
@@ -139,13 +176,7 @@
 
 - **Dev**: Django serves media when `DEBUG=True`
 - **Docker**: `SERVE_MEDIA=true` allows Django to serve when `DEBUG=False`
-- **Production**: Intended for nginx/CDN or S3; `DefaultAvatar` and `avatar_s3_key` support S3 keys for avatars
-
-### Static Files
-
-- `STATIC_ROOT = staticfiles/`
-- `collectstatic` run at container startup
-- WhiteNoise serves static in production
+- **Production**: Use S3-compatible storage (Cloudflare R2 or Backblaze B2) via `django-storages` for all user uploads
 
 ---
 
@@ -155,19 +186,25 @@
 
 - **JWT** (SimpleJWT) stored in **HttpOnly cookies**
 - Cookies: `access` (access token), `refresh` (refresh token)
-- `CookieJWTAuthentication`: reads JWT from `access` cookie or `Authorization: Bearer` header
+- `CookieJWTAuthentication`: reads JWT from `access` cookie
 
 ### Flow
 
-1. **Login**: POST `/api/auth/login/` with `{ email, password }` → backend sets `access` and `refresh` cookies
-2. **Refresh**: POST `/api/auth/refresh/` → rotates tokens, updates cookies
-3. **Me**: GET `/api/auth/me/` → returns user + profile (requires valid token)
-4. **Logout**: POST `/api/auth/logout/` → clears cookies
+1. **Login**: `POST /api/auth/login/` with `{ email, password }` → backend sets `access` and `refresh` cookies
+2. **Refresh**: `POST /api/auth/refresh/` → rotates tokens, updates cookies
+3. **Me**: `GET /api/auth/me/` → returns user + profile (requires valid token)
+4. **Logout**: `POST /api/auth/logout/` → clears cookies
+
+### Password Reset Flow
+
+1. User submits email at `/forgot-password` → `POST /api/auth/forgot-password/`
+2. Backend sends email with link: `/reset-password?uid=<uid>&token=<token>`
+3. User clicks link → frontend submits `POST /api/auth/reset-password/` with `{ uid, token, new_password }`
 
 ### CSRF
 
-- Required for state-changing requests (POST, PATCH, PUT, DELETE)
-- Frontend calls GET `/api/auth/csrf/` to obtain `csrftoken` cookie
+- Required for all state-changing requests (POST, PATCH, PUT, DELETE)
+- Frontend calls `GET /api/auth/csrf/` on app start to obtain `csrftoken` cookie
 - Mutations send `X-CSRFToken` header with value from cookie
 
 ### Configuration
@@ -181,6 +218,27 @@
 - `CORS_ALLOW_CREDENTIALS`: True
 - `CSRF_TRUSTED_ORIGINS` / `CORS_ALLOWED_ORIGINS` must include frontend origin
 
-### Fallback
+---
 
-- `SessionAuthentication` in DRF for compatibility (e.g. admin)
+## Environment Variables
+
+| Variable | Purpose | Example |
+|----------|---------|---------|
+| `DEBUG` | Django debug mode | `False` |
+| `SECRET_KEY` | Django secret key | (random string) |
+| `ALLOWED_HOSTS` | Comma-separated allowed hosts | `urgallery.io,www.urgallery.io` |
+| `DATABASE_URL` | PostgreSQL connection string | `postgres://user:pw@host/db` |
+| `PUBLIC_API_BASE` | Browser-accessible API URL (media URLs) | `https://api.urgallery.io` |
+| `FRONTEND_BASE_URL` | Frontend URL for password reset emails | `https://urgallery.io` |
+| `NEXT_PUBLIC_API_BASE` | Frontend env: backend URL | `https://api.urgallery.io` |
+| `SERVE_MEDIA` | Serve media from Django (Docker) | `true` |
+| `EMAIL_BACKEND` | Django email backend | `django.core.mail.backends.smtp.EmailBackend` |
+| `EMAIL_HOST` | SMTP host | `smtp.gmail.com` |
+| `EMAIL_HOST_USER` | SMTP user | `noreply@urgallery.io` |
+| `EMAIL_HOST_PASSWORD` | SMTP password | (secret) |
+| `DEFAULT_FROM_EMAIL` | From address | `noreply@urgallery.io` |
+| `HELP_EMAIL_RECIPIENT` | Help form recipient | `support@urgallery.io` |
+| `STRIPE_SECRET_KEY` | Stripe secret key (V1) | `sk_live_...` |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret | `whsec_...` |
+| `STRIPE_PRICE_PRO` | Stripe Price ID for Pro | `price_...` |
+| `STRIPE_PRICE_PREMIUM` | Stripe Price ID for Premium | `price_...` |

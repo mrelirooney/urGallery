@@ -86,12 +86,33 @@ class Profile(models.Model):
         max_length=255, null=True, blank=True, help_text="If provided, overrides default avatar"
     )
 
+    # subscription tier
+    class Tier(models.TextChoices):
+        FREE = "free", "Free"
+        PRO = "pro", "Pro"
+        PREMIUM = "premium", "Premium"
+
+    tier = models.CharField(
+        max_length=10,
+        choices=Tier.choices,
+        default=Tier.FREE,
+        help_text="Subscription tier; updated by Stripe webhooks",
+    )
+
     # banner image
     banner_image = models.ImageField(
         upload_to="banners/",
         blank=True,
         null=True,
         help_text="Banner image displayed behind profile picture"
+    )
+
+    # resume (optional PDF upload)
+    resume_file = models.FileField(
+        upload_to="resumes/",
+        blank=True,
+        null=True,
+        help_text="Optional resume PDF shown on artist profile",
     )
 
     # socials (same as before)

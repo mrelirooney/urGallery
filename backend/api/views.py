@@ -3,127 +3,33 @@ from rest_framework.response import Response
 from rest_framework import generics, permissions, status
 
 from themes.models import Theme
-from tags.models import Hashtag
-from portfolios.models import Portfolio, Page, DraftPortfolio
+from portfolios.models import Portfolio, DraftPortfolio
 from accounts.models import Profile
 
 from .serializers import (
     UserSerializer,
     ThemeSerializer,
-    HashtagSerializer,
     PortfolioSerializer,
-    PageSerializer,
     ProfileWriteSerializer,
 )
 
-from django.contrib.auth import authenticate, login, logout, get_user_model
-from rest_framework.decorators import (
-    api_view,
-    permission_classes,
-    authentication_classes,
-)
-from rest_framework.authentication import SessionAuthentication
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from django.conf import settings
 from django.core.mail import send_mail
 
 from config.utils import build_media_url
 
+from django.contrib.auth import get_user_model
 User = get_user_model()
 
 
-# ---------- AUTH / CURRENT USER ----------
-
-
-@api_view(["POST"])
-@authentication_classes([])  # login must not require auth
-@permission_classes([AllowAny])
-def login_view(request):
-    username = request.data.get("username")
-    password = request.data.get("password")
-
-    if not username or not password:
-        return Response(
-            {"detail": "Username and password are required."},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-
-    user = authenticate(request, username=username, password=password)
-
-    if user is None:
-        return Response(
-            {"detail": "Invalid credentials."},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-
-    # Create Django session
-    login(request, user)
-
-    # Pull profile slug if available
-    profile_slug = None
-    try:
-        profile_slug = user.profile.slug
-    except:
-        pass
-
-    return Response(
-        {
-            "id": user.id,
-            "username": user.username,
-            "email": getattr(user, "email", ""),
-            "slug": profile_slug,
-            "detail": "Login successful",
-        },
-        status=status.HTTP_200_OK,
-    )
-
-
-@api_view(["POST"])
-@authentication_classes([SessionAuthentication])
-@permission_classes([IsAuthenticated])
-def logout_view(request):
-    """
-    Log the current user out (destroy the session).
-    """
-    logout(request)
-    return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-@api_view(["GET"])
-@authentication_classes([SessionAuthentication])
-@permission_classes([IsAuthenticated])
-def me_view(request):
-    user = request.user
-
-    profile_slug = None
-    try:
-        profile_slug = user.profile.slug
-    except:
-        pass
-
-    return Response(
-        {
-            "id": user.id,
-            "username": user.username,
-            "email": getattr(user, "email", ""),
-            "slug": profile_slug,
-        },
-        status=status.HTTP_200_OK,
-    )
-
-
-# ---------- THEMES / TAGS ----------
+# ---------- THEMES ----------
 
 
 class ThemeListView(generics.ListAPIView):
     queryset = Theme.objects.filter(is_active=True).order_by("key")
     serializer_class = ThemeSerializer
-    permission_classes = [permissions.AllowAny]
-
-
-class HashtagListView(generics.ListAPIView):
-    queryset = Hashtag.objects.all().order_by("name")
-    serializer_class = HashtagSerializer
     permission_classes = [permissions.AllowAny]
 
 
@@ -135,86 +41,74 @@ class MyProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = ProfileWriteSerializer
 
     def get_object(self):
-        # guarantee a profile exists
         profile, _ = Profile.objects.get_or_create(user=self.request.user)
         return profile
-    
+
     def get(self, request, *args, **kwargs):
-        """Return profile with User fields included"""
         profile = self.get_object()
         serializer = self.get_serializer(profile)
         data = serializer.data
-        
-        # Add User fields
+
         user = profile.user
-        data['first_name'] = user.first_name
-        data['last_name'] = user.last_name
-        
-        # Add avatar URL if exists
+        data["first_name"] = user.first_name
+        data["last_name"] = user.last_name
+
         if user.avatar:
             try:
-                data['avatar_url'] = build_media_url(request, user.avatar.url)
+                data["avatar_url"] = build_media_url(request, user.avatar.url)
             except Exception:
-                data['avatar_url'] = None
+                data["avatar_url"] = None
         else:
-            data['avatar_url'] = None
-        
-        # Add banner image URL if exists
+            data["avatar_url"] = None
+
         if profile.banner_image:
             try:
-                data['banner_image_url'] = build_media_url(request, profile.banner_image.url)
+                data["banner_image_url"] = build_media_url(request, profile.banner_image.url)
             except Exception:
-                data['banner_image_url'] = None
+                data["banner_image_url"] = None
         else:
-            data['banner_image_url'] = None
-        
+            data["banner_image_url"] = None
+
         return Response(data)
-    
+
     def update(self, request, *args, **kwargs):
-        """Handle avatar upload, banner upload, and profile update"""
         profile = self.get_object()
         user = profile.user
-        
-        # Handle avatar upload separately if provided
-        if 'avatar' in request.FILES:
-            user.avatar = request.FILES['avatar']
+
+        if "avatar" in request.FILES:
+            user.avatar = request.FILES["avatar"]
             user.save()
-        
-        # Handle banner image upload separately if provided
-        if 'banner_image' in request.FILES:
-            profile.banner_image = request.FILES['banner_image']
+
+        if "banner_image" in request.FILES:
+            profile.banner_image = request.FILES["banner_image"]
             profile.save()
-        
-        # Update profile fields
+
         serializer = self.get_serializer(profile, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        
-        # Refresh profile to get updated banner_image
+
         profile.refresh_from_db()
-        
-        # Return updated data with User fields
+
         response_data = serializer.data
-        response_data['first_name'] = user.first_name
-        response_data['last_name'] = user.last_name
-        
+        response_data["first_name"] = user.first_name
+        response_data["last_name"] = user.last_name
+
         if user.avatar:
             try:
-                response_data['avatar_url'] = build_media_url(request, user.avatar.url)
+                response_data["avatar_url"] = build_media_url(request, user.avatar.url)
             except Exception:
-                response_data['avatar_url'] = None
+                response_data["avatar_url"] = None
         else:
-            response_data['avatar_url'] = None
-        
-        # Add banner image URL
+            response_data["avatar_url"] = None
+
         if profile.banner_image:
             try:
-                response_data['banner_image_url'] = build_media_url(request, profile.banner_image.url)
+                response_data["banner_image_url"] = build_media_url(request, profile.banner_image.url)
             except Exception:
-                response_data['banner_image_url'] = None
+                response_data["banner_image_url"] = None
         else:
-            response_data['banner_image_url'] = None
-        
+            response_data["banner_image_url"] = None
+
         return Response(response_data)
 
 
@@ -237,76 +131,31 @@ class MyPortfolioDetailView(generics.RetrieveUpdateDestroyAPIView):
     lookup_field = "slug"
 
     def get_queryset(self):
-        # ownership enforcement
         return Portfolio.objects.filter(user=self.request.user)
 
     def destroy(self, request, *args, **kwargs):
-        """
-        Delete both the live Portfolio and its associated DraftPortfolio.
-        """
         instance = self.get_object()
         slug = instance.slug
-        
-        # Delete DraftPortfolio if it exists (CASCADE will delete DraftPages)
+
         try:
             draft = DraftPortfolio.objects.get(slug=slug, user=request.user)
             draft.delete()
         except DraftPortfolio.DoesNotExist:
-            pass  # No draft exists, that's fine
-        
-        # Delete the live Portfolio (CASCADE will delete Pages)
+            pass
+
         instance.delete()
-        
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class PortfolioPublicListView(generics.ListAPIView):
-    """
-    Public browse endpoint (no auth)
-    """
-    permission_classes = [permissions.AllowAny]
-    serializer_class = PortfolioSerializer
-    queryset = Portfolio.objects.filter(privacy="public").order_by("-updated_at")
-
-
-# ---------- PAGES ----------
-
-
-class PageListCreateView(generics.ListCreateAPIView):
-    """
-    Pages for a given portfolio id (must own it)
-    """
-    permission_classes = [permissions.IsAuthenticated]
-    serializer_class = PageSerializer
-
-    def get_queryset(self):
-        return Page.objects.filter(
-            portfolio__user=self.request.user,
-            portfolio_id=self.kwargs["portfolio_id"],
-        ).order_by("order", "id")
-
-    def perform_create(self, serializer):
-        serializer.save()  # validate_portfolio() enforces ownership
-
-
-class PageDetailView(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = [permissions.IsAuthenticated]
-    serializer_class = PageSerializer
-
-    def get_queryset(self):
-        return Page.objects.filter(portfolio__user=self.request.user)
 
 
 # ---------- HELP FORM ----------
 
 
 @api_view(["POST"])
-@authentication_classes([SessionAuthentication])
 @permission_classes([IsAuthenticated])
 def help_form_view(request):
     """
     Send a help/feedback message via email to HELP_EMAIL_RECIPIENT.
-    Requires authenticated user. CSRF required.
+    Requires authenticated user.
     """
     message = (request.data.get("message") or "").strip()
     subject = (request.data.get("subject") or "").strip()
@@ -325,11 +174,12 @@ def help_form_view(request):
         )
 
     user = request.user
-    from_email = getattr(user, "email", "") or "unknown@urgallery.io"
+    from_email = user.email or "unknown@urgallery.io"
+    sender_label = user.display_name or user.email
     reply_to = reply_email or from_email
 
     email_subject = subject or "urGallery Help Request"
-    email_body = f"From: {user.username} ({from_email})\n"
+    email_body = f"From: {sender_label} ({from_email})\n"
     if reply_to != from_email:
         email_body += f"Reply-to preferred: {reply_to}\n"
     email_body += f"\n--- Message ---\n\n{message}"
@@ -343,7 +193,7 @@ def help_form_view(request):
             recipient_list=[recipient],
             fail_silently=False,
         )
-    except Exception as e:
+    except Exception:
         return Response(
             {"detail": "Failed to send message. Please try again later."},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,

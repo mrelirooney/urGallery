@@ -155,3 +155,163 @@ def csrf_cookie_view(request):
     """
     return Response({"detail": "CSRF cookie set"})
 
+
+# ---------- ACCOUNT SECURITY ----------
+
+
+class ChangePasswordView(APIView):
+    """
+    POST /api/auth/change-password/
+    Body: { current_password, new_password }
+    Requires current password to change.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        current_password = request.data.get("current_password", "")
+        new_password = request.data.get("new_password", "")
+
+        if not current_password or not new_password:
+            return Response(
+                {"error": "current_password and new_password are required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not request.user.check_password(current_password):
+            return Response(
+                {"error": "Current password is incorrect"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if len(new_password) < 8:
+            return Response(
+                {"error": "New password must be at least 8 characters"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        request.user.set_password(new_password)
+        request.user.save()
+        return Response({"detail": "Password updated successfully"})
+
+
+class ChangeEmailView(APIView):
+    """
+    POST /api/auth/change-email/
+    Body: { new_email, current_password }
+    Requires current password to change email.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        new_email = (request.data.get("new_email") or "").strip().lower()
+        current_password = request.data.get("current_password", "")
+
+        if not new_email or not current_password:
+            return Response(
+                {"error": "new_email and current_password are required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not request.user.check_password(current_password):
+            return Response(
+                {"error": "Current password is incorrect"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if User.objects.filter(email=new_email).exclude(pk=request.user.pk).exists():
+            return Response(
+                {"error": "Email already in use"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        request.user.email = new_email
+        request.user.save()
+        return Response({"detail": "Email updated successfully"})
+
+
+# ---------- PASSWORD RESET (unauthenticated) ----------
+
+
+class ForgotPasswordView(APIView):
+    """
+    POST /api/auth/forgot-password/
+    Body: { email }
+    Sends a password reset email with a token link.
+    Always returns 200 to avoid leaking whether an email exists.
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        from django.core.mail import send_mail
+        from django.contrib.auth.tokens import default_token_generator
+        from django.utils.http import urlsafe_base64_encode
+        from django.utils.encoding import force_bytes
+        from django.conf import settings
+
+        email = (request.data.get("email") or "").strip().lower()
+        if not email:
+            return Response({"error": "email is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.get(email=email)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+            frontend_base = getattr(settings, "FRONTEND_BASE_URL", "http://localhost:3000")
+            reset_url = f"{frontend_base}/reset-password?uid={uid}&token={token}"
+
+            send_mail(
+                subject="Reset your urGallery password",
+                message=(
+                    f"Hi {user.display_name or user.email},\n\n"
+                    f"Click the link below to reset your password. "
+                    f"This link expires in 24 hours.\n\n"
+                    f"{reset_url}\n\n"
+                    f"If you didn't request this, ignore this email."
+                ),
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email],
+                fail_silently=True,
+            )
+        except User.DoesNotExist:
+            pass  # Don't reveal if email exists
+
+        return Response({"detail": "If that email is registered, a reset link has been sent."})
+
+
+class ResetPasswordView(APIView):
+    """
+    POST /api/auth/reset-password/
+    Body: { uid, token, new_password }
+    Validates the token and sets the new password.
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        from django.contrib.auth.tokens import default_token_generator
+        from django.utils.http import urlsafe_base64_decode
+        from django.utils.encoding import force_str
+
+        uid = request.data.get("uid", "")
+        token = request.data.get("token", "")
+        new_password = request.data.get("new_password", "")
+
+        if not uid or not token or not new_password:
+            return Response(
+                {"error": "uid, token, and new_password are required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if len(new_password) < 8:
+            return Response(
+                {"error": "Password must be at least 8 characters"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            pk = force_str(urlsafe_base64_decode(uid))
+            user = User.objects.get(pk=pk)
+        except (TypeError, ValueError, User.DoesNotExist):
+            return Response({"error": "Invalid reset link"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not default_token_generator.check_token(user, token):
+            return Response({"error": "Reset link has expired or is invalid"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.set_password(new_password)
+        user.save()
+        return Response({"detail": "Password reset successfully. You can now log in."})
+

@@ -214,6 +214,30 @@ class PageMedia(models.Model):
 
 
 # ---------------------------------------------------------
+#  COMMENTS
+# ---------------------------------------------------------
+class Comment(models.Model):
+    portfolio = models.ForeignKey(
+        Portfolio,
+        on_delete=models.CASCADE,
+        related_name="comments",
+    )
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="portfolio_comments",
+    )
+    body = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Comment by {self.author_id} on {self.portfolio_id}"
+
+
+# ---------------------------------------------------------
 #  Auto-update pages_count
 # ---------------------------------------------------------
 def _recount_pages(portfolio_id: int):

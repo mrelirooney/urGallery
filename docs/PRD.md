@@ -493,6 +493,7 @@
 - **Email verification (V2):** Send confirmation link; user clicks to verify. Reduces fake accounts, ensures deliverability.
 - **2FA (V2):** TOTP (authenticator app); optional for users. Recovery codes.
 - **Advanced design tools:** Premium gets first access when released.
+- **Charts and Graphs:** Chart and graphic display for the portfolio pages to show off user's metrics to clients.
 - **Mobile app (V2/V3):** iOS and Android. Same API; native UI. Add when web is validated and resourced.
 
 ### Big Vision / Later Versions for Artists

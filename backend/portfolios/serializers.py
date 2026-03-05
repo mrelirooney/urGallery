@@ -5,6 +5,7 @@ from .models import (
     Page,
     DraftPortfolio,
     DraftPage,
+    Comment,
 )
 
 
@@ -334,17 +335,6 @@ class PortfolioSerializer(serializers.ModelSerializer):
         read_only_fields = ["slug"]
 
 
-class ArtistLandingSerializer(serializers.Serializer):
-    """Placeholder for potential future artist landing-specific data."""
-    pass
-
-
-class ArtistProfileSerializer(serializers.Serializer):
-    """
-    Placeholder serializer for profile data on the artist landing page.
-    """
-    pass
-
 class PublicPageSerializer(serializers.ModelSerializer):
     media_image = serializers.SerializerMethodField()
     media_image_2 = serializers.SerializerMethodField()
@@ -396,4 +386,24 @@ class PublicPortfolioSerializer(serializers.ModelSerializer):
             "pages",
         ]
         read_only_fields = ["slug"]
+
+
+# -------------------------------------------------------------------
+# Comments
+# -------------------------------------------------------------------
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    author_display_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Comment
+        fields = ["id", "body", "author_display_name", "created_at"]
+        read_only_fields = ["id", "author_display_name", "created_at"]
+
+    def get_author_display_name(self, obj):
+        profile = getattr(obj.author, "profile", None)
+        if profile:
+            return profile.display_name or obj.author.email
+        return obj.author.email
 

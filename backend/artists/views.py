@@ -4,12 +4,13 @@ from django.shortcuts import get_object_or_404
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework import generics, status
 from accounts.models import Profile
-from portfolios.models import Portfolio 
+from portfolios.models import Portfolio, Comment
 from .serializers import ArtistProfileSerializer
 from rest_framework.generics import RetrieveAPIView
-from portfolios.serializers import PublicPortfolioSerializer
+from portfolios.serializers import PublicPortfolioSerializer, CommentSerializer
 
 
 class ArtistLandingView(APIView):
@@ -98,23 +99,72 @@ class ArtistLandingView(APIView):
     
 class ArtistPortfolioDetailView(RetrieveAPIView):
     serializer_class = PublicPortfolioSerializer
-    lookup_field = "slug"  # portfolio slug
-    permission_classes = [AllowAny]  # Allow unauthenticated users to view public portfolios
-    
+    lookup_field = "slug"
+    permission_classes = [AllowAny]
+
     def get_queryset(self):
         artist_slug = self.kwargs["artist_slug"]
-
-        # Get the artist's user object
         owner = get_object_or_404(Profile, slug=artist_slug).user
 
-        # If the request user *is* the owner → show all portfolios
         if self.request.user.is_authenticated and self.request.user == owner:
             return Portfolio.objects.filter(user=owner)
 
-        # Otherwise → show public portfolios AND link_only (private) portfolios
-        # Anyone with the direct link can view link_only portfolios
         return Portfolio.objects.filter(
             user=owner,
             privacy__in=["public", "link_only"],
         )
+
+
+# ---------- COMMENTS ----------
+
+
+class PortfolioCommentListCreateView(generics.ListCreateAPIView):
+    """
+    GET  /api/artists/<artist_slug>/portfolios/<portfolio_slug>/comments/
+         List comments on a portfolio. Requires access (portfolio must be visible to requester).
+
+    POST /api/artists/<artist_slug>/portfolios/<portfolio_slug>/comments/
+         Create a comment. Authenticated users only.
+    """
+    serializer_class = CommentSerializer
+
+    def _get_portfolio(self):
+        artist_slug = self.kwargs["artist_slug"]
+        portfolio_slug = self.kwargs["slug"]
+        owner = get_object_or_404(Profile, slug=artist_slug).user
+        qs = Portfolio.objects.filter(user=owner, slug=portfolio_slug)
+        if not (self.request.user.is_authenticated and self.request.user == owner):
+            qs = qs.filter(privacy__in=["public", "link_only"])
+        return get_object_or_404(qs)
+
+    def get_permissions(self):
+        if self.request.method == "POST":
+            return [IsAuthenticated()]
+        return [AllowAny()]
+
+    def get_queryset(self):
+        portfolio = self._get_portfolio()
+        return Comment.objects.filter(portfolio=portfolio).select_related("author__profile")
+
+    def perform_create(self, serializer):
+        portfolio = self._get_portfolio()
+        serializer.save(author=self.request.user, portfolio=portfolio)
+
+
+class PortfolioCommentDeleteView(generics.DestroyAPIView):
+    """
+    DELETE /api/artists/<artist_slug>/portfolios/<portfolio_slug>/comments/<id>/
+    Author or portfolio owner can delete.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        comment = get_object_or_404(Comment, pk=self.kwargs["pk"])
+        artist_slug = self.kwargs["artist_slug"]
+        owner = get_object_or_404(Profile, slug=artist_slug).user
+        user = self.request.user
+        if user != comment.author and user != owner:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Not your comment.")
+        return comment
 

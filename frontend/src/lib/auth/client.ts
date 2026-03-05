@@ -106,22 +106,32 @@ async function getJSON<T>(path: string) {
 }
 
 export const AuthAPI = {
-  // http://backend:8000/api/auth/login/
   login: ({ email, password }: { email: string; password: string }) =>
     postJSON("/api/auth/login/", { email, password }),
 
-  // http://backend:8000/api/auth/register/
   signup: (payload: { email: string; password: string; first_name?: string; last_name?: string }) =>
     postJSON("/api/auth/register/", payload),
 
-  // http://backend:8000/api/auth/me/
-  me: () =>
-    getJSON<{ id: string | number; email: string }>(
-      "/api/auth/me/",
-    ),
+  me: () => getJSON<{ id: string | number; email: string }>("/api/auth/me/"),
 
   logout: () => postJSON("/api/auth/logout/", {}),
   refresh: () => postJSON("/api/auth/refresh/", {}),
+
+  /** Change password — requires current password */
+  changePassword: (payload: { current_password: string; new_password: string }) =>
+    postJSON("/api/auth/change-password/", payload),
+
+  /** Change login email — requires current password */
+  changeEmail: (payload: { new_email: string; current_password: string }) =>
+    postJSON("/api/auth/change-email/", payload),
+
+  /** Request a password reset email (unauthenticated) */
+  forgotPassword: (email: string) =>
+    postJSON("/api/auth/forgot-password/", { email }),
+
+  /** Complete password reset with token from email link (unauthenticated) */
+  resetPassword: (payload: { uid: string; token: string; new_password: string }) =>
+    postJSON("/api/auth/reset-password/", payload),
 };
 
 // --- Editor / portfolios API ----
