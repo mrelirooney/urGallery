@@ -62,6 +62,8 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
   const [controlsVisible, setControlsVisible] = useState(true);
   const [shareCopied, setShareCopied] = useState(false);
   const [commentsOpen, setCommentsOpen] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [saveLoading, setSaveLoading] = useState(false);
   const idleRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const shareCopiedTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -255,13 +257,49 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
                 </div>
               )}
             </div>
-            <button
-              type="button"
-              className="rounded-xs p-2.5 flex items-center justify-center text-[var(--artist-background)] hover:bg-[var(--artist-accent)] hover:text-[var(--artist-text)] transition"
-              aria-label="Save portfolio"
-            >
-              <Bookmark size={18} />
-            </button>
+            {!isOwner && (
+              <button
+                type="button"
+                onClick={async () => {
+                  if (saveLoading) return;
+                  setSaveLoading(true);
+                  try {
+                    if (saved) {
+                      const res = await fetch(
+                        `${API_BASE}/api/my/saves/portfolios/${artistSlug}/${slug}/`,
+                        {
+                          method: "DELETE",
+                          credentials: "include",
+                          headers: { "ngrok-skip-browser-warning": "true" },
+                        }
+                      );
+                      if (res.ok) setSaved(false);
+                    } else {
+                      const res = await fetch(
+                        `${API_BASE}/api/my/saves/portfolios/${artistSlug}/${slug}/`,
+                        {
+                          method: "POST",
+                          credentials: "include",
+                          headers: { "ngrok-skip-browser-warning": "true" },
+                        }
+                      );
+                      if (res.ok) setSaved(true);
+                    }
+                  } catch (err) {
+                    console.error("Error saving portfolio:", err);
+                  } finally {
+                    setSaveLoading(false);
+                  }
+                }}
+                disabled={saveLoading}
+                className={`rounded-xs p-2.5 flex items-center justify-center transition ${
+                  saved ? "bg-[var(--artist-accent)] text-[var(--artist-text)]" : "text-[var(--artist-background)] hover:bg-[var(--artist-accent)] hover:text-[var(--artist-text)]"
+                }`}
+                aria-label={saved ? "Remove from saves" : "Save portfolio"}
+              >
+                <Bookmark size={18} fill={saved ? "currentColor" : "none"} />
+              </button>
+            )}
             <EditPortfolioButton artistSlug={artistSlug} portfolioSlug={slug} />
           </div>
         </div>

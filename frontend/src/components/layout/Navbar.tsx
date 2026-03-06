@@ -65,8 +65,10 @@ export default function Navbar() {
   !pathname.startsWith('/login') &&
   !pathname.startsWith('/signup') &&
   !pathname.startsWith('/settings') &&
+  !pathname.startsWith('/saves') &&
   !pathname.startsWith('/sandbox') &&
   /^\/[^\/]+(\/[^\/]+)*$/.test(pathname);
+  const isSavesPage = pathname === "/saves";
   const hideNavbar =
   pathname?.startsWith("/portfolio-test") ||      // dev editor route
   pathname?.includes("/editor");                  // future real editor routes
@@ -168,10 +170,10 @@ export default function Navbar() {
       >
         <Container className="max-w-full px-0 h-12 sm:h-14">
         <div className={`h-full flex items-center justify-between gap-2 ${isArtistPage ? "max-w-6xl xl:max-w-7xl 2xl:max-w-[1310px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-16 2xl:px-20" : ""}`}>
-        {/* Left: Back arrow (mobile only) OR Hamburger + Logo (tablet/desktop on artist pages) */}
+        {/* Left: Back arrow (mobile only) OR Hamburger + Logo (tablet/desktop on artist/saves pages) */}
         <div className="flex items-center">
           {/* Mobile only: Back arrow (only on artist pages) */}
-          {isArtistPage && (
+          {isArtistPage && !isSavesPage && (
             <button
               onClick={() => router.push("/")}
               className="md:hidden rounded-md transition mr-3"
@@ -182,25 +184,31 @@ export default function Navbar() {
             </button>
           )}
           
-          {/* Tablet/Desktop: Hamburger (only on artist pages) */}
-          {isArtistPage && (
+          {/* Tablet/Desktop: Hamburger (artist pages = portfolio menu, saves page = saves menu) */}
+          {(isArtistPage || isSavesPage) && (
             <button
-              onClick={() => setOpen(!open)}
+              onClick={() => {
+                if (isSavesPage) {
+                  window.dispatchEvent(new CustomEvent("saves-menu-toggle"));
+                } else {
+                  setOpen(!open);
+                }
+              }}
               className="hidden md:block rounded-md transition"
-              style={{ color: 'var(--artist-text, #11100e)' }}
-              aria-label="Portfolio menu"
+              style={{ color: isSavesPage ? 'var(--foreground)' : 'var(--artist-text, #11100e)' }}
+              aria-label={isSavesPage ? "Saves menu" : "Portfolio menu"}
             >
-              {open ? <X size={28} /> : <Menu size={28} />}
+              <Menu size={28} />
             </button>
           )}
 
           {/* Logo - hidden on mobile for artist profile pages, shown on tablet/desktop.
-              Color: theme text on profile pages, var(--foreground) on home (light/dark auto) */}
+              Color: theme text on profile pages, var(--foreground) on home/saves (light/dark auto) */}
           <Link 
             href="/" 
             aria-label="Home" 
-            className={`${isArtistPage ? "md:ml-3" : ""} ${isArtistPage ? "hidden md:block" : ""} ${!isArtistPage ? "text-[var(--foreground)]" : ""}`}
-            style={isArtistPage ? { color: 'var(--artist-text, #11100e)' } : undefined}
+            className={`${(isArtistPage || isSavesPage) ? "md:ml-3" : ""} ${(isArtistPage || isSavesPage) ? "hidden md:block" : ""} ${!(isArtistPage || isSavesPage) ? "text-[var(--foreground)]" : ""}`}
+            style={(isArtistPage || isSavesPage) ? { color: isSavesPage ? 'var(--foreground)' : 'var(--artist-text, #11100e)' } : undefined}
           >
             <Logo className="h-10 sm:h-11 lg:h-12 w-auto" />
           </Link>
@@ -213,15 +221,21 @@ export default function Navbar() {
         ) : user ? (
           // --- Signed-in view ---
           <div className="flex items-center gap-3">
-            {/* Mobile only: Hamburger on right (only on artist pages) */}
-            {isArtistPage && (
+            {/* Mobile only: Hamburger on right (artist pages = portfolio menu, saves = saves menu) */}
+            {(isArtistPage || isSavesPage) && (
               <button
-                onClick={() => setOpen(!open)}
+                onClick={() => {
+                  if (isSavesPage) {
+                    window.dispatchEvent(new CustomEvent("saves-menu-toggle"));
+                  } else {
+                    setOpen(!open);
+                  }
+                }}
                 className="md:hidden rounded-md transition"
-                style={{ color: 'var(--artist-text, #11100e)' }}
-                aria-label="Portfolio menu"
+                style={{ color: isSavesPage ? 'var(--foreground)' : 'var(--artist-text, #11100e)' }}
+                aria-label={isSavesPage ? "Saves menu" : "Portfolio menu"}
               >
-                {open ? <X size={24} /> : <Menu size={24} />}
+                <Menu size={24} />
               </button>
             )}
             
@@ -278,6 +292,16 @@ export default function Navbar() {
                           onClick={() => setMenuOpen(false)}
                         >
                           View Profile
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          href="/saves"
+                          className="block px-3 py-2 hover:bg-gray-50"
+                          role="menuitem"
+                          onClick={() => setMenuOpen(false)}
+                        >
+                          Saves
                         </Link>
                       </li>
                       <li>
@@ -348,6 +372,16 @@ export default function Navbar() {
                           onClick={() => setMenuOpen(false)}
                         >
                           View Profile
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          href="/saves"
+                          className="block px-3 py-2 hover:bg-gray-50"
+                          role="menuitem"
+                          onClick={() => setMenuOpen(false)}
+                        >
+                          Saves
                         </Link>
                       </li>
                       <li>

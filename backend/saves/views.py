@@ -25,11 +25,13 @@ class MySavesView(APIView):
 
         saved_artists_qs = SavedArtist.objects.filter(
             user=request.user
-        ).select_related("profile")
+        ).select_related("profile", "profile__user")
 
         saved_portfolios_qs = SavedPortfolio.objects.filter(
             user=request.user
-        ).select_related("portfolio__user__profile")
+        ).select_related("portfolio__user__profile").prefetch_related(
+            "portfolio__pages", "portfolio__cover_page"
+        )
 
         if q:
             saved_artists_qs = saved_artists_qs.filter(
@@ -48,8 +50,12 @@ class MySavesView(APIView):
             saved_portfolios_qs = saved_portfolios_qs.order_by("portfolio__title")
 
         return Response({
-            "artists": SavedArtistSerializer(saved_artists_qs, many=True).data,
-            "portfolios": SavedPortfolioSerializer(saved_portfolios_qs, many=True).data,
+            "artists": SavedArtistSerializer(
+                saved_artists_qs, many=True, context={"request": request}
+            ).data,
+            "portfolios": SavedPortfolioSerializer(
+                saved_portfolios_qs, many=True, context={"request": request}
+            ).data,
         })
 
 

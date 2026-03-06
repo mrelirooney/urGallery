@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { FileText, X } from "lucide-react";
+import SaveProfileButton from "@/components/saves/SaveProfileButton";
 
 type Props = { 
   profile?: ArtistLanding["profile"];
@@ -140,10 +141,15 @@ export default function ArtistHeader({ profile, customColors }: Props) {
           {profile?.location ?? ""}
         </p>
         
-        {/* Contact buttons */}
-        {contacts.length > 0 && (
-          <div className="mt-3 mb-2 md:mt-2 flex md:justify-start gap-3 relative">
-            {contacts.map((contact, i) => (
+        {/* Save + Contact buttons */}
+        <div className="mt-3 mb-2 md:mt-2 flex md:justify-start gap-3 relative items-center">
+            {profile?.slug && (
+              <SaveProfileButton
+                artistSlug={profile.slug}
+                customColors={customColors}
+              />
+            )}
+            {contacts.length > 0 && contacts.map((contact, i) => (
               <button
                 key={i}
                 onClick={() => handleContactClick(contact)}
@@ -166,19 +172,18 @@ export default function ArtistHeader({ profile, customColors }: Props) {
                 {contact.icon}
               </button>
             ))}
-            {copiedEmail && (
-              <div 
-                className="absolute -bottom-8 left-0 text-xs px-3 py-1 rounded shadow-lg"
-                style={{
-                  backgroundColor: customColors?.foreground || '#11100e',
-                  color: customColors?.background || '#faf7f2',
-                }}
-              >
-                Email copied!
-              </div>
-            )}
-          </div>
-        )}
+          {contacts.length > 0 && copiedEmail && (
+            <div 
+              className="absolute -bottom-8 left-0 text-xs px-3 py-1 rounded shadow-lg"
+              style={{
+                backgroundColor: customColors?.foreground || '#11100e',
+                color: customColors?.background || '#faf7f2',
+              }}
+            >
+              Email copied!
+            </div>
+          )}
+        </div>
 
         {/* Resume button - only when profile has resume */}
         {profile?.resume_url && (

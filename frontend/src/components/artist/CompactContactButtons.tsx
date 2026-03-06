@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { ArtistLanding } from "@/lib/types";
 import { parseContacts, copyToClipboard } from "@/lib/contactUtils";
+import SaveProfileButton from "@/components/saves/SaveProfileButton";
 
 type Props = {
   profile: ArtistLanding["profile"];
@@ -33,8 +34,6 @@ export default function CompactContactButtons({ profile, customColors }: Props) 
     }
   };
 
-  if (contacts.length === 0) return null;
-
   const bg = customColors?.text || '#11100e';
   const iconColor = customColors?.background || '#faf7f2';
   const accent = customColors?.accent || '#c96a4a';
@@ -42,7 +41,13 @@ export default function CompactContactButtons({ profile, customColors }: Props) 
 
   return (
     <div className="flex items-center gap-2 relative">
-      {contacts.map((contact, i) => (
+      {profile?.slug && (
+        <SaveProfileButton
+          artistSlug={profile.slug}
+          customColors={customColors}
+        />
+      )}
+      {contacts.length > 0 && contacts.map((contact, i) => (
         <button
           key={i}
           onClick={() => handleContactClick(contact)}

@@ -519,12 +519,12 @@
 | Search result hover styling (background Color 3, text Color 2) | ✅ |
 | Comments on portfolios | ✅ (laptop) |
 | Category section (browse by title/location) | ⬜ |
-| Saves (save artists/portfolios, Saves page) | ⬜ |
+| Saves (save artists/portfolios, Saves page) | ✅ |
 | Subscription tiers (Stripe billing) | ⬜ |
 | **Hashtags** (Settings management + search integration) | ✅ |
 | Tier-based limits (portfolios, pages, storage) | ⬜ |
 
-**Remaining MVP features: 4** — Category section, Saves, Subscription/billing, Tier limits.
+**Remaining MVP features: 3** — Category section, Subscription/billing, Tier limits.
 
 ---
 
