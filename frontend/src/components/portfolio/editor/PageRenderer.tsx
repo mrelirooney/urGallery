@@ -111,7 +111,7 @@ function TextColumn({
         <textarea
           className="w-full text-lg border border-neutral-500/60 px-6 py-3 outline-none focus:border-neutral-200 min-h-[45vh] overflow-hidden resize-none"
           style={{
-            color: "var(--artist-background, #faf7f2)",
+            color: "var(--artist-text, #faf7f2)",
             background: "linear-gradient(to right, var(--artist-accent, #c96a4a) .5%, var(--artist-background, #11100e) .5%, transparent 0%)",
           }}
           value={description}
@@ -289,7 +289,6 @@ export default function PageRenderer({
         <div className="relative z-10 w-full max-w-7xl mx-auto flex justify-center items-center min-h-[50vh] py-8">
           <div
             className={`shrink-0 w-[31vw] aspect-square overflow-hidden flex items-center justify-center ${isEditor ? "cursor-pointer" : ""}`}
-            style={{ boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)" }}
             onClick={handleMediaClick}
           >
             {page.mediaSrc ? (
@@ -337,7 +336,6 @@ export default function PageRenderer({
               height: "48vh",
               minWidth: "24vw",
               minHeight: "48vh",
-              boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)",
             }}
             onClick={handleMediaClick}
           >
@@ -381,7 +379,6 @@ export default function PageRenderer({
         <div className="relative z-10 w-full max-w-7xl mx-auto flex justify-center items-center min-h-[50vh] py-8">
           <div
             className={`shrink-0 w-[55vw] h-[48vh] overflow-hidden flex items-center justify-center ${isEditor ? "cursor-pointer" : ""}`}
-            style={{ boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)" }}
             onClick={handleMediaClick}
           >
             {page.mediaSrc ? (
@@ -424,7 +421,6 @@ export default function PageRenderer({
         <div className="relative z-10 w-full max-w-7xl mx-auto flex justify-center items-center min-h-[50vh] py-8">
           <div
             className={`shrink-0 w-[55vw] h-[48vh] overflow-hidden flex items-center justify-center ${isEditor ? "cursor-pointer" : ""}`}
-            style={{ boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)" }}
             onClick={handleMediaClick}
           >
             {page.mediaSrc ? (
@@ -547,12 +543,12 @@ export default function PageRenderer({
                 value={page.description}
                 onChange={(e) => onChangeDescription?.(safeIndex, e.target.value)}
                 placeholder="Paragraph text"
-                style={{ color: "var(--artist-background, #11100e)" }}
+                style={{ color: "var(--artist-text, #11100e)" }}
               />
             ) : (
               <p
                 className="flex-1 max-w-xl whitespace-pre-line text-lg"
-                style={{ color: "var(--artist-background, #11100e)"}}
+                style={{ color: "var(--artist-text, #11100e)"}}
               >
                 {page.description}
               </p>
@@ -605,7 +601,6 @@ export default function PageRenderer({
             {/* Col A: image (left) – fixed size via SQ_HERO01_IMAGE_SIZE */}
             <div
               className={`shrink-0 self-center ${SQ_HERO01_IMAGE_SIZE} aspect-square overflow-hidden flex items-center justify-center ${isEditor ? "cursor-pointer" : ""}`}
-              style={{ boxShadow: '0 0 0 15px var(--artist-accent, #c96a4a)' }}
               onClick={handleMediaClick}
             >
               {page.mediaSrc ? (
@@ -621,7 +616,6 @@ export default function PageRenderer({
                     color: "var(--artist-text, #faf7f2)",
                     backgroundColor: "rgb(130, 130, 130)", 
                     opacity: 1,
-                    boxShadow: '0 0 0 15px var(--artist-accent, #c96a4a)',
                   }}
                 >
                   No image
@@ -652,7 +646,7 @@ export default function PageRenderer({
                       onInput={adjustHeaderTextareaHeight}
                       placeholder="Header"
                       rows={1}
-                      style={{ color: "var(--artist-background, #11100e)" }}
+                      style={{ color: "var(--artist-text, #11100e)" }}
                     />
                     <textarea
                       ref={subheaderTextareaRef}
@@ -662,7 +656,7 @@ export default function PageRenderer({
                       onInput={adjustSubheaderTextareaHeight}
                       placeholder="Subheader"
                       rows={1}
-                      style={{ color: "var(--artist-background, #11100e)", opacity: 0.8 }}
+                      style={{ color: "var(--artist-text, #11100e)", opacity: 0.8 }}
                     />
                   </div>
                   {/* Bottom spacer: equal to top for vertical centering */}
@@ -672,13 +666,13 @@ export default function PageRenderer({
                 <>
                   <h2
                     className="text-4xl md:text-5xl font-bold leading-tight"
-                    style={{ color: "var(--artist-background, #11100e)" }}
+                    style={{ color: "var(--artist-text, #11100e)" }}
                   >
                     {page.title || "Header"}
                   </h2>
                   <p
                     className="text-xl"
-                    style={{ color: "var(--artist-background, #11100e)", opacity: 0.8 }}
+                    style={{ color: "var(--artist-text, #11100e)", opacity: 0.8 }}
                   >
                     {page.title2 || "Subheader"}
                   </p>
@@ -708,7 +702,6 @@ export default function PageRenderer({
                 height: "48vh",
                 minWidth: "24vw",
                 minHeight: "48vh",
-                boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)",
               }}
               onClick={handleMediaClick}
             >
@@ -725,7 +718,6 @@ export default function PageRenderer({
                     color: "var(--artist-text, #faf7f2)",
                     backgroundColor: "rgb(130, 130, 130)",
                     opacity: 1,
-                    boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)",
                   }}
                 >
                   No image
@@ -755,7 +747,7 @@ export default function PageRenderer({
                       onInput={adjustHeaderTextareaHeight}
                       placeholder="Header"
                       rows={1}
-                      style={{ color: "var(--artist-background, #11100e)" }}
+                      style={{ color: "var(--artist-text, #11100e)" }}
                     />
                     <textarea
                       ref={subheaderTextareaRef}
@@ -765,7 +757,7 @@ export default function PageRenderer({
                       onInput={adjustSubheaderTextareaHeight}
                       placeholder="Subheader"
                       rows={1}
-                      style={{ color: "var(--artist-background, #11100e)", opacity: 0.8 }}
+                      style={{ color: "var(--artist-text, #11100e)", opacity: 0.8 }}
                     />
                   </div>
                   <div className="flex-1 min-h-[4vh] shrink-0" aria-hidden />
@@ -774,13 +766,13 @@ export default function PageRenderer({
                 <>
                   <h2
                     className="text-4xl md:text-5xl font-bold leading-tight"
-                    style={{ color: "var(--artist-background, #11100e)" }}
+                    style={{ color: "var(--artist-text, #11100e)" }}
                   >
                     {page.title || "Header"}
                   </h2>
                   <p
                     className="text-xl"
-                    style={{ color: "var(--artist-background, #11100e)", opacity: 0.8 }}
+                    style={{ color: "var(--artist-text, #11100e)", opacity: 0.8 }}
                   >
                     {page.title2 || "Subheader"}
                   </p>
@@ -806,7 +798,6 @@ export default function PageRenderer({
             {/* Col A: horizontal image (left) – 425px height, 5:4 aspect */}
             <div
               className={`shrink-0 self-center ${HORIZ_HERO01_IMAGE} overflow-hidden flex items-center justify-center ${isEditor ? "cursor-pointer" : ""}`}
-              style={{ boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)" }}
               onClick={handleMediaClick}
             >
               {page.mediaSrc ? (
@@ -822,7 +813,6 @@ export default function PageRenderer({
                     color: "var(--artist-text, #faf7f2)",
                     backgroundColor: "rgb(130, 130, 130)",
                     opacity: 1,
-                    boxShadow: "0 0 0 15px var(--artist-accent, #c96a4a)",
                   }}
                 >
                   No image
@@ -852,7 +842,7 @@ export default function PageRenderer({
                       onInput={adjustHeaderTextareaHeight}
                       placeholder="Header"
                       rows={1}
-                      style={{ color: "var(--artist-background, #11100e)" }}
+                      style={{ color: "var(--artist-text, #11100e)" }}
                     />
                     <textarea
                       ref={subheaderTextareaRef}
@@ -862,7 +852,7 @@ export default function PageRenderer({
                       onInput={adjustSubheaderTextareaHeight}
                       placeholder="Subheader"
                       rows={1}
-                      style={{ color: "var(--artist-background, #11100e)", opacity: 0.8 }}
+                      style={{ color: "var(--artist-text, #11100e)", opacity: 0.8 }}
                     />
                   </div>
                   <div className="flex-1 min-h-[4vh] shrink-0" aria-hidden />
@@ -871,13 +861,13 @@ export default function PageRenderer({
                 <>
                   <h2
                     className="text-4xl md:text-5xl font-bold leading-tight"
-                    style={{ color: "var(--artist-background, #11100e)" }}
+                    style={{ color: "var(--artist-text, #11100e)" }}
                   >
                     {page.title || "Header"}
                   </h2>
                   <p
                     className="text-xl"
-                    style={{ color: "var(--artist-background, #11100e)", opacity: 0.8 }}
+                    style={{ color: "var(--artist-text, #11100e)", opacity: 0.8 }}
                   >
                     {page.title2 || "Subheader"}
                   </p>

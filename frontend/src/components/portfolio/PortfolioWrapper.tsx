@@ -25,6 +25,7 @@ type PortfolioWrapperProps = {
     foreground: string;
     text: string;
     accent: string;
+    portfolioText?: string;
   };
   privacy?: "public" | "link_only" | "private";
   isOwner?: boolean;
@@ -215,15 +216,15 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
                 window.dispatchEvent(event);
               }
             }}
-            className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer relative z-20"
+            className="flex items-center gap-2 opacity-70 hover:opacity-100 transition-opacity cursor-pointer relative z-20"
             aria-label="Open portfolio menu"
           >
-            <MoreVertical size={20} style={{ color: customColors?.background }} />
+            <MoreVertical size={20} style={{ color: customColors?.portfolioText ?? 'var(--artist-portfolio-text, #faf7f2)' }} />
             <PortfolioTitle
               text={portfolioTitle}
               align="left"
               size="xs"
-              color={customColors?.background}
+              color={customColors?.portfolioText ?? 'var(--artist-portfolio-text, #faf7f2)'}
             />
           </div>
 
@@ -243,14 +244,15 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
                     }, 2000);
                   });
                 }}
-                className="rounded-xs p-2.5 flex items-center justify-center text-[var(--artist-background)] hover:bg-[var(--artist-accent)] hover:text-[var(--artist-text)] transition"
+                className="rounded-xs p-2.5 flex items-center justify-center bg-transparent text-[var(--artist-portfolio-text)] hover:bg-[var(--artist-accent)] hover:text-[var(--artist-accent-text)] opacity-70 hover:opacity-100 transition-opacity"
                 aria-label="Share portfolio"
               >
                 <Share2 size={18} />
               </button>
               {shareCopied && (
                 <div
-                  className="absolute left-1/2 -translate-x-1/2 -bottom-8 whitespace-nowrap px-2 py-1 text-xs rounded-xs bg-[var(--artist-accent)] text-[var(--artist-text)] shadow-lg"
+                  className="absolute left-1/2 -translate-x-1/2 -bottom-8 whitespace-nowrap px-2 py-1 text-xs rounded-xs bg-[var(--artist-accent)] text-[var(--artist-accent-text)]"
+                  style={{ boxShadow: 'var(--artist-accent-shadow-portfolio, 0 10px 15px -3px rgb(0 0 0 / 0.1))' }}
                   role="status"
                 >
                   Portfolio link copied
@@ -292,8 +294,8 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
                   }
                 }}
                 disabled={saveLoading}
-                className={`rounded-xs p-2.5 flex items-center justify-center transition ${
-                  saved ? "bg-[var(--artist-accent)] text-[var(--artist-text)]" : "text-[var(--artist-background)] hover:bg-[var(--artist-accent)] hover:text-[var(--artist-text)]"
+                className={`rounded-xs p-2.5 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity ${
+                  saved ? "bg-[var(--artist-accent)] text-[var(--artist-accent-text)]" : "bg-transparent text-[var(--artist-portfolio-text)] hover:bg-[var(--artist-accent)] hover:text-[var(--artist-accent-text)]"
                 }`}
                 aria-label={saved ? "Remove from saves" : "Save portfolio"}
               >
@@ -314,7 +316,7 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
           <button
             type="button"
             onClick={() => setCommentsOpen((v) => !v)}
-            className={`rounded-xs p-2.5 flex items-center justify-center transition ${commentsOpen ? "bg-[var(--artist-accent)] text-[var(--artist-text)]" : "text-[var(--artist-background)] hover:bg-[var(--artist-accent)] hover:text-[var(--artist-text)]"}`}
+            className={`rounded-xs p-2.5 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity ${commentsOpen ? "bg-[var(--artist-accent)] text-[var(--artist-accent-text)]" : "bg-transparent text-[var(--artist-portfolio-text)] hover:bg-[var(--artist-accent)] hover:text-[var(--artist-accent-text)]"}`}
             aria-label="Comments"
             aria-expanded={commentsOpen}
           >

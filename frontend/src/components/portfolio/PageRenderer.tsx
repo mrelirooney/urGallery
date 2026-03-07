@@ -153,7 +153,7 @@ function TextColumn({
         <p
           className="w-full whitespace-pre-line text-sm sm:text-base md:text-lg px-6 py-3"
           style={{
-            color: "var(--artist-background, #faf7f2)",
+            color: "var(--artist-text, #faf7f2)",
             background: "linear-gradient(to right, var(--artist-accent, #c96a4a) .5%, var(--artist-background, #11100e) .5%, transparent 0%)",
           }}
         >
@@ -243,24 +243,26 @@ export default function PageRenderer({
   const mobileLayout = (
     <div className="flex flex-col gap-4 md:hidden w-full">
       {mediaSrc && (
-        <div className="w-screen relative left-1/2 -translate-x-1/2 md:w-full md:left-0 md:translate-x-0 overflow-hidden">
-          <img
-            src={mediaSrc}
-            alt="Portfolio media"
-            className="w-full h-auto object-cover"
-          />
+        <div className="portfolio-media-shadow w-screen relative left-1/2 -translate-x-1/2 md:w-full md:left-0 md:translate-x-0">
+          <div className="overflow-hidden">
+            <img
+              src={mediaSrc}
+              alt="Portfolio media"
+              className="w-full h-auto object-cover"
+            />
+          </div>
         </div>
       )}
       <div className="w-screen relative left-1/2 -translate-x-1/2 md:w-full md:left-0 md:translate-x-0 px-4 flex flex-col gap-2">
         <h2
           className="text-2xl font-bold leading-tight"
-          style={{ color: "var(--artist-background, #11100e)" }}
+          style={{ color: "var(--artist-text, #11100e)" }}
         >
           {title}
         </h2>
         <p
           className="whitespace-pre-line text-base"
-          style={{ color: "var(--artist-background, #11100e)", opacity: 0.9 }}
+          style={{ color: "var(--artist-text, #11100e)", opacity: 0.9 }}
         >
           {description || page.title2 || ""}
         </p>
@@ -272,12 +274,14 @@ export default function PageRenderer({
   const mobileLayoutMediaOnly = (
     <div className="flex flex-col md:hidden w-full">
       {mediaSrc && (
-        <div className="w-screen relative left-1/2 -translate-x-1/2 md:w-full md:left-0 md:translate-x-0 overflow-hidden">
-          <img
-            src={mediaSrc}
-            alt="Portfolio media"
-            className="w-full h-auto object-cover"
-          />
+        <div className="portfolio-media-shadow w-screen relative left-1/2 -translate-x-1/2 md:w-full md:left-0 md:translate-x-0">
+          <div className="overflow-hidden">
+            <img
+              src={mediaSrc}
+              alt="Portfolio media"
+              className="w-full h-auto object-cover"
+            />
+          </div>
         </div>
       )}
     </div>
@@ -393,26 +397,28 @@ export default function PageRenderer({
             <MediaOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none hidden lg:block" />
             <div className="relative z-10 w-full max-w-7xl xl-lg:max-w-[1600px] mx-auto flex justify-center items-center min-h-[50vh] lg:min-h-[30vh] py-8">
             <div
-              className="shrink-0 w-[425px] lg:w-[30vw] aspect-square overflow-hidden flex items-center justify-center md:shadow-[0_0_0_15px_var(--artist-accent,#c96a4a)]"
+              className="portfolio-media-shadow shrink-0 w-[425px] lg:w-[30vw] aspect-square flex items-center justify-center"
             >
-              {mediaSrc ? (
-                <img
-                  src={mediaSrc}
-                  alt="Portfolio media"
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <div
-                  className="flex h-full w-full items-center justify-center text-sm"
-                  style={{
-                    color: "var(--artist-text, #faf7f2)",
-                    backgroundColor: "rgb(130, 130, 130)",
-                    opacity: 0.8,
-                  }}
-                >
-                  No media
-                </div>
-              )}
+              <div className="w-full h-full overflow-hidden flex items-center justify-center">
+                {mediaSrc ? (
+                  <img
+                    src={mediaSrc}
+                    alt="Portfolio media"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div
+                    className="flex h-full w-full items-center justify-center text-sm"
+                    style={{
+                      color: "var(--artist-text, #faf7f2)",
+                      backgroundColor: "rgb(130, 130, 130)",
+                      opacity: 0.8,
+                    }}
+                  >
+                    No media
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -427,26 +433,28 @@ export default function PageRenderer({
             <MediaOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none hidden lg:block" />
             <div className="relative z-10 w-full max-w-7xl xl-lg:max-w-[1600px] mx-auto flex justify-center items-center min-h-[50vh] lg:min-h-[30vh] py-8">
             <div
-              className="shrink-0 h-[425px] w-[340px] lg:h-[30vw] lg:w-[24vw] overflow-hidden flex items-center justify-center md:shadow-[0_0_0_15px_var(--artist-accent,#c96a4a)]"
+              className="portfolio-media-shadow shrink-0 h-[425px] w-[340px] lg:h-[30vw] lg:w-[24vw] flex items-center justify-center"
             >
-              {mediaSrc ? (
-                <img
-                  src={mediaSrc}
-                  alt="Portfolio media"
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <div
-                  className="flex h-full w-full items-center justify-center text-sm"
-                  style={{
-                    color: "var(--artist-text, #faf7f2)",
-                    backgroundColor: "rgb(130, 130, 130)",
-                    opacity: 0.8,
-                  }}
-                >
-                  No media
-                </div>
-              )}
+              <div className="w-full h-full overflow-hidden flex items-center justify-center">
+                {mediaSrc ? (
+                  <img
+                    src={mediaSrc}
+                    alt="Portfolio media"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div
+                    className="flex h-full w-full items-center justify-center text-sm"
+                    style={{
+                      color: "var(--artist-text, #faf7f2)",
+                      backgroundColor: "rgb(130, 130, 130)",
+                      opacity: 0.8,
+                    }}
+                  >
+                    No media
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -461,26 +469,28 @@ export default function PageRenderer({
             <MediaOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none hidden lg:block" />
             <div className="relative z-10 w-full max-w-6xl xl:max-w-7xl xl-lg:max-w-[1600px] 2xl:max-w-[1600px] mx-auto flex justify-center items-center min-h-[50vh] lg:min-h-[30vh] py-8">
             <div
-              className="w-full aspect-video lg:max-h-[32vw] lg:w-[60vw] lg:aspect-auto overflow-hidden flex items-center justify-center md:shadow-[0_0_0_15px_var(--artist-accent,#c96a4a)]"
+              className="portfolio-media-shadow w-full aspect-video lg:max-h-[32vw] lg:w-[60vw] lg:aspect-auto flex items-center justify-center"
             >
-              {mediaSrc ? (
-                <img
-                  src={mediaSrc}
-                  alt="Portfolio media"
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <div
-                  className="flex h-full w-full items-center justify-center text-sm"
-                  style={{
-                    color: "var(--artist-text, #faf7f2)",
-                    backgroundColor: "rgb(130, 130, 130)",
-                    opacity: 0.8,
-                  }}
-                >
-                  No media
-                </div>
-              )}
+              <div className="w-full h-full overflow-hidden flex items-center justify-center">
+                {mediaSrc ? (
+                  <img
+                    src={mediaSrc}
+                    alt="Portfolio media"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div
+                    className="flex h-full w-full items-center justify-center text-sm"
+                    style={{
+                      color: "var(--artist-text, #faf7f2)",
+                      backgroundColor: "rgb(130, 130, 130)",
+                      opacity: 0.8,
+                    }}
+                  >
+                    No media
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -495,26 +505,28 @@ export default function PageRenderer({
             <MediaOnlyTemplate className="absolute inset-0 w-full h-full z-0 pointer-events-none hidden lg:block" />
             <div className="relative z-10 w-full max-w-6xl xl:max-w-7xl xl-lg:max-w-[1600px] 2xl:max-w-[1600px] mx-auto flex justify-center items-center min-h-[50vh] lg:min-h-[30vh] py-8">
             <div
-              className="w-full aspect-video lg:max-h-[30vw] lg:w-[70vw] lg:aspect-auto overflow-hidden flex items-center justify-center md:shadow-[0_0_0_15px_var(--artist-accent,#c96a4a)]"
+              className="portfolio-media-shadow w-full aspect-video lg:max-h-[30vw] lg:w-[70vw] lg:aspect-auto flex items-center justify-center"
             >
-              {mediaSrc ? (
-                <img
-                  src={mediaSrc}
-                  alt="Portfolio media"
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <div
-                  className="flex h-full w-full items-center justify-center text-sm"
-                  style={{
-                    color: "var(--artist-text, #faf7f2)",
-                    backgroundColor: "rgb(130, 130, 130)",
-                    opacity: 0.8,
-                  }}
-                >
-                  No media
-                </div>
-              )}
+              <div className="w-full h-full overflow-hidden flex items-center justify-center">
+                {mediaSrc ? (
+                  <img
+                    src={mediaSrc}
+                    alt="Portfolio media"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div
+                    className="flex h-full w-full items-center justify-center text-sm"
+                    style={{
+                      color: "var(--artist-text, #faf7f2)",
+                      backgroundColor: "rgb(130, 130, 130)",
+                      opacity: 0.8,
+                    }}
+                  >
+                    No media
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -525,16 +537,16 @@ export default function PageRenderer({
       return (
         <>
           {/* Mobile: background = text color (Color #2), text = background color (Color #1) */}
-          <div className="md:hidden w-screen relative left-1/2 -translate-x-1/2 bg-[var(--artist-text)] px-4 py-4 flex flex-col gap-4 min-h-[60vh]">
+          <div className="md:hidden w-screen relative left-1/2 -translate-x-1/2 bg-[var(--artist-background)] px-4 py-4 flex flex-col gap-4 min-h-[60vh]">
             <h2
               className="text-2xl md:text-4xl lg:text-5xl font-bold leading-tight"
-              style={{ color: "var(--artist-background, #11100e)" }}
+              style={{ color: "var(--artist-text, #11100e)" }}
             >
               {title}
             </h2>
             <p
               className="whitespace-pre-line text-sm sm:text-base md:text-lg"
-              style={{ color: "var(--artist-background, #11100e)", opacity: 0.9 }}
+              style={{ color: "var(--artist-text, #11100e)", opacity: 0.9 }}
             >
               {description}
             </p>
@@ -550,16 +562,16 @@ export default function PageRenderer({
       return (
         <>
           {/* Mobile: background = text color (Color #2), text = background color (Color #1) */}
-          <div className="md:hidden w-screen relative left-1/2 -translate-x-1/2 bg-[var(--artist-text)] px-4 py-4 flex flex-col gap-2 text-center min-h-[60vh]">
+          <div className="md:hidden w-screen relative left-1/2 -translate-x-1/2 bg-[var(--artist-background)] px-4 py-4 flex flex-col gap-2 text-center min-h-[60vh]">
             <h2
               className="text-2xl md:text-4xl font-bold leading-tight"
-              style={{ color: "var(--artist-background, #11100e)" }}
+              style={{ color: "var(--artist-text, #11100e)" }}
             >
               {title}
             </h2>
             <p
               className="whitespace-pre-line text-sm md:text-base"
-              style={{ color: "var(--artist-background, #11100e)", opacity: 0.9 }}
+              style={{ color: "var(--artist-text, #11100e)", opacity: 0.9 }}
             >
               {description}
             </p>
@@ -578,24 +590,26 @@ export default function PageRenderer({
           {/* Tablet: 50/50 image left, text right */}
           <div className="hidden md:block lg:hidden relative w-full min-h-[50vh]">
             <div className="grid grid-cols-2 gap-4 md:gap-6 items-center min-h-[50vh] px-4 py-8">
-              <div className="w-full aspect-square overflow-hidden flex items-center justify-center md:shadow-[0_0_0_15px_var(--artist-accent,#c96a4a)]">
-                {page.mediaSrc ? (
-                  <img
-                    src={page.mediaSrc}
-                    alt="Portfolio media"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-sm" style={{ color: "var(--artist-text, #faf7f2)", opacity: 0.6 }}>
-                    No media
-                  </div>
-                )}
+              <div className="portfolio-media-shadow w-full aspect-square flex items-center justify-center">
+                <div className="w-full h-full overflow-hidden flex items-center justify-center">
+                  {page.mediaSrc ? (
+                    <img
+                      src={page.mediaSrc}
+                      alt="Portfolio media"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-sm" style={{ color: "var(--artist-text, #faf7f2)", opacity: 0.6 }}>
+                      No media
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="flex flex-col gap-4 px-4">
-                <h2 className="text-2xl md:text-3xl font-bold leading-tight" style={{ color: "var(--artist-background, #11100e)" }}>
+                <h2 className="text-2xl md:text-3xl font-bold leading-tight" style={{ color: "var(--artist-text, #11100e)" }}>
                   {page.title || "Header"}
                 </h2>
-                <p className="text-base md:text-lg whitespace-pre-line" style={{ color: "var(--artist-background, #11100e)", opacity: 0.8 }}>
+                <p className="text-base md:text-lg whitespace-pre-line" style={{ color: "var(--artist-text, #11100e)", opacity: 0.8 }}>
                   {page.title2 || "Subheader"}
                 </p>
               </div>
@@ -608,18 +622,20 @@ export default function PageRenderer({
             </div>
             <div className="relative z-10 w-full max-w-7xl xl-lg:max-w-[1600px] mx-auto px-0">
               <div className="grid grid-cols-[1fr_1fr] xl-lg:grid-cols-[1.5fr_1fr] gap-8 items-stretch min-h-[50vh] px-4 py-8">
-                <div className="shrink-0 self-center w-[425px] lg:w-[30vw] aspect-square overflow-hidden flex items-center justify-center md:shadow-[0_0_0_15px_var(--artist-accent,#c96a4a)]">
+                <div className="portfolio-media-shadow shrink-0 self-center w-[425px] lg:w-[30vw] aspect-square flex items-center justify-center">
+                  <div className="w-full h-full overflow-hidden flex items-center justify-center">
                   {page.mediaSrc ? (
                     <img src={page.mediaSrc} alt="Portfolio media" className="h-full w-full object-cover" />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-sm" style={{ color: "var(--artist-text, #faf7f2)", opacity: 0.6 }}>No media</div>
                   )}
+                  </div>
                 </div>
                 <div className="flex flex-col gap-4 min-w-0 self-stretch flex-1 min-h-0">
                   <div className="flex-1 min-h-[2rem]" aria-hidden />
                   <div className="flex flex-col gap-4">
-                    <h2 className="text-4xl md:text-5xl font-bold leading-tight" style={{ color: "var(--artist-background, #11100e)" }}>{page.title || "Header"}</h2>
-                    <p className="text-xl whitespace-pre-line" style={{ color: "var(--artist-background, #11100e)", opacity: 0.8 }}>{page.title2 || "Subheader"}</p>
+                    <h2 className="text-4xl md:text-5xl font-bold leading-tight" style={{ color: "var(--artist-text, #11100e)" }}>{page.title || "Header"}</h2>
+                    <p className="text-xl whitespace-pre-line" style={{ color: "var(--artist-text, #11100e)", opacity: 0.8 }}>{page.title2 || "Subheader"}</p>
                   </div>
                   <div className="flex-1 min-h-[2rem]" aria-hidden />
                 </div>
@@ -636,24 +652,26 @@ export default function PageRenderer({
           {/* Tablet: 50/50 image left, text right */}
           <div className="hidden md:block lg:hidden relative w-full min-h-[50vh]">
             <div className="grid grid-cols-2 gap-4 md:gap-6 items-center min-h-[50vh] px-4 py-8">
-              <div className="w-full aspect-[4/5] overflow-hidden flex items-center justify-center md:shadow-[0_0_0_15px_var(--artist-accent,#c96a4a)]">
-                {page.mediaSrc ? (
-                  <img
-                    src={page.mediaSrc}
-                    alt="Portfolio media"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-sm" style={{ color: "var(--artist-text, #faf7f2)", opacity: 0.6 }}>
-                    No media
-                  </div>
-                )}
+              <div className="portfolio-media-shadow w-full aspect-[4/5] flex items-center justify-center">
+                <div className="w-full h-full overflow-hidden flex items-center justify-center">
+                  {page.mediaSrc ? (
+                    <img
+                      src={page.mediaSrc}
+                      alt="Portfolio media"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-sm" style={{ color: "var(--artist-text, #faf7f2)", opacity: 0.6 }}>
+                      No media
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="flex flex-col gap-4 px-4">
-                <h2 className="text-2xl md:text-3xl font-bold leading-tight" style={{ color: "var(--artist-background, #11100e)" }}>
+                <h2 className="text-2xl md:text-3xl font-bold leading-tight" style={{ color: "var(--artist-text, #11100e)" }}>
                   {page.title || "Header"}
                 </h2>
-                <p className="text-base md:text-lg whitespace-pre-line" style={{ color: "var(--artist-background, #11100e)", opacity: 0.8 }}>
+                <p className="text-base md:text-lg whitespace-pre-line" style={{ color: "var(--artist-text, #11100e)", opacity: 0.8 }}>
                   {page.title2 || "Subheader"}
                 </p>
               </div>
@@ -666,18 +684,20 @@ export default function PageRenderer({
             </div>
             <div className="relative z-10 w-full max-w-7xl xl-lg:max-w-[1600px] mx-auto px-0">
               <div className="grid grid-cols-[auto_1fr] gap-4 md:gap-16 items-stretch min-h-[50vh] px-4 py-8">
-                <div className="shrink-0 self-center h-[425px] w-[340px] lg:h-[30vw] lg:w-[24vw] overflow-hidden flex items-center justify-center md:shadow-[0_0_0_15px_var(--artist-accent,#c96a4a)]">
+                <div className="portfolio-media-shadow shrink-0 self-center h-[425px] w-[340px] lg:h-[30vw] lg:w-[24vw] flex items-center justify-center">
+                  <div className="w-full h-full overflow-hidden flex items-center justify-center">
                   {page.mediaSrc ? (
                     <img src={page.mediaSrc} alt="Portfolio media" className="h-full w-full object-cover" />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-sm" style={{ color: "var(--artist-text, #faf7f2)", opacity: 0.6 }}>No media</div>
                   )}
+                  </div>
                 </div>
                 <div className="flex flex-col min-w-0 self-stretch flex-1 min-h-0">
                   <div className="flex-1 min-h-[2rem]" aria-hidden />
                   <div className="flex flex-col gap-4">
-                    <h2 className="text-4xl md:text-5xl font-bold leading-tight" style={{ color: "var(--artist-background, #11100e)" }}>{page.title || "Header"}</h2>
-                    <p className="text-xl whitespace-pre-line" style={{ color: "var(--artist-background, #11100e)", opacity: 0.8 }}>{page.title2 || "Subheader"}</p>
+                    <h2 className="text-4xl md:text-5xl font-bold leading-tight" style={{ color: "var(--artist-text, #11100e)" }}>{page.title || "Header"}</h2>
+                    <p className="text-xl whitespace-pre-line" style={{ color: "var(--artist-text, #11100e)", opacity: 0.8 }}>{page.title2 || "Subheader"}</p>
                   </div>
                   <div className="flex-1 min-h-[2rem]" aria-hidden />
                 </div>
@@ -694,24 +714,26 @@ export default function PageRenderer({
           {/* Tablet: image top half, text bottom half */}
           <div className="hidden md:block lg:hidden relative w-full min-h-[50vh]">
             <div className="flex flex-col gap-4 h-full min-h-[50vh]">
-              <div className="flex-1 min-h-[50%] lg:min-h-[24vw] flex items-center justify-center overflow-hidden md:shadow-[0_0_0_15px_var(--artist-accent,#c96a4a)]">
-                {page.mediaSrc ? (
-                  <img
-                    src={page.mediaSrc}
-                    alt="Portfolio media"
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full aspect-video flex items-center justify-center text-sm" style={{ color: "var(--artist-text, #faf7f2)", opacity: 0.6 }}>
-                    No media
-                  </div>
-                )}
+              <div className="portfolio-media-shadow flex-1 min-h-[50%] lg:min-h-[24vw] flex items-center justify-center">
+                <div className="w-full h-full overflow-hidden flex items-center justify-center">
+                  {page.mediaSrc ? (
+                    <img
+                      src={page.mediaSrc}
+                      alt="Portfolio media"
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full aspect-video flex items-center justify-center text-sm" style={{ color: "var(--artist-text, #faf7f2)", opacity: 0.6 }}>
+                      No media
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="flex-1 min-h-[50%] flex flex-col justify-center gap-4 px-4">
-                <h2 className="text-2xl md:text-3xl font-bold leading-tight" style={{ color: "var(--artist-background, #11100e)" }}>
+                <h2 className="text-2xl md:text-3xl font-bold leading-tight" style={{ color: "var(--artist-text, #11100e)" }}>
                   {page.title || "Header"}
                 </h2>
-                <p className="text-base md:text-lg whitespace-pre-line" style={{ color: "var(--artist-background, #11100e)", opacity: 0.8 }}>
+                <p className="text-base md:text-lg whitespace-pre-line" style={{ color: "var(--artist-text, #11100e)", opacity: 0.8 }}>
                   {page.title2 || "Subheader"}
                 </p>
               </div>
@@ -724,18 +746,20 @@ export default function PageRenderer({
             </div>
             <div className="relative z-10 w-full max-w-7xl xl-lg:max-w-[1600px] mx-auto px-0">
               <div className="grid grid-cols-[auto_1fr] gap-4 md:gap-16 items-stretch min-h-[50vh] px-4 py-8">
-                <div className="shrink-0 self-center h-[425px] w-[531px] lg:h-[24vw] lg:w-[30vw] overflow-hidden flex items-center justify-center md:shadow-[0_0_0_15px_var(--artist-accent,#c96a4a)]">
+                <div className="portfolio-media-shadow shrink-0 self-center h-[425px] w-[531px] lg:h-[24vw] lg:w-[30vw] flex items-center justify-center">
+                  <div className="w-full h-full overflow-hidden flex items-center justify-center">
                   {page.mediaSrc ? (
                     <img src={page.mediaSrc} alt="Portfolio media" className="h-full w-full object-cover" />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-sm" style={{ color: "var(--artist-text, #faf7f2)", opacity: 0.6 }}>No media</div>
                   )}
+                  </div>
                 </div>
                 <div className="flex flex-col gap-4 min-w-0 self-stretch flex-1 min-h-0">
                   <div className="flex-1 min-h-[2rem]" aria-hidden />
                   <div className="flex flex-col gap-4">
-                    <h2 className="text-4xl md:text-5xl font-bold leading-tight" style={{ color: "var(--artist-background, #11100e)" }}>{page.title || "Header"}</h2>
-                    <p className="text-xl whitespace-pre-line" style={{ color: "var(--artist-background, #11100e)", opacity: 0.8 }}>{page.title2 || "Subheader"}</p>
+                    <h2 className="text-4xl md:text-5xl font-bold leading-tight" style={{ color: "var(--artist-text, #11100e)" }}>{page.title || "Header"}</h2>
+                    <p className="text-xl whitespace-pre-line" style={{ color: "var(--artist-text, #11100e)", opacity: 0.8 }}>{page.title2 || "Subheader"}</p>
                   </div>
                   <div className="flex-1 min-h-[2rem]" aria-hidden />
                 </div>
@@ -788,9 +812,10 @@ export default function PageRenderer({
             <div className="md:col-span-7 flex justify-center items-center">
               <div className="relative w-full max-w-lg">
                 <div
-                  className="relative aspect-square w-full max-w-lg lg:max-w-[30vw] mx-auto overflow-hidden border-4"
+                  className="portfolio-media-shadow relative aspect-square w-full max-w-lg lg:max-w-[30vw] mx-auto border-4"
                   style={{ borderColor: "var(--artist-accent, #c96a4a)" }}
                 >
+                  <div className="w-full h-full overflow-hidden">
                   {page.mediaSrc ? (
                     <img
                       src={page.mediaSrc}
@@ -805,6 +830,7 @@ export default function PageRenderer({
                       No media
                     </div>
                   )}
+                  </div>
                   <div
                     className="absolute bottom-4 right-4 z-20 px-4 py-2 border"
                     style={{

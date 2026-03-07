@@ -11,10 +11,13 @@ type Props = {
     foreground: string;
     text: string;
     accent: string;
+    profileText?: string;
+    accentText?: string;
   };
+  textColor?: string;
 };
 
-export default function CompactNavPortfolioTitle({ initialTitle = "", customColors }: Props) {
+export default function CompactNavPortfolioTitle({ initialTitle = "", customColors, textColor }: Props) {
   const [portfolioTitle, setPortfolioTitle] = useState<string>(initialTitle);
 
   // Listen for portfolio title updates from PortfolioWrapper
@@ -56,14 +59,14 @@ export default function CompactNavPortfolioTitle({ initialTitle = "", customColo
     >
       <MoreVertical
         size={20}
-        style={customColors ? { color: customColors.text } : undefined}
-        className={`hidden md:block ${!customColors ? "text-[var(--light-brown)]" : ""}`}
+        style={customColors || textColor ? { color: textColor ?? customColors?.profileText ?? customColors?.text } : undefined}
+        className={`hidden md:block transition-colors duration-200 ${!customColors && !textColor ? "text-[var(--light-brown)]" : ""}`}
       />
       <PortfolioTitle
         text={portfolioTitle}
         align="left"
         size="xs"
-        color={customColors?.text ?? "text-[var(--light-brown)]"}
+        color={textColor ?? customColors?.profileText ?? customColors?.text ?? "text-neutral-200"}
       />
     </div>
   );

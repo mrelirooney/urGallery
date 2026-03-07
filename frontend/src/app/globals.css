@@ -112,7 +112,7 @@ html:not(.artist-compact) #site-navbar { transform: translateY(0); }
 html.artist-compact #site-navbar { transform: translateY(-100%); }
 html.artist-compact #artist-profile { padding-top: 0; padding-bottom: 0; opacity: 0; pointer-events: none; }
 html.artist-compact #artist-profile-compact { transform: translateY(0); opacity: 1; display: block; }
-html.artist-compact #portfolio-shell { min-height: 86vh; } /* fills ~84–90% */
+html.artist-compact #portfolio-shell { min-height: 100vh; } /* fills ~84–90% */
 
 /* Tablet: portfolio section 90vh, higher z-index to cover profile, more canvas space */
 @media (min-width: 768px) and (max-width: 1023px) {
@@ -146,6 +146,11 @@ html.artist-compact #portfolio-shell { min-height: 86vh; } /* fills ~84–90% */
   html.artist-compact #portfolio-shell {
     padding-top: 2rem; /* compact bar height – tighter so portfolio nav sits closer */
   }
+}
+
+/* Portfolio media drop shadow – off-black on light bg, off-white on dark bg */
+.portfolio-media-shadow {
+  box-shadow: var(--artist-media-shadow, 0 8px 32px rgba(0,0,0,0.15));
 }
 
 /* Allow full-width breakout on mobile for portfolio image/text */

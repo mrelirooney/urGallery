@@ -336,7 +336,7 @@ export default function CommentsSection({
                   className="shrink-0 p-2 rounded-xs transition disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{
                     backgroundColor: sendHovered && !submitting && body.trim() ? accent : "transparent",
-                    color: sendHovered && !submitting && body.trim() ? text : bg,
+                    color: sendHovered && !submitting && body.trim() ? "var(--artist-accent-text, #faf7f2)" : bg,
                   }}
                   onMouseEnter={() => setSendHovered(true)}
                   onMouseLeave={() => setSendHovered(false)}

@@ -16,7 +16,8 @@ import GoogleFontsLoader from "@/components/artist/GoogleFontsLoader";
 import ThemePatternLayer from "../../components/artist/ThemePatternLayer";
 import EmptyPortfolioMessage from "@/components/artist/EmptyPortfolioMessage";
 import ScrollToPortfolioOnLoad from "@/components/artist/ScrollToPortfolioOnLoad";
-
+import { getTextColorForBackground } from "@/lib/colorUtils";
+import CompactProfileBar from "@/components/artist/CompactProfileBar";
 
 type RouteParams = { slug: string };
 
@@ -99,11 +100,15 @@ export default async function ArtistPage(
     .toUpperCase();
 
   // Get custom colors or use defaults
+  // Color #1 = profile bg, Color #2 = portfolio bg, Color #3 = accent
   const customColors = {
     background: profile.background_color || '#faf7f2',
     foreground: profile.foreground_color || '#11100e',
     text: profile.text_color || '#11100e',
     accent: profile.accent_color || '#c96a4a',
+    profileText: getTextColorForBackground(profile.background_color || '#faf7f2'),
+    portfolioText: getTextColorForBackground(profile.text_color || '#11100e'),
+    accentText: getTextColorForBackground(profile.accent_color || '#c96a4a'),
   };
 
   const fontFamily = profile.font_family?.trim() || null;
@@ -113,7 +118,7 @@ export default async function ArtistPage(
       <GoogleFontsLoader fontFamily={fontFamily} />
       <ColorThemeSetter colors={customColors} fontFamily={fontFamily} />
       <ScrollToPortfolioOnLoad />
-      <main className="flex flex-col relative z-50">
+      <main className="flex flex-col flex-1 min-h-0 relative z-50">
         <ArtistLandingMotion pagesCount={firstPortfolio?.pages_count ?? 1} />
 
         {/* Artist Header Section */}
@@ -123,9 +128,9 @@ export default async function ArtistPage(
           <ThemePatternLayer
             svgUrl={profile.theme.svg_url}
             colorOverrides={{
-              "--artist-background": customColors.text,
+              "--artist-background": customColors.accent,
               "--artist-accent": customColors.accent,
-              "--artist-text": customColors.background,
+              "--artist-text": customColors.accent,
             }}
           />
         )}
@@ -155,14 +160,10 @@ export default async function ArtistPage(
       </section>
 
       {/* Compact sticky profile (appears in compact mode) */}
-      <div
-        id="artist-profile-compact"
-        style={{
-          backgroundColor: customColors.background,
-          fontFamily: "var(--artist-font, 'Raleway'), sans-serif",
-          borderColor: `${customColors.text}30`,
-        }}
-        className="sticky mt-20 md:mt-0 md:top-14 lg:mt-0 lg:top-0 top-0 z-50 hidden backdrop-blur overflow-hidden relative border-b shrink-0"
+      <CompactProfileBar
+        profileBackground={customColors.background}
+        profileText={customColors.profileText}
+        portfolioBackground={customColors.text}
       >
         <div className="max-w-6xl xl:max-w-7xl 2xl:max-w-[1310px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-16 2xl:px-20 py-4 md:py-4 lg:py-2 flex flex-col lg:min-h-0 lg:justify-start">
           {/* Phone: back arrow, avatar, hamburger, portfolio title */}
@@ -180,7 +181,7 @@ export default async function ArtistPage(
             <CompactNavHamburger />
           </div>
           <div className="flex justify-center md:hidden mt-2">
-            <CompactNavPortfolioTitle initialTitle={initialPortfolioTitle} customColors={customColors} />
+            <CompactNavPortfolioTitle initialTitle={initialPortfolioTitle} customColors={customColors} textColor="var(--compact-bar-text)" />
           </div>
 
           {/* Tablet + Laptop: thin bar - pic + name left, contact buttons right */}
@@ -193,14 +194,14 @@ export default async function ArtistPage(
                   <span className="text-base font-semibold text-neutral-700">{compactInitial}</span>
                 )}
               </div>
-              <span className="font-semibold truncate" style={{ color: customColors.text }}>
+              <span className="font-semibold truncate transition-colors duration-200" style={{ color: "var(--compact-bar-text)" }}>
                 {profile?.display_name ?? "Loading..."}
               </span>
             </div>
-            <CompactContactButtons profile={profile} customColors={customColors} />
+            <CompactContactButtons profile={profile} customColors={customColors} textColor="var(--compact-bar-text)" />
           </div>
         </div>
-      </div>
+      </CompactProfileBar>
 
       {/* Portfolio Section */}
       <div id="portfolio-sentinel" />
@@ -209,18 +210,18 @@ export default async function ArtistPage(
         id="portfolio-shell" 
         style={{ 
           backgroundColor: customColors.text,
-          color: customColors.background,
+          color: customColors.portfolioText,
           fontFamily: "var(--artist-font, 'Raleway'), sans-serif",
         }}
-        className="relative overflow-hidden"
+        className="relative overflow-hidden flex-1 min-h-0 min-h-dvh pb-14"
       >
         {profile?.theme?.svg_url && (
           <ThemePatternLayer
             svgUrl={profile.theme.svg_url}
             colorOverrides={{
-              "--artist-background": customColors.background,
+              "--artist-background": customColors.accent,
               "--artist-accent": customColors.accent,
-              "--artist-text": customColors.text,
+              "--artist-text": customColors.accent,
             }}
           />
         )}

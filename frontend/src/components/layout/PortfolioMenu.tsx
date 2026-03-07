@@ -323,7 +323,7 @@ export default function PortfolioMenu({ isOpen, onClose, customColors }: Props) 
                   className="px-4 py-4 sm:p-page transition-colors border-b last:border-b-0"
                   style={{ borderColor: `${bg}15` }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = `${bg}50`;
+                    e.currentTarget.style.backgroundColor = `${bg}15`;
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.backgroundColor = "transparent";
@@ -358,7 +358,7 @@ export default function PortfolioMenu({ isOpen, onClose, customColors }: Props) 
                             className="p-2 rounded-md transition"
                             style={{ color: bg }}
                             onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor = `${bg}50`;
+                              e.currentTarget.style.backgroundColor = `${bg}15`;
                             }}
                             onMouseLeave={(e) => {
                               e.currentTarget.style.backgroundColor = "transparent";
@@ -373,7 +373,7 @@ export default function PortfolioMenu({ isOpen, onClose, customColors }: Props) 
                             className="p-2 rounded-md transition"
                             style={{ color: bg }}
                             onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor = `${bg}50`;
+                              e.currentTarget.style.backgroundColor = `${bg}15`;
                             }}
                             onMouseLeave={(e) => {
                               e.currentTarget.style.backgroundColor = "transparent";

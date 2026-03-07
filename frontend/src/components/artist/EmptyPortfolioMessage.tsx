@@ -10,6 +10,7 @@ type Props = {
     foreground: string;
     text: string;
     accent: string;
+    portfolioText?: string;
   };
 };
 
@@ -47,7 +48,7 @@ export default function EmptyPortfolioMessage({ profileSlug, customColors }: Pro
     <div className="py-16 px-0 text-left max-w-6xl mx-auto">
       <p
         className="text-lg"
-        style={{ color: customColors?.background || "rgba(255,255,255,0.7)" }}
+        style={{ color: customColors?.portfolioText ?? customColors?.text ?? "rgba(255,255,255,0.7)" }}
       >
         {message}
       </p>

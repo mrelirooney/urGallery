@@ -11,6 +11,7 @@ type Props = {
     foreground: string;
     text: string;
     accent: string;
+    profileText?: string;
   };
 };
 
@@ -26,7 +27,7 @@ export default function ProfileSettingsButton({ profileSlug, customColors }: Pro
       className="inline-flex p-2 rounded-full items-center justify-center transition-opacity hover:opacity-90 shadow-lg"
       style={{
         backgroundColor: customColors?.background ?? "rgba(255,255,255,0.9)",
-        color: customColors?.text ?? "#11100e",
+        color: customColors?.profileText ?? customColors?.text ?? "#11100e",
       }}
       aria-label="Settings"
     >

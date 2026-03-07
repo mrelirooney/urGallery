@@ -10,6 +10,7 @@ type PaginationProps = {
     foreground: string;
     text: string;
     accent: string;
+    portfolioText?: string;
   };
 };
 
@@ -29,13 +30,13 @@ export default function Pagination({ totalPages, currentPage, onChangePage, cust
           <button
             key={idx}
             onClick={() => onChangePage(idx)}
-            className={`w-2 h-2 rounded-full transition-all ${
+            className={`w-2 h-2 rounded-full transition-all opacity-70 hover:opacity-100 ${
               idx === currentIndex ? "w-2 h-2" : ""
             }`}
             style={{
               backgroundColor: idx === currentIndex 
                 ? (customColors?.accent || '#c96a4a')
-                : (customColors?.background || '#11100e'),
+                : (customColors?.portfolioText ?? customColors?.text ?? '#11100e'),
             }}
             aria-label={`Go to page ${idx + 1}`}
           />
@@ -48,17 +49,15 @@ export default function Pagination({ totalPages, currentPage, onChangePage, cust
           {Array.from({ length: totalPages }).map((_, idx) => {
             const isActive = idx === currentIndex;
             const accent = customColors?.accent || '#c96a4a';
-            const bg = customColors?.background || '#faf7f2';
-            const fg = customColors?.text || '#11100e';
+            const fg = customColors?.portfolioText ?? customColors?.text ?? '#11100e';
 
             return (
               <button
                 key={idx}
-                className="w-10 h-10 text-sm rounded-xs transition-colors"
+                className={`w-10 h-10 text-sm rounded-xs transition-opacity opacity-70 hover:opacity-100 ${isActive ? "!opacity-100" : ""}`}
                 style={{
                   backgroundColor: "transparent",
-                  color: isActive ? bg : bg,
-                  opacity: isActive ? 1 : 0.5,
+                  color: fg,
                 }}
                 onMouseEnter={(e) => {
                   if (!isActive) {
@@ -78,15 +77,9 @@ export default function Pagination({ totalPages, currentPage, onChangePage, cust
           })}
         </div>
         <button
-          className="p-2 rounded-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="p-2 rounded-sm transition-opacity opacity-70 hover:opacity-100 disabled:opacity-50 disabled:cursor-not-allowed"
           style={{
-            color: customColors?.background || '#faf7f2',
-          }}
-          onMouseEnter={(e) => {
-            
-          }}
-          onMouseLeave={(e) => {
-            
+            color: customColors?.portfolioText ?? customColors?.text ?? '#faf7f2',
           }}
           onClick={goPrev}
           disabled={currentIndex === 0}
@@ -95,15 +88,9 @@ export default function Pagination({ totalPages, currentPage, onChangePage, cust
           <ChevronLeft size={24} />
         </button>
         <button
-          className="p-2 rounded-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="p-2 rounded-sm transition-opacity opacity-70 hover:opacity-100 disabled:opacity-50 disabled:cursor-not-allowed"
           style={{
-            color: customColors?.background || '#faf7f2',
-          }}
-          onMouseEnter={(e) => {
-            
-          }}
-          onMouseLeave={(e) => {
-            
+            color: customColors?.portfolioText ?? customColors?.text ?? '#faf7f2',
           }}
           onClick={goNext}
           disabled={currentIndex === totalPages - 1}

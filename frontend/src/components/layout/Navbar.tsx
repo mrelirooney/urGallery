@@ -10,6 +10,8 @@ import SearchInput from "@/components/search/SearchInput";
 import PortfolioMenu from "@/components/layout/PortfolioMenu";
 import { useAuth } from "@/hooks/useAuth";
 import { Menu, X, ArrowLeft } from "lucide-react";
+import { hexToRgba, isLightColor } from "@/lib/colorUtils";
+import { useFrostedGlassHover } from "@/components/layout/FrostedGlassHoverContext";
 
 export default function Navbar() {
   const [customColors, setCustomColors] = useState<{
@@ -17,6 +19,7 @@ export default function Navbar() {
     foreground: string;
     text: string;
     accent: string;
+    portfolioBg?: string | null;
   } | null>(null);
 
   const pathname = usePathname();
@@ -24,26 +27,26 @@ export default function Navbar() {
   useEffect(() => {
     const checkColors = () => {
       const htmlElement = document.documentElement;
-      const bgColor = htmlElement.style.getPropertyValue('--artist-background');
-      const fgColor = htmlElement.style.getPropertyValue('--artist-foreground');
-      const textColor = htmlElement.style.getPropertyValue('--artist-text');
+      const profileBg = htmlElement.style.getPropertyValue('--artist-profile-bg');
+      const profileText = htmlElement.style.getPropertyValue('--artist-profile-text');
       const accentColor = htmlElement.style.getPropertyValue('--artist-accent');
+      const portfolioBg = htmlElement.style.getPropertyValue('--artist-portfolio-bg');
 
-      if (bgColor && fgColor && textColor && accentColor) {
+      if (profileBg && profileText && accentColor) {
         setCustomColors({
-          background: bgColor.trim(),
-          foreground: fgColor.trim(),
-          text: textColor.trim(),
+          background: profileBg.trim(),
+          foreground: profileText.trim(),
+          text: profileText.trim(),
           accent: accentColor.trim(),
+          portfolioBg: portfolioBg?.trim() || null,
         });
       } else {
         setCustomColors(null);
       }
     };
 
-    checkColors(); // Initial check
+    checkColors();
 
-    // Watch for style changes on html element (when ColorThemeSetter applies vars)
     const observer = new MutationObserver(checkColors);
     observer.observe(document.documentElement, {
       attributes: true,
@@ -153,6 +156,12 @@ export default function Navbar() {
     }
   }
 
+  const frostedCtx = useFrostedGlassHover();
+  const isFrostedHovered = frostedCtx?.isHovered ?? false;
+  const frostedOpacity = isArtistPage && customColors && frostedCtx ? (isFrostedHovered ? 0.75 : 0.05) : 0.05;
+  const bgForBorder = customColors?.portfolioBg ?? customColors?.background ?? "#faf7f2";
+  const borderOpacity = isLightColor(bgForBorder) ? 0.3 : 0.1;
+
   // --- 4. Return JSX ---
   return (
     <>
@@ -163,10 +172,21 @@ export default function Navbar() {
         </Suspense>
       )}
 
-      <header 
-        id="site-navbar" 
-        className="sticky top-0 z-55"
-        style={{ backgroundColor: customColors?.background || 'var(--background)' }}
+      <header
+        id="site-navbar"
+        ref={frostedCtx?.getRefCallback("nav")}
+        onMouseEnter={() => frostedCtx?.onMouseEnter("nav")}
+        onMouseLeave={(e) => frostedCtx?.onMouseLeave("nav", e.relatedTarget)}
+        className={`fixed top-0 left-0 right-0 z-55 transition-colors duration-200 ${isArtistPage && customColors ? "border-b backdrop-blur-md shadow-[0_4px_12px_rgba(0,0,0,0.15)]" : ""}`}
+        style={{
+          backgroundColor: isArtistPage && customColors
+            ? hexToRgba(customColors.background, frostedOpacity)
+            : (customColors?.background || "var(--background)"),
+          ...(isArtistPage && customColors && {
+            borderBottomWidth: 1,
+            borderBottomColor: hexToRgba("#faf7f2", borderOpacity),
+          }),
+        }}
       >
         <Container className="max-w-full px-0 h-12 sm:h-14">
         <div className={`h-full flex items-center justify-between gap-2 ${isArtistPage ? "max-w-6xl xl:max-w-7xl 2xl:max-w-[1310px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-16 2xl:px-20" : ""}`}>
@@ -177,7 +197,7 @@ export default function Navbar() {
             <button
               onClick={() => router.push("/")}
               className="md:hidden rounded-md transition mr-3"
-              style={{ color: 'var(--artist-text, #11100e)' }}
+              style={{ color: 'var(--artist-profile-text, #11100e)' }}
               aria-label="Back to home"
             >
               <ArrowLeft size={24} />
@@ -195,7 +215,7 @@ export default function Navbar() {
                 }
               }}
               className="hidden md:block rounded-md transition"
-              style={{ color: isSavesPage ? 'var(--foreground)' : 'var(--artist-text, #11100e)' }}
+              style={{ color: isSavesPage ? 'var(--foreground)' : 'var(--artist-profile-text, #11100e)' }}
               aria-label={isSavesPage ? "Saves menu" : "Portfolio menu"}
             >
               <Menu size={28} />
@@ -208,7 +228,7 @@ export default function Navbar() {
             href="/" 
             aria-label="Home" 
             className={`${(isArtistPage || isSavesPage) ? "md:ml-3" : ""} ${(isArtistPage || isSavesPage) ? "hidden md:block" : ""} ${!(isArtistPage || isSavesPage) ? "text-[var(--foreground)]" : ""}`}
-            style={(isArtistPage || isSavesPage) ? { color: isSavesPage ? 'var(--foreground)' : 'var(--artist-text, #11100e)' } : undefined}
+            style={(isArtistPage || isSavesPage) ? { color: isSavesPage ? 'var(--foreground)' : 'var(--artist-profile-text, #11100e)' } : undefined}
           >
             <Logo className="h-10 sm:h-11 lg:h-12 w-auto" />
           </Link>
@@ -232,7 +252,7 @@ export default function Navbar() {
                   }
                 }}
                 className="md:hidden rounded-md transition"
-                style={{ color: isSavesPage ? 'var(--foreground)' : 'var(--artist-text, #11100e)' }}
+                style={{ color: isSavesPage ? 'var(--foreground)' : 'var(--artist-profile-text, #11100e)' }}
                 aria-label={isSavesPage ? "Saves menu" : "Portfolio menu"}
               >
                 <Menu size={24} />

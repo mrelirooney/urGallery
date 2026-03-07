@@ -6,6 +6,7 @@ import ThemePatternLayer from "../artist/ThemePatternLayer";
 import GoogleFontsLoader from "../artist/GoogleFontsLoader";
 import GoogleFontsAllLoader from "../artist/GoogleFontsAllLoader";
 import { GOOGLE_FONTS, DEFAULT_FONT_FAMILY } from "@/lib/constants";
+import { getTextColorForBackground } from "@/lib/colorUtils";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "";
 
@@ -216,18 +217,21 @@ export default function CustomizationSection({ onSaveRef }: CustomizationSection
     );
   }
 
-  // Profile preview: matches live profile section (inverted for contrast on background)
+  const profileText = getTextColorForBackground(colors.background);
+  const portfolioText = getTextColorForBackground(colors.text);
+
+  // Profile preview: Color #1 bg, accent for pattern
   const profileThemeOverrides = {
-    "--artist-background": colors.text,
+    "--artist-background": colors.accent,
     "--artist-accent": colors.accent,
-    "--artist-text": colors.background,
+    "--artist-text": colors.accent,
   };
 
-  // Portfolio preview: matches live portfolio section
+  // Portfolio preview: Color #2 bg, accent for pattern
   const portfolioThemeOverrides = {
-    "--artist-background": colors.background,
+    "--artist-background": colors.accent,
     "--artist-accent": colors.accent,
-    "--artist-text": colors.text,
+    "--artist-text": colors.accent,
   };
 
   // Use hovered font for preview when hovering, otherwise selected font
@@ -249,10 +253,10 @@ export default function CustomizationSection({ onSaveRef }: CustomizationSection
         <h3 className="block text-lg font-semibold text-[var(--foreground)] mb-2">
             Colors
           </h3>
-          {/* Color #1 */}
+          {/* Profile background (Color #1) */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
-              Color #1
+              Profile background
             </label>
             <div className="flex items-center gap-3">
               <input
@@ -293,10 +297,10 @@ export default function CustomizationSection({ onSaveRef }: CustomizationSection
             </div>
           </div> */}
 
-          {/* Color #2 */}
+          {/* Portfolio background (Color #2) */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
-              Color #2
+              Portfolio background
             </label>
             <div className="flex items-center gap-3">
               <input
@@ -315,10 +319,10 @@ export default function CustomizationSection({ onSaveRef }: CustomizationSection
             </div>
           </div>
 
-          {/* Color #3 */}
+          {/* Accent color (Color #3) */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
-              Color #3
+              Accent color
             </label>
             <div className="flex items-center gap-3">
               <input
@@ -448,30 +452,30 @@ export default function CustomizationSection({ onSaveRef }: CustomizationSection
               <ThemePatternLayer
                 svgUrl={absoluteSvgUrl}
                 colorOverrides={profileThemeOverrides}
-                opacity={0.08}
+                opacity={0.02}
               />
             )}
             <div className="relative z-10 p-6 pr-5 pl-5" style={{ fontFamily: previewFontFamily }}>
               <div 
                 className="w-20 h-20 rounded-full mb-4 flex items-center justify-center"
-                style={{ backgroundColor: colors.text }}
+                style={{ backgroundColor: "rgb(130, 130, 130)" }}
               >
               </div>
               <h1 
                 className="text-2xl font-bold mb-2"
-                style={{ color: colors.text }}
+                style={{ color: profileText }}
               >
                 Your Name
               </h1>
               <p 
                 className="text-sm mb-4"
-                style={{ color: colors.text }}
+                style={{ color: profileText }}
               >
                 Title • Location • Contact
               </p>
               <p 
                 className="text-sm leading-relaxed"
-                style={{ color: colors.text }}
+                style={{ color: profileText }}
               >
                 Customize bold, quirky visuals and text to match your exact vibe. Jump beyond basic design.
               </p>
@@ -487,7 +491,7 @@ export default function CustomizationSection({ onSaveRef }: CustomizationSection
               <ThemePatternLayer
                 svgUrl={absoluteSvgUrl}
                 colorOverrides={portfolioThemeOverrides}
-                opacity={1}
+                opacity={0.02}
               />
             )}
             {/* Semi-transparent gradient overlay so pattern shows through */}
@@ -503,7 +507,7 @@ export default function CustomizationSection({ onSaveRef }: CustomizationSection
                 <div 
                   className="w-38 h-20 z-10 mb-4 flex items-center justify-center"
                   style={{ 
-                    backgroundColor: colors.background,
+                    backgroundColor: colors.accent,
                     boxShadow: `0 0 0 5px ${colors.accent}`,
                    }}
                 >
@@ -511,19 +515,19 @@ export default function CustomizationSection({ onSaveRef }: CustomizationSection
                 <div className="pl-2">
                   <h1 
                     className="text-2xl font-bold mb-2"
-                    style={{ color: colors.background }}
+                    style={{ color: portfolioText }}
                   >
                     Your Portfolio
                   </h1>
                   <p 
                     className="text-sm mb-4"
-                    style={{ color: colors.background }}
+                    style={{ color: portfolioText }}
                   >
                     This is how your portfolio will look with these colors. 
                   </p>
                   <p 
                     className="text-sm text-right"
-                    style={{ color: colors.background }}
+                    style={{ color: portfolioText }}
                   >
                     1 2 3 4 5 6 7 8 9 10 
                   </p>          

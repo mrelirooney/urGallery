@@ -16,6 +16,8 @@ type Props = {
     foreground: string;
     text: string;
     accent: string;
+    profileText?: string;
+    accentText?: string;
   };
 };
 
@@ -102,7 +104,7 @@ export default function ArtistHeader({ profile, customColors }: Props) {
         {/* Top: Avatar - left aligned on mobile */}
         <div className="flex justify-start">
           <div className="h-25 w-25 md:h-56 md:w-56 rounded-full overflow-hidden border-3"
-            style={{ borderColor: customColors?.background || '#11100e' }}
+            style={{ borderColor: customColors?.background || '#faf7f2' }}
           >
             {hasAvatar ? (
               <img
@@ -114,7 +116,7 @@ export default function ArtistHeader({ profile, customColors }: Props) {
               <div
                 className="w-full h-full"
                 style={{
-                  backgroundColor: customColors?.background || '#faf7f2',
+                  backgroundColor: 'rgb(130, 130, 130)',
                 }}
               />
             )}
@@ -125,18 +127,18 @@ export default function ArtistHeader({ profile, customColors }: Props) {
         <div className="flex flex-col md:justify-center md:text-left -mt-2">
         <h1 
           className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-wide"
-          style={{ color: customColors?.text || 'var(--foreground)' }}
+          style={{ color: customColors?.profileText ?? customColors?.text ?? 'var(--foreground)' }}
         >
             {profile?.display_name ?? "Unknown Artist"}
           </h1>
           <p 
             className="mt-1 text-sm sm:text-md md:text-lg"
-            style={{ color: customColors?.text || 'var(--foreground)' }}
+            style={{ color: customColors?.profileText ?? customColors?.text ?? 'var(--foreground)' }}
           >{profile?.title ?? ""}</p>
 
         <p 
           className="mt-1 text-xs sm:text-sm md:text-base"
-          style={{ color: customColors?.text || 'var(--foreground)' }}
+          style={{ color: customColors?.profileText ?? customColors?.text ?? 'var(--foreground)' }}
         >
           {profile?.location ?? ""}
         </p>
@@ -153,18 +155,18 @@ export default function ArtistHeader({ profile, customColors }: Props) {
               <button
                 key={i}
                 onClick={() => handleContactClick(contact)}
-                className="h-8 w-8 md:h-10 md:w-10 rounded-full flex items-center justify-center transition-colors"
+                className="h-8 w-8 md:h-10 md:w-10 rounded-xs flex items-center justify-center transition-colors"
                 style={{
-                  backgroundColor: customColors?.text || '#11100e',
-                  color: customColors?.background || '#faf7f2',
+                  backgroundColor: 'transparent',
+                  color: customColors?.profileText ?? customColors?.text ?? '#faf7f2',
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = customColors?.accent || '#c96a4a';
-                  e.currentTarget.style.color = customColors?.text || '#11100e';
+                  e.currentTarget.style.color = customColors?.accentText ?? customColors?.profileText ?? '#faf7f2';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = customColors?.text || '#11100e';
-                  e.currentTarget.style.color = customColors?.background || '#faf7f2';
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = customColors?.profileText ?? customColors?.text ?? '#faf7f2';
                 }}
                 title={contact.platform}
                 aria-label={`Contact via ${contact.platform}`}
@@ -176,7 +178,7 @@ export default function ArtistHeader({ profile, customColors }: Props) {
             <div 
               className="absolute -bottom-8 left-0 text-xs px-3 py-1 rounded shadow-lg"
               style={{
-                backgroundColor: customColors?.foreground || '#11100e',
+                backgroundColor: customColors?.profileText ?? customColors?.foreground ?? '#11100e',
                 color: customColors?.background || '#faf7f2',
               }}
             >
@@ -192,16 +194,21 @@ export default function ArtistHeader({ profile, customColors }: Props) {
               onClick={() => setResumeModalOpen(true)}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-xs text-sm font-medium transition-colors"
               style={{
-                backgroundColor: customColors?.text || '#11100e',
-                color: customColors?.background || '#faf7f2',
+                backgroundColor: 'transparent',
+                color: customColors?.profileText ?? customColors?.text ?? '#faf7f2',
+                borderWidth: '1px',
+                borderStyle: 'solid',
+                borderColor: customColors?.profileText ?? customColors?.text ?? '#faf7f2',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = customColors?.accent || '#c96a4a';
-                e.currentTarget.style.color = customColors?.text || '#11100e';
+                e.currentTarget.style.color = customColors?.accentText ?? customColors?.profileText ?? '#faf7f2';
+                e.currentTarget.style.borderColor = customColors?.accent || '#c96a4a';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = customColors?.text || '#11100e';
-                e.currentTarget.style.color = customColors?.background || '#faf7f2';
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = customColors?.profileText ?? customColors?.text ?? '#faf7f2';
+                e.currentTarget.style.borderColor = customColors?.profileText ?? customColors?.text ?? '#faf7f2';
               }}
             >
               <FileText size={18} />
@@ -249,7 +256,7 @@ export default function ArtistHeader({ profile, customColors }: Props) {
         <div className="md:col-span-2">
           <p 
             className="mt-1 text-sm sm:text-md md:text-lg leading-relaxed"
-            style={{ color: customColors?.text || 'var(--foreground)' }}
+            style={{ color: customColors?.profileText ?? customColors?.text ?? 'var(--foreground)' }}
           >
             {profile.bio ||
               (isOwner

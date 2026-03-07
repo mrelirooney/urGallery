@@ -18,7 +18,7 @@ export default function MediaSlotC({
   alt,
   shape = "1:1",
   border = true,
-  shadow = true,
+  shadow = false,
   align = "left",
 }: MediaSlotProps) {
   // 1) Shape controls the aspect ratio (height is based on width)
@@ -44,7 +44,7 @@ export default function MediaSlotC({
     align === "center" ? "mx-auto" : align === "right" ? "ml-auto" : "mr-auto";
 
   return (
-    <div className="justify-self-center md:justify-self-start overflow-hidden">
+    <div className="justify-self-center md:justify-self-start portfolio-media-shadow">
       <div
         className={`
           ${alignClass}
@@ -52,7 +52,7 @@ export default function MediaSlotC({
           w-full
           max-w-[65vw] lg:max-w-[20vw]  /* laptop 1024px+: matches square aspect */
           ${shapeClass}      /* aspect ratio = shape */
-          flex items-center justify-center
+          flex items-center justify-center overflow-hidden
           bg-neutral-200
           ${borderClass}
           ${shadowClass}
@@ -80,7 +80,7 @@ export function MediaSlotR({
   alt,
   shape = "1:1",
   border = true,
-  shadow = true,
+  shadow = false,
   align = "left",
 }: MediaSlotProps) {
   const shapeClass =
@@ -103,7 +103,7 @@ export function MediaSlotR({
     align === "center" ? "mx-auto" : align === "right" ? "ml-auto" : "mr-auto";
 
   return (
-    <div className="justify-self-center md:justify-self-start overflow-hidden">
+    <div className="justify-self-center md:justify-self-start portfolio-media-shadow">
       <div
         className={`
           ${alignClass}
@@ -111,7 +111,7 @@ export function MediaSlotR({
           w-full
           max-w-[43vw]          /* smaller cap than the canvas version */
           ${shapeClass}
-          flex items-center justify-center
+          flex items-center justify-center overflow-hidden
           bg-neutral-200
           ${borderClass}
           ${shadowClass}

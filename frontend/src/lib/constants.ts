@@ -4,13 +4,13 @@
  */
 
 /** Opacity for theme pattern on live pages (0–1). Lower = more subtle. */
-export const THEME_PATTERN_OPACITY = 0.08;
+export const THEME_PATTERN_OPACITY = 0.05;
 
 /** Opacity for the profile preview card in Settings > Customization. */
-export const THEME_PATTERN_PREVIEW_OPACITY_PROFILE = 0.15;
+export const THEME_PATTERN_PREVIEW_OPACITY_PROFILE = 0.02;
 
 /** Opacity for the portfolio preview card in Settings > Customization. */
-export const THEME_PATTERN_PREVIEW_OPACITY_PORTFOLIO = 0.1;
+export const THEME_PATTERN_PREVIEW_OPACITY_PORTFOLIO = 0.02;
 
 /** Scale factor for the pattern (1 = default). >1 = larger, <1 = smaller. */
 export const THEME_PATTERN_SCALE = 1;

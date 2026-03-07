@@ -31,14 +31,15 @@ export default function ArtistLandingMotion({ pagesCount = 1 }: ArtistLandingMot
       if (compact) return;
       compact = true;
       rootEl.classList.add("artist-compact");
-      const bar = get("artist-profile-compact");
-      const target = shell.offsetTop - ((bar as HTMLElement | null)?.offsetHeight ?? 0);
       isAuto = true;
-      window.scrollTo({ top: Math.max(0, target), behavior: "smooth" });
+      // Wait for portfolio-shell min-height transition (500ms) to complete
       setTimeout(() => {
-        compactEnterY = window.scrollY;
-        isAuto = false;
-      }, 800);
+        document.getElementById("site-footer")?.scrollIntoView({ behavior: "smooth", block: "end" });
+        setTimeout(() => {
+          compactEnterY = window.scrollY;
+          isAuto = false;
+        }, 800);
+      }, 550);
     };
 
     const toExpanded = () => {

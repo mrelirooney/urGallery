@@ -19,13 +19,14 @@ export default function PortfolioTitle({ text, align = "left", size = "lg", colo
     align === "right" ? "text-right" :
     "text-left";
   
-  // Check if color is a hex code or Tailwind class
+  // Check if color is a hex code, CSS variable, or Tailwind class
   const isHexColor = color?.startsWith('#');
+  const isCssVar = color?.startsWith('var(');
   
   return (
     <p 
-      className={`${sizeClass} ${alignClass} ${isHexColor ? '' : color}`}
-      style={isHexColor ? { color } : undefined}
+      className={`${sizeClass} ${alignClass} ${(isHexColor || isCssVar) ? '' : (color ?? '')}`}
+      style={(isHexColor || isCssVar) ? { color: color! } : undefined}
     >
         {text}
     </p>

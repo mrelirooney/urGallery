@@ -12,10 +12,13 @@ type Props = {
     foreground: string;
     text: string;
     accent: string;
+    profileText?: string;
+    accentText?: string;
   };
+  textColor?: string;
 };
 
-export default function CompactContactButtons({ profile, customColors }: Props) {
+export default function CompactContactButtons({ profile, customColors, textColor }: Props) {
   const [copiedEmail, setCopiedEmail] = useState(false);
   const contacts = parseContacts(profile);
 
@@ -34,10 +37,9 @@ export default function CompactContactButtons({ profile, customColors }: Props) 
     }
   };
 
-  const bg = customColors?.text || '#11100e';
-  const iconColor = customColors?.background || '#faf7f2';
   const accent = customColors?.accent || '#c96a4a';
-  const textColor = customColors?.text || '#11100e';
+  const accentText = customColors?.accentText ?? customColors?.profileText ?? '#faf7f2';
+  const iconColor = textColor ?? customColors?.profileText ?? accentText;
 
   return (
     <div className="flex items-center gap-2 relative">
@@ -51,17 +53,17 @@ export default function CompactContactButtons({ profile, customColors }: Props) 
         <button
           key={i}
           onClick={() => handleContactClick(contact)}
-          className="h-8 w-8 rounded-full flex items-center justify-center transition-colors"
+          className="h-8 w-8 rounded-xs flex items-center justify-center transition-colors duration-200"
           style={{
-            backgroundColor: bg,
+            backgroundColor: 'transparent',
             color: iconColor,
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor = accent;
-            e.currentTarget.style.color = textColor;
+            e.currentTarget.style.color = accentText;
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = bg;
+            e.currentTarget.style.backgroundColor = 'transparent';
             e.currentTarget.style.color = iconColor;
           }}
           title={contact.platform}

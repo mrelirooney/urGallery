@@ -5,6 +5,8 @@ import ConditionalFooter from "@/components/layout/ConditionalFooter";
 import ConditionalNavbar from "@/components/layout/ConditionalNavbar";
 import LayoutWrapper from "@/components/layout/LayoutWrapper";
 import ColorThemeGuard from "@/components/artist/ColorThemeGuard";
+import { FrostedGlassHoverProvider } from "@/components/layout/FrostedGlassHoverContext";
+import MainWithPadding from "@/components/layout/MainWithPadding";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,16 +32,21 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={raleway.variable}>
-      <body className="min-h-dvh flex flex-col bg-[var(--artist-background,var(--background))] text-neutral-900">
+      <body
+        className="min-h-dvh flex flex-col text-neutral-900"
+        style={{ background: "var(--body-background, var(--background))" }}
+      >
         <ColorThemeGuard />
-        {/* Shared page container: constrained for app routes, full-width for profile/portfolio */}
-        <LayoutWrapper>
-          <ConditionalNavbar />
-          <main className="flex-1 flex flex-col min-h-0 min-w-0">
-            {children}
-          </main>
-          <ConditionalFooter />
-        </LayoutWrapper>
+        <FrostedGlassHoverProvider>
+          {/* Shared page container: constrained for app routes, full-width for profile/portfolio */}
+          <LayoutWrapper>
+            <ConditionalNavbar />
+            <MainWithPadding>
+              {children}
+            </MainWithPadding>
+            <ConditionalFooter />
+          </LayoutWrapper>
+        </FrostedGlassHoverProvider>
       </body>
     </html>
   );

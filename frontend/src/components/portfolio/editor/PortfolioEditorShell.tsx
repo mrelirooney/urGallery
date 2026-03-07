@@ -748,7 +748,7 @@ export default function PortfolioEditorShell({
   return (
     <div
       className="w-full min-w-0 flex-1 flex flex-col min-h-0 pt-5"
-      style={{ backgroundColor: "var(--artist-background, #11100e)" }}
+      style={{ backgroundColor: "var(--artist-portfolio-bg, #11100e)" }}
     >
       {/* Off-screen capture for page thumbnails */}
       <PageThumbnailCapture
@@ -785,17 +785,17 @@ export default function PortfolioEditorShell({
       <section
         className="flex-1 justify-center items-center min-w-0 min-h-0 shadow-lg flex flex-col -mt-14 relative overflow-hidden"
         style={{
-          backgroundColor: "var(--artist-text, #faf7f2)",
-          color: "var(--artist-background, #11100e)",
+          backgroundColor: "var(--artist-background, #11100e)",
+          color: "var(--artist-text, #faf7f2)",
         }}
       >
         {themeSvgUrl && customColors && (
           <ThemePatternLayer
             svgUrl={themeSvgUrl}
             colorOverrides={{
-              "--artist-background": customColors.background,
+              "--artist-background": customColors.accent,
               "--artist-accent": customColors.accent,
-              "--artist-text": customColors.text,
+              "--artist-text": customColors.accent,
             }}
           />
         )}

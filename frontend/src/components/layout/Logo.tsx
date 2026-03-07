@@ -43,7 +43,7 @@ export function LogoPrimary({ className = "", ...rest }: Props) {
 export default function LogoMark({ className = "", ...rest }: LogoMarkProps) {
   return (
     <UrLogoMarkSvg
-      className={`opacity-60 hover:opacity-90 transition-opacity ${className}`}
+      className={`opacity-100 hover:opacity-90 transition-opacity ${className}`}
       {...rest}
     />
   );

@@ -12,6 +12,8 @@ type Props = {
     background: string;
     text: string;
     accent: string;
+    profileText?: string;
+    accentText?: string;
   };
   className?: string;
 };
@@ -24,9 +26,8 @@ export default function SaveProfileButton({ artistSlug, customColors, className 
   const isOwner = user?.slug === artistSlug;
   if (isOwner) return null;
 
-  const bg = customColors?.text || "#11100e";
-  const iconColor = customColors?.background || "#faf7f2";
   const accent = customColors?.accent || "#c96a4a";
+  const accentText = customColors?.accentText ?? customColors?.profileText ?? "#faf7f2";
 
   const handleClick = async () => {
     if (!user || loading) return;
@@ -58,20 +59,20 @@ export default function SaveProfileButton({ artistSlug, customColors, className 
     <button
       onClick={handleClick}
       disabled={loading}
-      className={`h-8 w-8 md:h-10 md:w-10 rounded-full flex items-center justify-center transition-colors ${className ?? ""}`}
+      className={`h-8 w-8 md:h-10 md:w-10 rounded-xs flex items-center justify-center transition-colors ${className ?? ""}`}
       style={{
-        backgroundColor: saved ? accent : bg,
-        color: saved ? iconColor : iconColor,
+        backgroundColor: saved ? accent : 'transparent',
+        color: saved ? accentText : (customColors?.profileText ?? accentText),
       }}
       onMouseEnter={(e) => {
         if (!loading) {
           e.currentTarget.style.backgroundColor = accent;
-          e.currentTarget.style.color = bg;
+          e.currentTarget.style.color = accentText;
         }
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.backgroundColor = saved ? accent : bg;
-        e.currentTarget.style.color = iconColor;
+        e.currentTarget.style.backgroundColor = saved ? accent : 'transparent';
+        e.currentTarget.style.color = saved ? accentText : (customColors?.profileText ?? accentText);
       }}
       title={saved ? "Remove from saves" : "Save profile"}
       aria-label={saved ? "Remove from saves" : "Save profile"}

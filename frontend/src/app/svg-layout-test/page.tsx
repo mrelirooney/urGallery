@@ -84,7 +84,7 @@ export default function SVG_LayoutTestPage() {
                 opacity: 0.7,
               }}
             >
-              v0.0.0
+              v0.5.0
             </span>
           </div>
           <nav className="flex flex-wrap items-center justify-center sm:justify-center md:justify-end gap-4 sm:gap-6 md:gap-8 lg:gap-10 xl:gap-12 order-1 md:order-2" style={{ color: "var(--artist-text, #faf7f2)" }}>
