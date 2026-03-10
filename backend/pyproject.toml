@@ -1,17 +1,25 @@
 [project]
-name = "backend"
+name = "urgallery-api"
 version = "0.1.0"
-description = "Add your description here"
+description = "Backend API for urGallery portfolio platform"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 dependencies = [
-    "dj-database-url>=3.0.1",
-    "django>=5.2.9",
-    "django-cors-headers>=4.9.0",
-    "django-rest-framework>=0.1.0",
-    "djangorestframework-simplejwt>=5.5.1",
-    "dotenv>=0.9.9",
-    "gunicorn>=23.0.0",
-    "pillow>=12.0.0",
-    "psycopg2-binary>=2.9.11",
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "sqlalchemy>=2.0.0",
+    "psycopg2-binary>=2.9.0",
+    "bcrypt>=4.0.0",
+    "email-validator>=2.0.0",
 ]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "httpx>=0.28.0",
+    "testcontainers[postgres]>=4.9.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
