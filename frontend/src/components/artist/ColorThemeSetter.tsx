@@ -37,6 +37,7 @@ export default function ColorThemeSetter({ colors, fontFamily }: ColorThemeSette
 
     const htmlElement = document.documentElement;
     htmlElement.style.setProperty("--artist-profile-bg", profileBg);
+    htmlElement.style.setProperty("background", profileBg);
     htmlElement.style.setProperty("--artist-portfolio-bg", portfolioBg);
     htmlElement.style.setProperty("--artist-profile-surface", profileSurface);
     htmlElement.style.setProperty("--artist-portfolio-surface", portfolioSurface);
@@ -69,6 +70,7 @@ export default function ColorThemeSetter({ colors, fontFamily }: ColorThemeSette
     );
 
     return () => {
+      htmlElement.style.removeProperty("background");
       htmlElement.style.removeProperty("--artist-profile-bg");
       htmlElement.style.removeProperty("--artist-portfolio-bg");
       htmlElement.style.removeProperty("--artist-profile-surface");

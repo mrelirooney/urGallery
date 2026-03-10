@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { hexToRgba, getTextColorForBackground, isLightColor } from "@/lib/colorUtils";
 import { useFrostedGlassHover } from "@/components/layout/FrostedGlassHoverContext";
 
@@ -18,6 +19,16 @@ export default function CompactProfileBar({
 }: Props) {
   const frostedCtx = useFrostedGlassHover();
   const isFrostedHovered = frostedCtx?.isHovered ?? false;
+  const [overlayVisible, setOverlayVisible] = useState(true);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const ev = e as CustomEvent<{ visible: boolean }>;
+      setOverlayVisible(ev.detail?.visible ?? true);
+    };
+    window.addEventListener("portfolio-overlay-visibility", handler);
+    return () => window.removeEventListener("portfolio-overlay-visibility", handler);
+  }, []);
   const frostedOpacity = frostedCtx ? (isFrostedHovered ? 0.75 : 0.05) : 0.05;
   const baseTextColor = portfolioBackground
     ? getTextColorForBackground(portfolioBackground)
@@ -39,8 +50,10 @@ export default function CompactProfileBar({
         ["--compact-bar-text" as string]: textColor,
         borderBottomWidth: 1,
         borderBottomColor: hexToRgba("#faf7f2", borderOpacity),
+        opacity: overlayVisible ? undefined : 0,
+        pointerEvents: overlayVisible ? undefined : "none",
       }}
-      className="opacity-0 sticky mt-20 md:mt-0 md:top-14 lg:mt-0 lg:top-0 top-0 z-50 hidden backdrop-blur-md overflow-hidden relative shrink-0 transition-colors duration-200 shadow-[0_4px_12px_rgba(0,0,0,0.15)]"
+      className="opacity-0 sticky mt-20 md:mt-0 md:top-14 lg:mt-0 lg:top-0 top-0 z-50 hidden backdrop-blur-md overflow-hidden relative shrink-0 transition-all duration-300 shadow-[0_4px_12px_rgba(0,0,0,0.15)]"
     >
       <div
         className="transition-opacity duration-200"

@@ -61,8 +61,9 @@ export default function MediaSlotC({
         {src ? (
           <img
             src={src}
-            alt={alt}
+            alt={alt ?? ""}
             className="h-full w-full object-cover"
+            loading="lazy"
           />
         ) : (
           <div className="text-neutral-500 text-sm">No image</div>
@@ -120,8 +121,9 @@ export function MediaSlotR({
         {src ? (
           <img
             src={src}
-            alt={alt}
+            alt={alt ?? ""}
             className="h-full w-full object-cover"
+            loading="lazy"
           />
         ) : (
           <div className="text-neutral-500 text-sm">No image</div>

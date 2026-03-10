@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import EditorTopBar from "./EditorTopBar";
 import PageThumbnailCapture from "./PageThumbnailCapture";
 import ThemePatternLayer from "../../artist/ThemePatternLayer";
@@ -14,6 +14,9 @@ import PrivacyModal from "./PrivacyModal";
 import useHistory from "@/hooks/useHistory";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
+import { getTextColorForBackground } from "@/lib/colorUtils";
+import { resizeImageForUpload } from "@/lib/imageUtils";
+import { X } from "lucide-react";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE ?? process.env.NEXT_PUBLIC_API_URL ?? "";
@@ -38,11 +41,45 @@ interface EditorPageApi {
   description_2: string;
 }
 
+/** Map API draft pages to frontend format, preserving local blob URLs when backend has no media */
+function mapApiPagesToEditor(
+  apiPages: EditorPageApi[],
+  currentPages: PortfolioPageData[]
+): PortfolioPageData[] {
+  const sorted = apiPages.slice().sort((a, b) => a.order - b.order);
+  return sorted.map((apiPage, i) => {
+    const current = currentPages[i];
+    const mediaSrc = apiPage.media_image
+      ? apiPage.media_image.startsWith("http")
+        ? apiPage.media_image
+        : `${API_BASE}${apiPage.media_image}`
+      : (current?.mediaSrc ?? null);
+    const mediaSrc2 = apiPage.media_image_2
+      ? apiPage.media_image_2.startsWith("http")
+        ? apiPage.media_image_2
+        : `${API_BASE}${apiPage.media_image_2}`
+      : (current?.mediaSrc2 ?? null);
+    return {
+      id: apiPage.id,
+      layoutType: (apiPage.layout || "layout-1") as LayoutType,
+      title: apiPage.title,
+      description: apiPage.description,
+      mediaSrc,
+      mediaShape: (apiPage.media_shape || "1:1") as MediaShapeType,
+      mediaSrc2,
+      mediaShape2: (apiPage.media_shape_2 || "1:1") as MediaShapeType,
+      title2: apiPage.title_2 || "",
+      description2: apiPage.description_2 || "",
+    };
+  });
+}
+
 export interface PortfolioEditorShellProps {
   portfolioTitle: string;
   initialPages: PortfolioPageData[];
   initialPageIndex?: number;
   initialPrivacy: "public" | "private";
+  initialPassword?: string;
   artistSlug: string;
   /** Optional – used for the privacy modal link */
   portfolioSlug?: string;
@@ -59,13 +96,13 @@ export interface PortfolioEditorShellProps {
 
 const createEmptyPage = (): PortfolioPageData => ({
   id: `page-${crypto.randomUUID?.() ?? Math.random().toString(36).slice(2)}`,
-  layoutType: "HeroLayoutSquare01",
+  layoutType: "layout-1",
   title: "",
   description: "",
   mediaSrc: null,
-  mediaShape2: "1:1",
+  mediaShape: "1:1",
   mediaSrc2: null,
-  mediaShape2_2: "1:1",
+  mediaShape2: "1:1",
   title2: "",
   description2: "",
 });
@@ -73,10 +110,9 @@ const createEmptyPage = (): PortfolioPageData => ({
 export type PrivacyState = "public" | "private";
 
 
-const djangoPrivacyFromState = (state: PrivacyState): "public" | "draft" | "link_only" => {
+const djangoPrivacyFromState = (state: PrivacyState): "public" | "draft" | "private" => {
   if (state === "public") return "public";
-  // Treat the "Private" button as Link-only in Django
-  return "link_only";
+  return "private";
 };
 
 interface EditorState {
@@ -84,6 +120,7 @@ interface EditorState {
   pages: PortfolioPageData[];
   currentPageIndex: number;
   privacy: PrivacyState;
+  password?: string;
 }
 
 export default function PortfolioEditorShell({
@@ -91,6 +128,7 @@ export default function PortfolioEditorShell({
   initialPages,
   initialPageIndex = 0,
   initialPrivacy,
+  initialPassword = "",
   portfolioSlug,
   customColors,
   themeSvgUrl,
@@ -109,6 +147,7 @@ export default function PortfolioEditorShell({
         ? initialPageIndex
         : 0,
     privacy: initialPrivacy,
+    password: initialPassword,
   };
 
   /**
@@ -129,6 +168,32 @@ export default function PortfolioEditorShell({
   // -------- Modals --------
   const [isLayoutModalOpen, setIsLayoutModalOpen] = useState(false);
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
+  const [privacyModalPublishContext, setPrivacyModalPublishContext] = useState(false);
+  const [isDraftSavedModalOpen, setIsDraftSavedModalOpen] = useState(false);
+  const [isBackWarningModalOpen, setIsBackWarningModalOpen] = useState(false);
+  const [isPublishSuccessModalOpen, setIsPublishSuccessModalOpen] = useState(false);
+
+  // Track in-flight image uploads so we wait for them before publish
+  const pendingUploadsRef = useRef<Set<Promise<void>>>(new Set());
+  const hasRunInitialSyncRef = useRef(false);
+
+  // Auto-save when we have pages with string IDs (new portfolio) so they get numeric IDs for image uploads
+  useEffect(() => {
+    if (!portfolioSlug || hasRunInitialSyncRef.current) return;
+    const hasStringIds = pages.some((p) => typeof p.id !== "number");
+    if (!hasStringIds) return;
+    hasRunInitialSyncRef.current = true;
+    savePortfolio(undefined, { silent: true }).catch(() => {});
+  }, [portfolioSlug, pages]);
+
+  // Lock scroll when modals are open
+  useEffect(() => {
+    if (isDraftSavedModalOpen || isBackWarningModalOpen || isPublishSuccessModalOpen) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => { document.body.style.overflow = prev; };
+    }
+  }, [isDraftSavedModalOpen, isBackWarningModalOpen, isPublishSuccessModalOpen]);
 
   // Force layout display when user selects a new layout (bypasses any state sync delay)
   const [layoutOverride, setLayoutOverride] = useState<LayoutType | null>(null);
@@ -381,33 +446,47 @@ export default function PortfolioEditorShell({
   }, [pages, currentPageIndex, updateState, portfolioSlug]);
 
 
-  const handleCancel = () => {
-    // Navigate back to the artist's profile page with a full reload
+  const handleCancel = () => setIsBackWarningModalOpen(true);
+
+  const goToProfile = () => {
     if (artistSlug) {
       window.location.href = `/${artistSlug}`;
     } else {
-      // Fallback: go back in history if no slug
       window.history.back();
-      }
+    }
   };
 
-  const handleOpenPrivacy = () => setIsPrivacyModalOpen(true);
+  const handleSaveAndGo = async () => {
+    const ok = await savePortfolio();
+    if (ok) {
+      setIsBackWarningModalOpen(false);
+      goToProfile();
+    }
+  };
+
+  const handleOpenPrivacy = () => {
+    setPrivacyModalPublishContext(false);
+    setIsPrivacyModalOpen(true);
+  };
   const handleOpenLayout = () => setIsLayoutModalOpen(true);
-  const handleClosePrivacy = () => setIsPrivacyModalOpen(false);
+  const handleClosePrivacy = () => {
+    setPrivacyModalPublishContext(false);
+    setIsPrivacyModalOpen(false);
+  };
   const handleCloseLayout = () => setIsLayoutModalOpen(false);
 
   const savePortfolio = async (
     nextPrivacy?: PrivacyState,
-    options?: { silent?: boolean }
-  ) => {
+    options?: { silent?: boolean; password?: string }
+  ): Promise<boolean> => {
     if (!portfolioSlug) {
       console.warn("No portfolioSlug – cannot sync draft/publish");
-      return;
+      return false;
     }
 
     const effectivePrivacy: PrivacyState = nextPrivacy ?? editorState.privacy;
 
-    const payload = {
+    const payload: Record<string, unknown> = {
       title: editorState.title,
       privacy: djangoPrivacyFromState(effectivePrivacy),
       pages: editorState.pages.map((page, index) => ({
@@ -422,6 +501,10 @@ export default function PortfolioEditorShell({
         order: index,
       })),
     };
+    const passwordToSave = options?.password ?? editorState.password;
+    if (effectivePrivacy === "private" && passwordToSave) {
+      payload.password = passwordToSave;
+    }
     let res;
     try {
       res = await fetch(
@@ -464,6 +547,14 @@ export default function PortfolioEditorShell({
         return false;
       }
 
+      const data = (await res.json()) as { pages?: EditorPageApi[] };
+      if (data?.pages?.length) {
+        updateState((prev) => {
+          const mappedPages = mapApiPagesToEditor(data.pages!, prev.pages);
+          return { ...prev, pages: mappedPages };
+        });
+      }
+
       if (!options?.silent) {
       }
       return true;
@@ -483,9 +574,50 @@ export default function PortfolioEditorShell({
   }
 
 
-  const handleDraft = () => {
+  const handleDraft = async () => {
     // treat “Save Draft” as “save, keep current privacy (often 'draft')”
-    void savePortfolio();
+    const ok = await savePortfolio();
+    if (ok) setIsDraftSavedModalOpen(true);
+  };
+
+  const PUBLISH_UPLOAD_TIMEOUT_MS = 30_000;
+
+  const doPublish = async () => {
+    if (!portfolioSlug) throw new Error("Cannot publish: no portfolio slug");
+    const saveResult = await savePortfolio(undefined, { silent: true });
+    if (saveResult === false) throw new Error("Failed to save draft before publishing");
+    // Wait for any in-flight image uploads to complete before publishing (with timeout)
+    const pending = Array.from(pendingUploadsRef.current);
+    if (pending.length > 0) {
+      const timeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Image uploads are taking too long. Please try again in a moment.")), PUBLISH_UPLOAD_TIMEOUT_MS)
+      );
+      await Promise.race([Promise.all(pending), timeout]);
+    }
+    const res = await fetch(
+      `${API_BASE}/api/portfolios/${portfolioSlug}/editor/publish/`,
+      {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCsrfToken(),
+          "ngrok-skip-browser-warning": "true",
+        },
+      },
+    );
+    if (!res.ok) {
+      const errorText = await res.text();
+      let errorMessage = "Failed to publish portfolio";
+      try {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.detail || errorMessage;
+      } catch {
+        errorMessage = errorText || errorText;
+      }
+      throw new Error(errorMessage);
+    }
+    setIsPublishSuccessModalOpen(true);
   };
 
   const handlePublish = async () => {
@@ -493,56 +625,19 @@ export default function PortfolioEditorShell({
       console.error("Cannot publish: no portfolio slug");
       return;
     }
-
+    if (privacy === "private" && !editorState.password) {
+      setPrivacyModalPublishContext(true);
+      setIsPrivacyModalOpen(true);
+      return;
+    }
     try {
-      // First, save the draft to ensure all changes are persisted
-      const saveResult = await savePortfolio(undefined, { silent: true });
-      if (saveResult === false) {
-        console.error("Failed to save draft before publishing");
-        alert("Failed to save draft. Please try again.");
-        return;
-      }
-
-      // Then publish the draft to live
-      const res = await fetch(
-        `${API_BASE}/api/portfolios/${portfolioSlug}/editor/publish/`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": getCsrfToken(),
-            "ngrok-skip-browser-warning": "true",
-          },
-        },
-      );
-
-      if (!res.ok) {
-        const errorText = await res.text();
-        console.error("Publish failed", res.status, errorText);
-        let errorMessage = "Failed to publish portfolio";
-        try {
-          const errorData = JSON.parse(errorText);
-          errorMessage = errorData.detail || errorMessage;
-        } catch {
-          errorMessage = errorText || errorMessage;
-        }
-        alert(errorMessage);
-        return;
-      }
-
-      const data = await res.json();
-        alert("Portfolio published successfully!");
-        // Navigate back to the artist's profile page with a full reload
-        if (artistSlug) {
-          window.location.href = `/${artistSlug}`;
-        }
-            } catch (err: any) {
+      await doPublish();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Unknown error";
       console.error("Error publishing portfolio:", err);
-      alert(`Error publishing portfolio: ${err?.message || "Unknown error"}`);
+      alert(`Error publishing portfolio: ${msg}`);
     }
   };
-
 
   // -------- Page-level change handlers --------
   const handleChangePageTitle = (pageIndex: number, newTitle: string) => {
@@ -621,46 +716,49 @@ export default function PortfolioEditorShell({
     return;
   }
 
-    try {
-      const formData = new FormData();
-
-      if (file) {
-        formData.append("media_image", file);
-      } else {
-        formData.append("media_image", "");
-      }
-
-      const res = await fetch(
-        `${API_BASE}/api/portfolios/${encodeURIComponent(
-          portfolioSlug,
-        )}/editor/pages/${page.id}/`,
-        {
-          method: "PATCH",
-          credentials: "include",          // ✅ new
-          headers: {
-            "X-CSRFToken": getCsrfToken(),
-            "ngrok-skip-browser-warning": "true",
-          },
-          body: formData,
-        },
-      );
-
-        if (!res.ok) {
-          console.error("Failed to update page image", res.status, await res.text());
-          return;
+    const uploadPromise = new Promise<void>((resolve) => {
+      (async () => {
+        try {
+          const formData = new FormData();
+          if (file) {
+            const fileToUpload = await resizeImageForUpload(file);
+            formData.append("media_image", fileToUpload);
+          } else {
+            formData.append("media_image", "");
+          }
+          const res = await fetch(
+            `${API_BASE}/api/portfolios/${encodeURIComponent(
+              portfolioSlug,
+            )}/editor/pages/${page.id}/`,
+            {
+              method: "PATCH",
+              credentials: "include",
+              headers: {
+                "X-CSRFToken": getCsrfToken(),
+                "ngrok-skip-browser-warning": "true",
+              },
+              body: formData,
+            },
+          );
+          if (!res.ok) {
+            console.error("Failed to update page image", res.status, await res.text());
+            return;
+          }
+          const data = await res.json();
+          const newUrl = (data as any).media_image as string | null;
+          if (newUrl) {
+            updatePage(pageIndex, (prev) => ({ ...prev, mediaSrc: newUrl }));
+          }
+        } catch (err) {
+          console.error("Error while uploading page image", err);
+        } finally {
+          pendingUploadsRef.current.delete(uploadPromise);
         }
-
-        const data = await res.json();
-        const newUrl = (data as any).media_image as string | null;
-
-        // Use the canonical URL returned by Django
-        if (newUrl) {
-          updatePage(pageIndex, (prev) => ({ ...prev, mediaSrc: newUrl }));
-        }
-      } catch (err) {
-        console.error("Error while uploading page image", err);
-      }
-    };
+        resolve();
+      })();
+    });
+    pendingUploadsRef.current.add(uploadPromise);
+  };
 
   const handleChangeImage2 = async (pageIndex: number, file: File | null) => {
     const page = pages[pageIndex];
@@ -683,45 +781,48 @@ export default function PortfolioEditorShell({
       return;
     }
 
-    try {
-      const formData = new FormData();
-
-      if (file) {
-        formData.append("media_image_2", file);
-      } else {
-        formData.append("media_image_2", "");
-      }
-
-      const res = await fetch(
-        `${API_BASE}/api/portfolios/${encodeURIComponent(
-          portfolioSlug
-        )}/editor/pages/${page.id}/`,
-        {
-          method: "PATCH",
-          credentials: "include",
-          headers: {
-            "X-CSRFToken": getCsrfToken(),
-            "ngrok-skip-browser-warning": "true",
-          },
-          body: formData,
+    const uploadPromise = new Promise<void>((resolve) => {
+      (async () => {
+        try {
+          const formData = new FormData();
+          if (file) {
+            const fileToUpload = await resizeImageForUpload(file);
+            formData.append("media_image_2", fileToUpload);
+          } else {
+            formData.append("media_image_2", "");
+          }
+          const res = await fetch(
+            `${API_BASE}/api/portfolios/${encodeURIComponent(
+              portfolioSlug
+            )}/editor/pages/${page.id}/`,
+            {
+              method: "PATCH",
+              credentials: "include",
+              headers: {
+                "X-CSRFToken": getCsrfToken(),
+                "ngrok-skip-browser-warning": "true",
+              },
+              body: formData,
+            }
+          );
+          if (!res.ok) {
+            console.error("Failed to update page image 2", res.status, await res.text());
+            return;
+          }
+          const data = await res.json();
+          const newUrl = (data as any).media_image_2 as string | null;
+          if (newUrl) {
+            updatePage(pageIndex, (prev) => ({ ...prev, mediaSrc2: newUrl }));
+          }
+        } catch (err) {
+          console.error("Error while uploading page image 2", err);
+        } finally {
+          pendingUploadsRef.current.delete(uploadPromise);
         }
-      );
-
-      if (!res.ok) {
-        console.error("Failed to update page image 2", res.status, await res.text());
-        return;
-      }
-
-      const data = await res.json();
-      const newUrl = (data as any).media_image_2 as string | null;
-
-      // Use the canonical URL returned by Django
-      if (newUrl) {
-        updatePage(pageIndex, (prev) => ({ ...prev, mediaSrc2: newUrl }));
-      }
-    } catch (err) {
-      console.error("Error while uploading page image 2", err);
-    }
+        resolve();
+      })();
+    });
+    pendingUploadsRef.current.add(uploadPromise);
   };
 
   const handleChangeTitle2 = (pageIndex: number, newTitle: string) => {
@@ -736,19 +837,19 @@ export default function PortfolioEditorShell({
     updateState((prev) => ({ ...prev, title: value }));
   };
 
-  const handleChangePrivacy = async (nextPrivacy: PrivacyState) => {
+  const handleChangePrivacy = async (nextPrivacy: PrivacyState, password?: string) => {
     // Update local state immediately for responsive UI
-    updateState((prev) => ({ ...prev, privacy: nextPrivacy }));
+    updateState((prev) => ({ ...prev, privacy: nextPrivacy, password }));
     
-    // Save to backend immediately
-    await savePortfolio(nextPrivacy, { silent: true });
+    // Save to backend immediately (pass password so it's available before state flushes)
+    await savePortfolio(nextPrivacy, { silent: true, password });
   };
 
   // -------- Render --------
   return (
     <div
       className="w-full min-w-0 flex-1 flex flex-col min-h-0 pt-5"
-      style={{ backgroundColor: "var(--artist-portfolio-bg, #11100e)" }}
+      style={{ backgroundColor: customColors?.background ?? "var(--artist-profile-bg, #faf7f2)" }}
     >
       {/* Off-screen capture for page thumbnails */}
       <PageThumbnailCapture
@@ -759,6 +860,7 @@ export default function PortfolioEditorShell({
 
       {/* Top bar with thumbnails + actions */}
       <EditorTopBar
+        customColors={customColors}
         pages={pages}
         pageThumbnails={pageThumbnails}
         currentPageIndex={currentPageIndex}
@@ -799,15 +901,16 @@ export default function PortfolioEditorShell({
             }}
           />
         )}
-        <div className="w-full max-w-6xl xl:max-w-7xl xl-lg:max-w-[1310px] 2xl:max-w-[1310px] mx-auto px-4 sm:px-6 md:px-10 lg:px-10 xl:px-8 2xl:px-20 shrink-0 relative z-10">
+        <div className="w-full max-w-6xl xl:max-w-7xl xl-lg:max-w-[1310px] 2xl:max-w-[1310px] mx-auto px-4 sm:px-6 md:px-10 lg:px-10 xl:px-8 2xl:px-20 shrink-0 relative z-10 max-h-[calc(100vh-8rem)]">
         {/* Actual page canvas */}
-        <div className="flex justify-center">
+        <div className="flex justify-center min-h-0">
           <div className="w-full">
             <PageRenderer
               key={`page-${currentPage?.id ?? currentPageIndex}-${layoutOverride ?? currentPage?.layoutType ?? "default"}`}
               pages={pages}
               currentPageIndex={currentPageIndex}
               isEditor
+              customColors={customColors}
               layoutOverride={layoutOverride}
               onChangeTitle={handleChangePageTitle}
               onChangeDescription={handleChangePageDescription}
@@ -843,7 +946,138 @@ export default function PortfolioEditorShell({
                 ? `${window.location.origin}/${artistSlug}?portfolio=${portfolioSlug}#portfolio-shell`
                 : portfolioSlug ?? ""
             }
+            publishContext={privacyModalPublishContext}
+            onPublish={doPublish}
+            initialPassword={editorState.password ?? ""}
+            customColors={customColors}
           />
+
+          {isBackWarningModalOpen && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+              <div
+                className="w-full max-w-sm mx-4 rounded-xs p-6 shadow-xl relative"
+                style={{
+                  backgroundColor: customColors?.background ?? "#faf7f2",
+                  color: getTextColorForBackground(customColors?.background ?? "#faf7f2"),
+                  border: "1px solid rgba(255, 253, 250, 0.3)",
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setIsBackWarningModalOpen(false)}
+                  className="absolute top-3 right-3 p-1 rounded opacity-70 hover:opacity-100 transition-opacity z-10"
+                  style={{ color: "inherit" }}
+                  aria-label="Close"
+                >
+                  <X size={20} />
+                </button>
+                <h3 className="text-lg font-medium mb-2 text-center">Unsaved changes</h3>
+                <p className="text-sm opacity-80 mb-6 text-center">
+                  Continue without saving?
+                </p>
+                <div className="flex gap-3 justify-center">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsBackWarningModalOpen(false);
+                      goToProfile();
+                    }}
+                    className="px-4 py-2 rounded-xs font-medium text-sm transition-colors"
+                    style={{
+                      backgroundColor: customColors?.text ?? "#11100e",
+                      color: getTextColorForBackground(customColors?.text ?? "#11100e"),
+                    }}
+                  >
+                    Discard
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSaveAndGo}
+                    className="px-4 py-2 rounded-xs font-medium text-sm transition-colors"
+                    style={{
+                      backgroundColor: customColors?.accent ?? "#c96a4a",
+                      color: getTextColorForBackground(customColors?.accent ?? "#c96a4a"),
+                    }}
+                  >
+                    Save & go
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {isDraftSavedModalOpen && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+              <div
+                className="w-full max-w-sm mx-4 rounded-xs p-6 shadow-xl"
+                style={{
+                  backgroundColor: customColors?.background ?? "#faf7f2",
+                  color: getTextColorForBackground(customColors?.background ?? "#faf7f2"),
+                  border: "1px solid rgba(255, 253, 250, 0.3)",
+                }}
+              >
+                <h3 className="text-lg font-medium mb-2 text-center">Draft saved</h3>
+                <p className="text-sm opacity-80 mb-6 text-center">
+                  Keep editing or return to your profile?
+                </p>
+                <div className="flex gap-3 justify-center">
+                  <button
+                    type="button"
+                    onClick={() => setIsDraftSavedModalOpen(false)}
+                    className="px-4 py-2 rounded-xs font-medium text-sm transition-colors"
+                    style={{
+                      backgroundColor: customColors?.text ?? "#11100e",
+                      color: getTextColorForBackground(customColors?.text ?? "#11100e"),
+                    }}
+                  >
+                    Keep editing
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => router.push(`/${artistSlug}`)}
+                    className="px-4 py-2 rounded-xs font-medium text-sm transition-colors"
+                    style={{
+                      backgroundColor: customColors?.accent ?? "#c96a4a",
+                      color: getTextColorForBackground(customColors?.accent ?? "#c96a4a"),
+                    }}
+                  >
+                    Back to profile
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {isPublishSuccessModalOpen && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+              <div
+                className="w-full max-w-sm mx-4 rounded-xs p-6 shadow-xl"
+                style={{
+                  backgroundColor: customColors?.background ?? "#faf7f2",
+                  color: getTextColorForBackground(customColors?.background ?? "#faf7f2"),
+                  border: "1px solid rgba(255, 253, 250, 0.3)",
+                }}
+              >
+                <h3 className="text-lg font-medium mb-6 text-center">Portfolio Published</h3>
+                <div className="flex justify-center">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsPublishSuccessModalOpen(false);
+                      router.push(`/${artistSlug}`);
+                    }}
+                    className="px-4 py-2 rounded-xs font-medium text-sm transition-colors"
+                    style={{
+                      backgroundColor: customColors?.accent ?? "#c96a4a",
+                      color: getTextColorForBackground(customColors?.accent ?? "#c96a4a"),
+                    }}
+                  >
+                    Go back to profile
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>

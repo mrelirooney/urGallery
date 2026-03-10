@@ -47,7 +47,7 @@ export interface PortfolioSummary {
   id: number;
   slug: string;
   title: string;
-  privacy: "public" | "link_only" | "private";
+  privacy: "public" | "private";
   order_index: number;
   pages_count: number;
   first_page?: PortfolioPage;

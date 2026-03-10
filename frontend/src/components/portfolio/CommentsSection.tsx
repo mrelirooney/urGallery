@@ -216,9 +216,9 @@ export default function CommentsSection({
 
       <div
         ref={panelRef}
-        className={`fixed left-0 top-0 bottom-0 w-full sm:w-[400px] h-screen flex flex-col
+        className={`fixed right-0 top-0 bottom-0 w-full sm:w-[400px] h-screen flex flex-col
           shadow-xl z-60 transform transition-transform duration-300 ease-in-out
-          ${isOpen ? "translate-x-0" : "-translate-x-full"}
+          ${isOpen ? "translate-x-0" : "translate-x-full"}
         `}
         style={{ backgroundColor: text }}
       >

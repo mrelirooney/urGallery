@@ -57,6 +57,10 @@ export default function Footer() {
     return () => observer.disconnect();
   }, [pathname]);
 
+  const hideFooterBorder =
+    pathname === "/" ||
+    pathname?.startsWith("/login") ||
+    pathname?.startsWith("/signup");
   const isArtistPage = pathname &&
     pathname !== '/' &&
     !pathname.startsWith('/login') &&
@@ -67,21 +71,47 @@ export default function Footer() {
 
   const frostedCtx = useFrostedGlassHover();
   const isFrostedHovered = frostedCtx?.isHovered ?? false;
-  const frostedOpacity = isArtistPage && customColors && frostedCtx ? (isFrostedHovered ? 0.75 : 0.05) : 0.05;
+  const isEditorPage = pathname?.includes("/edit");
+  const [overlayVisible, setOverlayVisible] = useState(true);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const ev = e as CustomEvent<{ visible: boolean }>;
+      setOverlayVisible(ev.detail?.visible ?? true);
+    };
+    window.addEventListener("portfolio-overlay-visibility", handler);
+    return () => window.removeEventListener("portfolio-overlay-visibility", handler);
+  }, []);
+  const frostedOpacity =
+    isEditorPage && customColors
+      ? 1
+      : isArtistPage && customColors && frostedCtx
+        ? (isFrostedHovered ? 0.75 : 0.05)
+        : 0.05;
 
   const footerBg = customColors?.background || "var(--background)";
   const portfolioBg = customColors?.portfolioBg || customColors?.text;
   const baseTextColor = portfolioBg ? getTextColorForBackground(portfolioBg) : "#6b7280";
-  const footerText = isArtistPage && customColors
-    ? (isFrostedHovered ? "#faf7f2" : baseTextColor)
-    : (customColors?.text || "#6b7280");
+  const footerText =
+    isEditorPage && customColors
+      ? getTextColorForBackground(footerBg)
+      : isArtistPage && customColors
+        ? (isFrostedHovered ? "#faf7f2" : baseTextColor)
+        : (customColors?.text || "#6b7280");
   const footerAccent = customColors?.accent || "#c96a4a";
   const bgForBorder = portfolioBg ?? customColors?.background ?? "#faf7f2";
   const borderOpacity = isLightColor(bgForBorder) ? 0.3 : 0.1;
 
   const containerClass = isArtistPage
-    ? "h-auto md:h-14 flex flex-col md:flex-row items-center justify-space-between md:justify-between text-xs max-w-6xl xl:max-w-7xl xl-lg:max-w-[1310px] 2xl:max-w-[1310px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-16 2xl:px-20 py-3 md:py-0 gap-3 sm:gap-4 md:gap-0 opacity-70"
+    ? "h-auto md:h-14 flex flex-col md:flex-row items-center justify-space-between md:justify-between text-xs max-w-7.5xl lg:max-w-7.5xl xl:max-w-7.5xl 2xl:max-w-7.5xl mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-16 2xl:px-20 py-3 md:py-0 gap-3 sm:gap-4 md:gap-0 opacity-70"
     : "h-auto md:h-14 flex flex-col md:flex-row items-center justify-space-between md:justify-between text-xs max-w-full px-0 py-3 md:py-0 gap-3 sm:gap-4 md:gap-0 opacity-70";
+
+  const footerClassName =
+    isArtistPage && customColors
+      ? `relative z-[50] -mt-14 backdrop-blur-md transition-all duration-300 shadow-[0_-4px_12px_rgba(0,0,0,0.15)] ${overlayVisible ? "" : "opacity-0 pointer-events-none"}`
+      : hideFooterBorder
+        ? ""
+        : "border-t-2 border-[#faf7f2]";
 
   return (
     <footer
@@ -89,11 +119,7 @@ export default function Footer() {
       ref={frostedCtx?.getRefCallback("footer")}
       onMouseEnter={() => frostedCtx?.onMouseEnter("footer")}
       onMouseLeave={(e) => frostedCtx?.onMouseLeave("footer", e.relatedTarget)}
-      className={
-        isArtistPage && customColors
-          ? "relative z-[60] -mt-14 backdrop-blur-md transition-colors duration-200 shadow-[0_-4px_12px_rgba(0,0,0,0.15)]"
-          : "border-t-2 border-[#faf7f2]"
-      }
+      className={footerClassName}
       style={{
         backgroundColor: isArtistPage && customColors ? hexToRgba(footerBg, frostedOpacity) : footerBg,
         ...(isArtistPage && customColors && {

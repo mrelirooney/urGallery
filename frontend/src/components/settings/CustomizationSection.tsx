@@ -365,7 +365,7 @@ export default function CustomizationSection({ onSaveRef }: CustomizationSection
             </button>
             {fontDropdownOpen && (
               <div
-                className="text-[var(--foreground)] absolute z-50 mt-1 left-0 right-0 max-h-64 overflow-y-auto border border-neutral-200 dark:border-neutral-600 rounded-xs bg-[var(--background)] shadow-lg"
+                className="text-[var(--foreground)] absolute z-50 mt-1 left-0 right-0 max-h-[200px] overflow-y-auto border border-neutral-200 dark:border-neutral-600 rounded-xs bg-[var(--background)] shadow-lg"
                 onMouseLeave={() => setHoveredFont(null)}
               >
                 {GOOGLE_FONTS.map((f) => {

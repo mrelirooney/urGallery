@@ -7,6 +7,8 @@ from .api import search_artists
 from .views import (
     ArtistLandingView,
     ArtistPortfolioDetailView,
+    PortfolioUnlockView,
+    PortfolioPrivacyView,
     PortfolioCommentListCreateView,
     PortfolioCommentDeleteView,
 )
@@ -23,6 +25,20 @@ urlpatterns = [
         "<slug:artist_slug>/portfolios/<slug:slug>/",
         ArtistPortfolioDetailView.as_view(),
         name="artist-portfolio-detail",
+    ),
+
+    # POST /api/artists/<artist_slug>/portfolios/<portfolio_slug>/unlock/
+    path(
+        "<slug:artist_slug>/portfolios/<slug:slug>/unlock/",
+        PortfolioUnlockView.as_view(),
+        name="portfolio-unlock",
+    ),
+
+    # PATCH /api/artists/<artist_slug>/portfolios/<portfolio_slug>/privacy/
+    path(
+        "<slug:artist_slug>/portfolios/<slug:slug>/privacy/",
+        PortfolioPrivacyView.as_view(),
+        name="portfolio-privacy",
     ),
 
     # GET/POST /api/artists/<artist_slug>/portfolios/<portfolio_slug>/comments/

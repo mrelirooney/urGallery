@@ -115,14 +115,16 @@ class ProfileWriteSerializer(serializers.ModelSerializer):
         first_name = validated_data.pop("first_name", None)
         last_name = validated_data.pop("last_name", None)
         
-        # If display_name is blank, use first_name + last_name as fallback
-        display_name = (validated_data.get("display_name") or "").strip()
-        if not display_name:
-            fn = first_name if first_name is not None else instance.user.first_name or ""
-            ln = last_name if last_name is not None else instance.user.last_name or ""
-            combined = f"{fn} {ln}".strip()
-            if combined:
-                validated_data["display_name"] = combined
+        # Only apply first_name + last_name fallback when display_name was explicitly sent and is blank.
+        # Do NOT overwrite when display_name is omitted (e.g. from Customization-only PATCH).
+        if "display_name" in validated_data:
+            display_name = (validated_data.get("display_name") or "").strip()
+            if not display_name:
+                fn = first_name if first_name is not None else instance.user.first_name or ""
+                ln = last_name if last_name is not None else instance.user.last_name or ""
+                combined = f"{fn} {ln}".strip()
+                if combined:
+                    validated_data["display_name"] = combined
         
         # Update Profile fields
         profile = super().update(instance, validated_data)
@@ -151,9 +153,9 @@ class PortfolioSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data["user"] = self.context["request"].user
-        # Set default privacy to link_only if not provided
+        # Set default privacy to private if not provided
         if "privacy" not in validated_data:
-            validated_data["privacy"] = "link_only"
+            validated_data["privacy"] = "private"
         return super().create(validated_data)
 
 class PageSerializer(serializers.ModelSerializer):

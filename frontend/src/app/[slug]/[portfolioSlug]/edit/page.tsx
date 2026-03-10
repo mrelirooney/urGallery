@@ -33,7 +33,8 @@ type EditorPortfolioApi = {
   title: string;
   slug: string;
   description: string;
-  privacy: "public" | "draft" | "link_only";
+  privacy: "public" | "draft" | "private";
+  password?: string;
   has_unpublished_changes?: boolean;
   pages: {
     id: number;
@@ -171,7 +172,7 @@ export default function EditPortfolioPage() {
     .sort((a, b) => a.order - b.order)
     .map((page) => ({
       id: page.id,
-      layoutType: (page.layout || "HeroLayoutSquare01") as LayoutType,
+      layoutType: (page.layout || "layout-1") as LayoutType,
       title: page.title,
       description: page.description,
       mediaSrc: page.media_image
@@ -179,22 +180,21 @@ export default function EditPortfolioPage() {
           ? page.media_image
           : `${API_BASE}${page.media_image}`
         : null,
-      // PortfolioEditorShell expects `mediaShape2`
-      mediaShape2: (page.media_shape || "1:1") as MediaShapeType,
-      // Second column fields
+      mediaShape: (page.media_shape || "1:1") as MediaShapeType,
       mediaSrc2: page.media_image_2
         ? page.media_image_2.startsWith("http")
           ? page.media_image_2
           : `${API_BASE}${page.media_image_2}`
         : null,
-      mediaShape2_2: (page.media_shape_2 || "1:1") as MediaShapeType,
+      mediaShape2: (page.media_shape_2 || "1:1") as MediaShapeType,
       title2: page.title_2 || "",
       description2: page.description_2 || "",
     }));
 
-  // Editor only needs public/private; backend still keeps draft/link_only
+  // Editor only needs public/private; backend keeps draft/private
   const initialPrivacy: "public" | "private" =
     apiPortfolio.privacy === "public" ? "public" : "private";
+  const initialPassword = apiPortfolio.password ?? "";
 
   return (
     <main className="flex-1 flex flex-col min-h-0 py-0" style={{ fontFamily: "var(--artist-font, 'Raleway'), sans-serif" }}>
@@ -208,6 +208,7 @@ export default function EditPortfolioPage() {
           initialPages={pages}
           initialPageIndex={0}
           initialPrivacy={initialPrivacy}
+          initialPassword={initialPassword}
           customColors={customColors}
           themeSvgUrl={themeSvgUrl}
         />

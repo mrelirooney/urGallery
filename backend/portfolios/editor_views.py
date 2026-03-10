@@ -54,6 +54,7 @@ def _get_or_create_draft(slug: str, user) -> DraftPortfolio:
         title=live.title,
         description=getattr(live, "description", "") or "",
         privacy=live.privacy,
+        password=getattr(live, "password", "") or "",
     )
 
     # Copy live pages into the draft
@@ -157,7 +158,7 @@ def editor_create_page(request, slug):
         "title": request.data.get("title") or "Untitled Page",
         "description": request.data.get("description") or "",
         # Use the PortfolioPageLayout enum for the default layout
-        "layout": request.data.get("layout") or PortfolioPageLayout.HERO_LAYOUT_SQUARE_01,
+        "layout": request.data.get("layout") or PortfolioPageLayout.LAYOUT_1,
         "order": next_order,
     }
 
@@ -284,6 +285,17 @@ def publish_portfolio(request, slug):
             if hasattr(portfolio, "description"):
                 portfolio.description = draft.description
             portfolio.privacy = draft.privacy
+            # Draft stores plaintext; live needs hash. Hash if plaintext, else copy.
+            draft_pw = getattr(draft, "password", "") or ""
+            if draft_pw:
+                from django.contrib.auth.hashers import make_password
+                if not (
+                    draft_pw.startswith("pbkdf2_")
+                    or draft_pw.startswith("argon2")
+                    or draft_pw.startswith("bcrypt$")
+                ):
+                    draft_pw = make_password(draft_pw)
+            portfolio.password = draft_pw
             portfolio.save()
 
             # 2) Replace live pages with draft pages

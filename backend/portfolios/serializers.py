@@ -52,12 +52,25 @@ class PageSummarySerializer(serializers.ModelSerializer):
         return build_media_url(request, obj.media_image_2.url)
 
 
+def _is_hashed_password(value: str) -> bool:
+    """True if value looks like a Django password hash (cannot be shown as plaintext)."""
+    if not value:
+        return False
+    return (
+        value.startswith("pbkdf2_")
+        or value.startswith("argon2")
+        or value.startswith("bcrypt$")
+    )
+
+
 class PortfolioDetailSerializer(serializers.ModelSerializer):
     """
     Editor view of a DraftPortfolio + its DraftPages.
+    Draft stores password as plaintext for owner display; hashed values return "".
     """
     
     pages = PageSummarySerializer(many=True, read_only=True)
+    password = serializers.SerializerMethodField()
 
     class Meta:
         model = DraftPortfolio
@@ -67,11 +80,20 @@ class PortfolioDetailSerializer(serializers.ModelSerializer):
             "slug",
             "description",
             "privacy",
+            "password",
             "has_unpublished_changes",
             "created_at",
             "updated_at",
             "pages",
         ]
+
+    def get_password(self, obj):
+        p = getattr(obj, "password", "") or ""
+        if not p:
+            return ""
+        if _is_hashed_password(p):
+            return ""  # Cannot show hashed password (e.g. draft created from live)
+        return p
 
 EditorPortfolioSerializer = PortfolioDetailSerializer
 
@@ -86,6 +108,7 @@ class PortfolioUpdateSerializer(serializers.ModelSerializer):
             "title",
             "description",
             "privacy",
+            "password",
         ]
 
 
@@ -158,7 +181,7 @@ class PortfolioEditorSaveSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = DraftPortfolio
-        fields = ["title", "description", "privacy", "pages"]
+        fields = ["title", "description", "privacy", "password", "pages"]
     
     def validate_privacy(self, value):
         """Ensure privacy value is valid."""
@@ -177,6 +200,13 @@ class PortfolioEditorSaveSerializer(serializers.ModelSerializer):
         instance.title = validated_data.get("title", instance.title)
         instance.description = validated_data.get("description", instance.description)
         instance.privacy = validated_data.get("privacy", instance.privacy)
+        if validated_data.get("privacy") == "public":
+            instance.password = ""
+        else:
+            raw_password = validated_data.get("password")
+            if raw_password is not None:
+                # Store plaintext in draft so owner can see/edit when they return
+                instance.password = raw_password if raw_password else ""
         instance.save()
         
         # Update/create/delete pages if provided
@@ -214,7 +244,7 @@ class PortfolioEditorSaveSerializer(serializers.ModelSerializer):
                     valid_layouts = [choice[0] for choice in PortfolioPageLayout.choices]
                     if layout_value not in valid_layouts:
                         # Default to a valid layout if invalid
-                        layout_value = PortfolioPageLayout.HERO_LAYOUT_SQUARE_01
+                        layout_value = PortfolioPageLayout.LAYOUT_1
                 
                 # Validate media_shape if provided
                 media_shape_value = page_data.get("media_shape", "1:1")
@@ -249,7 +279,7 @@ class PortfolioEditorSaveSerializer(serializers.ModelSerializer):
                         draft_portfolio=instance,
                         title=page_data.get("title", "Untitled Page"),
                         description=page_data.get("description", ""),
-                        layout=layout_value or "HeroLayoutSquare01",
+                        layout=layout_value or "layout-1",
                         media_shape=media_shape_value,
                         media_shape_2=page_data.get("media_shape_2", "1:1"),
                         title_2=page_data.get("title_2", ""),

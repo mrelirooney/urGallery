@@ -1,6 +1,8 @@
 # backend/artists/views.py
 
+import time
 from django.shortcuts import get_object_or_404
+from django.core.signing import TimestampSigner
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -40,8 +42,8 @@ class ArtistLandingView(APIView):
             profile, context={"request": request}
         ).data
 
-        # 3) Base queryset = this user's portfolios
-        portfolios_qs = Portfolio.objects.filter(user=profile.user)
+        # 3) Base queryset = this user's portfolios (exclude drafts - only public/private)
+        portfolios_qs = Portfolio.objects.filter(user=profile.user).exclude(privacy="draft")
 
         # 4) Privacy rules: show all portfolios to everyone (private appear in menu;
         #    frontend blurs private content for non-owners)
@@ -52,7 +54,7 @@ class ArtistLandingView(APIView):
         portfolios_qs = portfolios_qs.annotate(
             privacy_priority=Case(
                 When(privacy="public", then=1),
-                When(privacy="link_only", then=2),
+                When(privacy="private", then=2),
                 default=3,
                 output_field=IntegerField(),
             )
@@ -105,6 +107,91 @@ class ArtistPortfolioDetailView(RetrieveAPIView):
         return Portfolio.objects.filter(user=owner)
 
 
+class PortfolioUnlockView(APIView):
+    """
+    POST /api/artists/<artist_slug>/portfolios/<portfolio_slug>/unlock/
+    Body: { "password": "..." }
+    Returns: { "token": "signed_token" } on success.
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request, artist_slug: str, slug: str):
+        owner = get_object_or_404(Profile, slug=artist_slug).user
+        portfolio = get_object_or_404(
+            Portfolio.objects.filter(user=owner),
+            slug=slug,
+        )
+        if portfolio.privacy != "private":
+            return Response(
+                {"detail": "This portfolio is not password-protected."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        password = (request.data.get("password") or "").strip()
+        if not portfolio.check_password(password):
+            return Response(
+                {"detail": "Incorrect password."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        signer = TimestampSigner()
+        token = signer.sign(f"unlock:{portfolio.id}")
+        expires_at = int(time.time()) + (7 * 24 * 60 * 60)  # 7 days from now
+        return Response({"token": token, "expires_at": expires_at})
+
+
+class PortfolioPrivacyView(APIView):
+    """
+    PATCH /api/artists/<artist_slug>/portfolios/<portfolio_slug>/privacy/
+    Body: { "privacy": "public" | "private", "password": "..." }  (password required when going private)
+    Owner only. Updates live portfolio and draft to keep in sync.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, artist_slug: str, slug: str):
+        owner = get_object_or_404(Profile, slug=artist_slug).user
+        if request.user != owner:
+            return Response(
+                {"detail": "Only the owner can change privacy."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        portfolio = get_object_or_404(
+            Portfolio.objects.filter(user=owner),
+            slug=slug,
+        )
+        new_privacy = (request.data.get("privacy") or "").strip().lower()
+        if new_privacy not in ("public", "private"):
+            return Response(
+                {"detail": "privacy must be 'public' or 'private'."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        password = (request.data.get("password") or "").strip()
+
+        if new_privacy == "private":
+            if not password:
+                return Response(
+                    {"detail": "A password is required for private portfolios."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            from django.contrib.auth.hashers import make_password
+            portfolio.password = make_password(password)
+        else:
+            portfolio.password = ""
+
+        portfolio.privacy = new_privacy
+        portfolio.save()
+
+        # Sync draft (create if missing) so owner can pre-fill password when setting private again
+        from portfolios.editor_views import _get_or_create_draft
+        from portfolios.models import DraftPortfolio
+        draft = _get_or_create_draft(slug, owner)
+        draft.privacy = new_privacy
+        if new_privacy == "private":
+            draft.password = password  # Store plaintext for owner pre-fill
+        # When going public, keep draft.password for pre-fill
+        draft.save()
+
+        return Response({"privacy": new_privacy})
+
+
 # ---------- COMMENTS ----------
 
 
@@ -124,7 +211,7 @@ class PortfolioCommentListCreateView(generics.ListCreateAPIView):
         owner = get_object_or_404(Profile, slug=artist_slug).user
         qs = Portfolio.objects.filter(user=owner, slug=portfolio_slug)
         if not (self.request.user.is_authenticated and self.request.user == owner):
-            qs = qs.filter(privacy__in=["public", "link_only"])
+            qs = qs.filter(privacy__in=["public", "private"])
         return get_object_or_404(qs)
 
     def get_permissions(self):

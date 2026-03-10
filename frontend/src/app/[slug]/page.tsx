@@ -165,7 +165,7 @@ export default async function ArtistPage(
         profileText={customColors.profileText}
         portfolioBackground={customColors.text}
       >
-        <div className="max-w-6xl xl:max-w-7xl 2xl:max-w-[1310px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-16 2xl:px-20 py-4 md:py-4 lg:py-2 flex flex-col lg:min-h-0 lg:justify-start">
+        <div className="max-w-8xl lg:max-w-8xl xl:max-w-8xl 2xl:max-w-8xl mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-16 2xl:px-20 py-4 md:py-4 lg:py-2 flex flex-col lg:min-h-0 lg:justify-start">
           {/* Phone: back arrow, avatar, hamburger, portfolio title */}
           <div className="flex items-center justify-between md:hidden">
             <BackArrowButton />

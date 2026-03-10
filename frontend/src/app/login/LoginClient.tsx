@@ -27,10 +27,10 @@ export default function LoginClient() {
       await AuthAPI.login({ email, password });
 
       // 2) immediately pull /api/auth/me and update context
-      await refreshUser();
+      const user = await refreshUser();
 
-      // 3) bounce wherever you want and re-render server comps (Navbar)
-      router.push("/");
+      // 3) redirect to profile page if user has slug, otherwise homepage
+      router.push(user?.slug ? `/${user.slug}` : "/");
       router.refresh();
     } catch (err: any) {
       setError(err?.message || "Login failed");

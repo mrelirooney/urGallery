@@ -27,36 +27,39 @@ export function useAuth() {
   const router = useRouter();
   const pathname = usePathname();
 
-  const fetchUser = useCallback(async () => {
+  const fetchUser = useCallback(async (): Promise<User | null> => {
     try {
       const me = await AuthAPI.me(); // calls /api/auth/me
       if (!me) {
         setUser(null);
-      } else {
-        setUser(me as User);
+        return null;
       }
+      const u = me as User;
+      setUser(u);
+      return u;
     } catch (_err: any) {
       // Don't spam console / error overlay – just assume logged out
       setUser(null);
+      return null;
     } finally {
       setLoading(false);
     }
   }, []);
 
 
-  const refreshUser = useCallback(async () => {
+  const refreshUser = useCallback(async (): Promise<User | null> => {
     setLoading(true);
-    await fetchUser();
+    return fetchUser();
   }, [fetchUser]);
 
   const logout = useCallback(async () => {
+    router.replace("/");
     try {
       await AuthAPI.logout();
     } catch (err) {
       console.error("Error logging out:", err);
     } finally {
       setUser(null);
-      router.push("/");
     }
   }, [router]);
 

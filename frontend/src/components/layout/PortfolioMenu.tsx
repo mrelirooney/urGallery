@@ -185,7 +185,7 @@ export default function PortfolioMenu({ isOpen, onClose, customColors }: Props) 
         },
         body: JSON.stringify({
           title: "Untitled Portfolio",
-          privacy: "link_only",
+          privacy: "private",
         }),
       });
 

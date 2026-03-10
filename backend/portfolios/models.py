@@ -3,6 +3,7 @@ from django.conf import settings
 from django.db import models
 from django.utils.text import slugify
 from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import make_password, check_password
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 
@@ -10,7 +11,7 @@ User = get_user_model()
 
 class Privacy(models.TextChoices):
     DRAFT = "draft", "Draft"
-    LINK_ONLY = "link_only", "Link-only"
+    PRIVATE = "private", "Private"
     PUBLIC = "public", "Public"
 
 
@@ -47,6 +48,9 @@ class Portfolio(models.Model):
         choices=Privacy.choices,
         default=Privacy.DRAFT,
     )
+
+    # Hashed password for private portfolios; blank when public
+    password = models.CharField(max_length=128, blank=True, default="")
 
     order_index = models.IntegerField(default=0)
     pages_count = models.PositiveIntegerField(default=0)
@@ -88,28 +92,22 @@ class Portfolio(models.Model):
             self._generate_gallery_slug()
         super().save(*args, **kwargs)
 
+    def check_password(self, raw_password: str) -> bool:
+        """Check if raw_password matches the stored hash. Empty password allowed for legacy private portfolios."""
+        if not self.password:
+            return raw_password == ""
+        return check_password(raw_password, self.password)
+
+    def set_password(self, raw_password: str) -> None:
+        """Hash and store password. Use empty string to clear."""
+        self.password = make_password(raw_password) if raw_password else ""
+
 
 # ---------------------------------------------------------
 #  PAGE
 # ---------------------------------------------------------
 class PortfolioPageLayout(models.TextChoices):
-    MEDIA_LEFT_TEXT_RIGHT = "MediaLeft_TextRight", "Media Left • Text Right"
-    MEDIA_RIGHT_TEXT_LEFT = "MediaRight_TextLeft", "Media Right • Text Left"
-    HERO_LAYOUT_SQUARE_00 = "HeroLayoutSquare00", "Title Page 1"
-    HERO_LAYOUT_SQUARE_01 = "HeroLayoutSquare01", "Title Page 2"
-    HERO_LAYOUT_VERTICAL_01 = "HeroLayoutVertical01", "Title Page – Vertical Image"
-    HERO_LAYOUT_HORIZONTAL_01 = "HeroLayoutHorizontal01", "Title Page – Horizontal Image"
-    TWO_COLUMN_MEDIA_ONLY = "TwoColumnMediaOnly", "Two Column Media Only"
-    TWO_COLUMN_MEDIA_WITH_TEXT = "TwoColumnMediaWithText", "Two Column Media With Text"
-    TEXT_ONLY = "TextOnly", "Text Only"
-    TEXT_ONLY_CENTER = "TextOnlyCenter", "Text Only – Centered"
-    MEDIA_ONLY = "MediaOnly", "Media Only"
-    MEDIA_ONLY_VERTICAL = "MediaOnlyVertical", "Media Only – Vertical"
-    MEDIA_ONLY_HORIZONTAL = "MediaOnlyHorizontal", "Media Only – Horizontal"
-    MEDIA_ONLY_WIDE = "MediaOnlyWide", "Media Only – Wide (16:9)"
-    # Legacy layouts - kept for backward compatibility but hidden from UI
-    MEDIA_TOP_TEXT_BOTTOM = "MediaTop_TextBottom", "Media Top • Text Bottom"
-    MEDIA_BOTTOM_TEXT_TOP = "MediaBottom_TextTop", "Media Bottom • Text Top"
+    LAYOUT_1 = "layout-1", "layout-1"
 
 
 MEDIA_SHAPE_CHOICES = [
@@ -135,7 +133,7 @@ class Page(models.Model):
     layout = models.CharField(
         max_length=50,
         choices=PortfolioPageLayout.choices,
-        default=PortfolioPageLayout.HERO_LAYOUT_SQUARE_00,
+        default=PortfolioPageLayout.LAYOUT_1,
     )
 
     # First column/media
@@ -272,6 +270,9 @@ class DraftPortfolio(models.Model):
         default=Privacy.DRAFT,
     )
 
+    # Plain-text or hashed password for private; editor sends plain, we hash on save
+    password = models.CharField(max_length=128, blank=True, default="")
+
     has_unpublished_changes = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -305,7 +306,7 @@ class DraftPage(models.Model):
     layout = models.CharField(
         max_length=50,
         choices=PortfolioPageLayout.choices,
-        default=PortfolioPageLayout.HERO_LAYOUT_SQUARE_00,
+        default=PortfolioPageLayout.LAYOUT_1,
     )
 
     # First column/media

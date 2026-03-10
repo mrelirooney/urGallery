@@ -2,13 +2,6 @@
 
 import React from "react";
 import { LayoutType } from "./PageRenderer";
-import {
-  HeroLayoutSquare01Template,
-  HeroLayoutVertical01Template,
-  HeroLayoutHorizontal01Template,
-  TextOnlyTemplate,
-  MediaOnlyTemplate,
-} from "../templates";
 
 interface LayoutPickerModalProps {
   isOpen: boolean;
@@ -17,20 +10,8 @@ interface LayoutPickerModalProps {
   onSelectLayout: (layout: LayoutType) => void;
 }
 
-const LAYOUT_OPTIONS: {
-  value: LayoutType;
-  label: string;
-  Icon: React.ComponentType<{ className?: string }>;
-}[] = [
-  { value: "HeroLayoutSquare01", label: "Title Page 2 – Image Right", Icon: HeroLayoutSquare01Template },
-  { value: "HeroLayoutVertical01", label: "Title Page – Vertical Image", Icon: HeroLayoutVertical01Template },
-  { value: "HeroLayoutHorizontal01", label: "Title Page – Horizontal Image", Icon: HeroLayoutHorizontal01Template },
-  { value: "TextOnly", label: "Text Only", Icon: TextOnlyTemplate },
-  { value: "TextOnlyCenter", label: "Text Only – Centered", Icon: TextOnlyTemplate },
-  { value: "MediaOnly", label: "Media Only", Icon: MediaOnlyTemplate },
-  { value: "MediaOnlyVertical", label: "Media Only – Vertical", Icon: MediaOnlyTemplate },
-  { value: "MediaOnlyHorizontal", label: "Media Only – Horizontal (16:9)", Icon: MediaOnlyTemplate },
-  { value: "MediaOnlyWide", label: "Media Only – Wide (16:9)", Icon: MediaOnlyTemplate },
+const LAYOUT_OPTIONS: { value: LayoutType; label: string }[] = [
+  { value: "layout-1", label: "layout-1" },
 ];
 
 export default function LayoutPickerModal({
@@ -39,7 +20,6 @@ export default function LayoutPickerModal({
   onClose,
   onSelectLayout,
 }: LayoutPickerModalProps) {
-
   const handleSelect = (layout: LayoutType) => {
     onSelectLayout(layout);
     onClose();
@@ -53,7 +33,7 @@ export default function LayoutPickerModal({
       onClick={onClose}
     >
       <div
-        className="bg-neutral-900 border border-neutral-700 rounded-lg p-8 max-w-4xl w-full mx-4"
+        className="bg-neutral-900 border border-neutral-700 rounded-lg p-8 max-w-md w-full mx-4"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-6">
@@ -66,13 +46,13 @@ export default function LayoutPickerModal({
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="flex flex-col gap-2">
           {LAYOUT_OPTIONS.map((option) => (
             <button
               key={option.value}
               onClick={() => handleSelect(option.value)}
               className={`
-                p-6 rounded-lg border-2 transition-all
+                px-4 py-3 rounded-lg border-2 transition-all text-left
                 ${
                   currentLayout === option.value
                     ? "border-white bg-neutral-800"
@@ -80,12 +60,7 @@ export default function LayoutPickerModal({
                 }
               `}
             >
-              <div className="w-full h-24 mb-3 flex items-center justify-center [&_svg]:w-full [&_svg]:h-full [&_svg]:max-w-[120px] [&_svg]:max-h-[80px]">
-                <option.Icon className="text-neutral-100" />
-              </div>
-              <div className="text-sm text-neutral-200 font-medium">
-                {option.label}
-              </div>
+              <span className="text-neutral-200 font-medium">{option.label}</span>
             </button>
           ))}
         </div>

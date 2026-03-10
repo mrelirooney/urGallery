@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useSearch } from "@/hooks/useSearch";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import type { SearchResult } from "@/lib/search/types";
 
 /** Append 50% opacity to a hex color (#rgb or #rrggbb) */
@@ -29,34 +29,41 @@ type Props = {
   accentColor?: string; // hover/focus ring/icon color (used at 100%)
   backgroundColor?: string; // input background (theme)
   foregroundColor?: string; // input text color (theme)
+  showCloseButton?: boolean;
+  onClose?: () => void;
 };
 
-export default function SearchInput({ placeholder = "Search artists...", onSelect, variant, textColor, accentColor, backgroundColor, foregroundColor }: Props) {
+export default function SearchInput({ placeholder = "Search artists...", onSelect, variant, textColor, accentColor, backgroundColor, foregroundColor, showCloseButton, onClose }: Props) {
   const router = useRouter();
+  const pathname = usePathname();
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<number | null>(null);
 
-    // local query state (your hook returns run/results/loading/clear)
-    const [open, setOpen] = useState(false);
-    const [active, setActive] = useState(-1);
-    const [query, setQuery] = useState("");
-    const [mounted, setMounted] = useState(false);
-    const [isHovered, setIsHovered] = useState(false);
-    const [isFocused, setIsFocused] = useState(false);
-    const hasTheme = Boolean(textColor && accentColor);
-    const hasInputTheme = Boolean(backgroundColor && foregroundColor);
-    const useAccent = hasTheme && (isHovered || isFocused);
-  
-    const { run, results, loading, clear } = useSearch();
+  const isNavbar = variant === "nav" || variant === "navbar";
+
+  // local query state (your hook returns run/results/loading/clear)
+  const [open, setOpen] = useState(false);
+  const [active, setActive] = useState(-1);
+  const [query, setQuery] = useState("");
+  const [mounted, setMounted] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+  const [expanded, setExpanded] = useState(!isNavbar);
+  const [fadeIn, setFadeIn] = useState(false);
+  const hasTheme = Boolean(textColor && accentColor);
+  const hasInputTheme = Boolean(backgroundColor && foregroundColor);
+  const useAccent = hasTheme && (isHovered || isFocused);
+
+  const { run, results, loading, clear } = useSearch();
   
     // Ensure component is mounted (client-side only)
     useEffect(() => {
       setMounted(true);
     }, []);
 
-  // Close dropdown when clicking outside the search component
+  // Close dropdown when clicking outside; collapse navbar search when clicking away
   useEffect(() => {
     if (!mounted) return;
     function handleClickOutside(e: MouseEvent) {
@@ -64,11 +71,36 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
       if (containerRef.current && !containerRef.current.contains(target)) {
         setOpen(false);
         setActive(-1);
+        setIsFocused(false);
+        if (isNavbar && expanded) setExpanded(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [mounted]);
+  }, [mounted, isNavbar, expanded]);
+
+  // Collapse navbar search when navigating to a different page
+  useEffect(() => {
+    if (!isNavbar) return;
+    setIsFocused(false);
+    setExpanded(false);
+  }, [pathname, isNavbar]);
+
+  // Focus input and trigger fade-in when navbar search expands
+  useEffect(() => {
+    if (isNavbar && expanded) {
+      setFadeIn(false);
+      const raf = requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setFadeIn(true);
+          inputRef.current?.focus();
+        });
+      });
+      return () => cancelAnimationFrame(raf);
+    } else if (isNavbar) {
+      setFadeIn(false);
+    }
+  }, [isNavbar, expanded]);
   
     // Debounce searches when query changes
     useEffect(() => {
@@ -116,6 +148,15 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Escape") {
       setOpen(false);
+      if (showCloseButton && onClose) {
+        onClose();
+        return;
+      }
+      if (isNavbar && expanded) {
+        setIsFocused(false);
+        setExpanded(false);
+        inputRef.current?.blur();
+      }
       return;
     }
     const shown = results.slice(0, 6);
@@ -140,56 +181,90 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
 
   const displayedResults = results.slice(0, 6);
 
-  return (
-    <div ref={containerRef} className={`relative w-full ${widthClasses}`}>
-      <div
-        className={`flex items-center gap-2 sm:gap-3 md:gap-4 rounded-xs ring-1 ring-[var(--foreground)]/90 px-3 sm:px-4 md:px-5 transition-all ${
-          variant === "hero" ? "py-1.5 sm:py-2" : "py-0.5 sm:py-1"
-        } ${
-          !hasTheme ? "hover:ring-[var(--light-brown)]/100 focus-within:ring-[var(--light-brown)]/70" : ""
-        } ${
-          variant === "hero"
-            ? "shadow-lg shadow-[var(--light-brown)]/90 ring-1 hover:shadow-xl hover:shadow-[var(--light-brown)]/40 focus-within:shadow-xl focus-within:shadow-[var(--light-brown)]/50"
-            : ""
-        }`}
-        style={{
-          ...(hasTheme ? { boxShadow: `0 0 0 2px ${useAccent ? accentColor : withOpacity50(textColor!)}` } : {}),
-          ...(hasInputTheme ? { backgroundColor, color: foregroundColor } : {}),
+  const searchBoxContent = (
+    <div
+      className={`flex items-center gap-2 sm:gap-3 md:gap-4 rounded-xs ring-1 ring-[var(--foreground)]/90 px-3 sm:px-4 md:px-5 transition-all duration-500 ${
+        variant === "hero" ? "py-1.5 sm:py-2" : "py-0.5 sm:py-1"
+      } ${
+        !hasTheme ? "hover:ring-[var(--light-brown)]/100 focus-within:ring-[var(--light-brown)]/70" : ""
+      } ${
+        variant === "hero"
+          ? "shadow-lg shadow-[var(--light-brown)]/90 ring-1 hover:shadow-xl hover:shadow-[var(--light-brown)]/40 focus-within:shadow-xl focus-within:shadow-[var(--light-brown)]/50"
+          : ""
+      }`}
+      style={{
+        ...(hasTheme ? { boxShadow: `0 0 0 2px ${useAccent ? accentColor : withOpacity50(textColor!)}` } : {}),
+        ...(hasInputTheme ? { backgroundColor, color: foregroundColor } : {}),
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <input
+        ref={inputRef}
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        onFocus={() => {
+          displayedResults.length > 0 && setOpen(true);
+          setIsFocused(true);
         }}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
-        <input
-          ref={inputRef}
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onFocus={() => {
-            displayedResults.length > 0 && setOpen(true);
-            setIsFocused(true);
-          }}
-          onBlur={() => setIsFocused(false)}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder}
-          className={`w-full outline-none text-body-sm sm:text-body bg-transparent placeholder:opacity-90 ${!hasInputTheme ? "text-[var(--foreground)]" : ""}`}
-          style={hasInputTheme ? { color: foregroundColor } : undefined}
-          aria-label="Search"
-        />
+        onBlur={() => setIsFocused(false)}
+        onKeyDown={handleKeyDown}
+        placeholder={placeholder}
+        className={`w-full outline-none text-body-sm sm:text-body bg-transparent placeholder:opacity-90 ${!hasInputTheme ? "text-[var(--foreground)]" : ""}`}
+        style={hasInputTheme ? { color: foregroundColor } : undefined}
+        aria-label="Search"
+      />
+      {showCloseButton && onClose ? (
+        <button
+          type="button"
+          onClick={onClose}
+          className="shrink-0 rounded-full p-1.5 transition-opacity hover:opacity-80"
+          style={hasTheme ? { color: useAccent ? accentColor : (hasInputTheme ? foregroundColor : textColor) } : hasInputTheme ? { color: foregroundColor } : undefined}
+          aria-label="Close search"
+        >
+          <X size={20} />
+        </button>
+      ) : (
         <button
           type="button"
           onClick={() => {
             if (!query.trim()) return;
-            // run immediately, then navigate to first result after a beat
             run(query.trim()).then(() => {
               const r = results[0];
               if (r) handleSelect(r);
             });
           }}
           className="shrink-0 rounded-full text-[var(--foreground)] px-1.5 py-1.5 text-sm font-medium transition-all active:scale-95"
-          style={hasTheme ? { color: useAccent ? accentColor : (hasInputTheme ? foregroundColor : withOpacity50(textColor!)) } : hasInputTheme ? { color: foregroundColor } : undefined}
+          style={hasTheme ? { color: useAccent ? accentColor : (hasInputTheme ? foregroundColor : textColor) } : hasInputTheme ? { color: foregroundColor } : undefined}
         >
           <Search size={18} />
         </button>
-      </div>
+      )}
+    </div>
+  );
+
+  return (
+    <div ref={containerRef} className={`relative ${isNavbar ? "w-auto" : `w-full ${widthClasses}`}`}>
+      {isNavbar && !expanded ? (
+        <button
+          type="button"
+          onClick={() => setExpanded(true)}
+          className="flex items-center justify-center rounded-xs p-2 transition-all duration-300 hover:opacity-80"
+          style={hasTheme ? { color: useAccent ? accentColor : (hasInputTheme ? foregroundColor : textColor) } : undefined}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          aria-label="Open search"
+        >
+          <Search size={20} />
+        </button>
+      ) : (
+        <div
+          className={`transition-opacity duration-333 ${isNavbar ? (fadeIn ? "opacity-100" : "opacity-0") : ""}`}
+          style={isNavbar ? { minWidth: 260 } : undefined}
+        >
+          {searchBoxContent}
+        </div>
+      )}
 
       {/* Results dropdown - Responsive */}
       {mounted && open && displayedResults.length > 0 && (

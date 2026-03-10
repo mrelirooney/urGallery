@@ -7,10 +7,11 @@ import Logo from "@/components/layout/Logo";
 import Container from "@/components/layout/Container";
 import AvatarButton from "../menus/AvatarButton";
 import SearchInput from "@/components/search/SearchInput";
+import MobileSearchOverlay from "@/components/search/MobileSearchOverlay";
 import PortfolioMenu from "@/components/layout/PortfolioMenu";
 import { useAuth } from "@/hooks/useAuth";
-import { Menu, X, ArrowLeft } from "lucide-react";
-import { hexToRgba, isLightColor } from "@/lib/colorUtils";
+import { Menu, X, ArrowLeft, Search } from "lucide-react";
+import { hexToRgba, isLightColor, getTextColorForBackground } from "@/lib/colorUtils";
 import { useFrostedGlassHover } from "@/components/layout/FrostedGlassHoverContext";
 
 export default function Navbar() {
@@ -62,6 +63,20 @@ export default function Navbar() {
   const menuRef = useRef<HTMLDivElement | null>(null);
   const router = useRouter();
   
+  const isConstrainedLayout =
+    pathname === "/" ||
+    pathname?.startsWith("/login") ||
+    pathname?.startsWith("/signup") ||
+    pathname?.startsWith("/forgot-password") ||
+    pathname?.startsWith("/reset-password") ||
+    pathname?.startsWith("/settings") ||
+    pathname?.startsWith("/saves") ||
+    pathname?.startsWith("/sandbox") ||
+    pathname?.startsWith("/svg-layout-test") ||
+    pathname === "/about" ||
+    pathname === "/terms" ||
+    pathname === "/privacy" ||
+    pathname === "/help";
   // Check if we're on any artist page (profile, portfolio, or portfolio/edit)
   const isArtistPage = pathname && 
   pathname !== '/' &&
@@ -83,6 +98,7 @@ export default function Navbar() {
   // Where "View Profile" should go
   const profileHref = user?.slug ? `/${user.slug}` : "/login";
   const [open, setOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
   // --- 2. Effects ---
   // outside click + Esc
@@ -146,14 +162,8 @@ export default function Navbar() {
 
   // --- 3. Handlers ---
   async function handleLogout() {
-    try {
-      await logout();          // clear cookies/state
-      setMenuOpen(false);
-      router.push("/");        // redirect to home page
-      router.refresh();        // ensure navbar re-renders w/ logged-out view
-    } catch {
-      // no-op; you could toast here if you want
-    }
+    setMenuOpen(false);
+    await logout();
   }
 
   const frostedCtx = useFrostedGlassHover();
@@ -172,6 +182,9 @@ export default function Navbar() {
         </Suspense>
       )}
 
+      {/* Mobile only: full-screen search overlay */}
+      <MobileSearchOverlay isOpen={mobileSearchOpen} onClose={() => setMobileSearchOpen(false)} />
+
       <header
         id="site-navbar"
         ref={frostedCtx?.getRefCallback("nav")}
@@ -188,8 +201,8 @@ export default function Navbar() {
           }),
         }}
       >
-        <Container className="max-w-full px-0 h-12 sm:h-14">
-        <div className={`h-full flex items-center justify-between gap-2 ${isArtistPage ? "max-w-6xl xl:max-w-7xl 2xl:max-w-[1310px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-16 2xl:px-20" : ""}`}>
+        <Container className={`h-12 sm:h-14 ${isConstrainedLayout ? "max-w-none" : ""} px-0`}>
+        <div className={`h-full flex items-center justify-between gap-2 ${isArtistPage ? "max-w-6xl xl:max-w-7xl 2xl:max-w-[1310px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-16 2xl:px-20" : isConstrainedLayout ? "max-w-6xl xl:max-w-7xl 2xl:max-w-[1310px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-16 2xl:px-20" : ""}`}>
         {/* Left: Back arrow (mobile only) OR Hamburger + Logo (tablet/desktop on artist/saves pages) */}
         <div className="flex items-center">
           {/* Mobile only: Back arrow (only on artist pages) */}
@@ -241,6 +254,15 @@ export default function Navbar() {
         ) : user ? (
           // --- Signed-in view ---
           <div className="flex items-center gap-3">
+            {/* Mobile only: Search icon - opens full-screen search overlay */}
+            <button
+              onClick={() => setMobileSearchOpen(true)}
+              className="md:hidden rounded-md p-2 transition hover:opacity-80"
+              style={{ color: (isArtistPage && !isSavesPage) ? 'var(--artist-profile-text, #11100e)' : 'var(--foreground)' }}
+              aria-label="Search"
+            >
+              <Search size={24} />
+            </button>
             {/* Mobile only: Hamburger on right (artist pages = portfolio menu, saves = saves menu) */}
             {(isArtistPage || isSavesPage) && (
               <button
@@ -432,6 +454,15 @@ export default function Navbar() {
         ) : (
           // --- Logged-out view ---
           <nav className="flex items-center gap-3 sm:gap-4 text-body-sm md:pr-4">
+            {/* Mobile only: Search icon - opens full-screen search overlay */}
+            <button
+              onClick={() => setMobileSearchOpen(true)}
+              className="md:hidden rounded-md p-2 transition hover:opacity-80"
+              style={{ color: isArtistPage ? (customColors?.text || '#11100e') : 'var(--foreground)' }}
+              aria-label="Search"
+            >
+              <Search size={24} />
+            </button>
             {/* Mobile only: Hamburger on right (only on artist profile pages) */}
             {isArtistPage && (
               <button
@@ -456,16 +487,29 @@ export default function Navbar() {
                   foregroundColor={isArtistPage ? customColors?.foreground : undefined}
                 />
               </div>
-              <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+              <div
+                className="flex items-center gap-2 sm:gap-3 shrink-0"
+                style={
+                  isArtistPage && customColors?.accent
+                    ? {
+                        "--nav-accent": customColors.accent,
+                        "--nav-accent-text": getTextColorForBackground(customColors.accent),
+                      } as React.CSSProperties
+                    : {
+                        "--nav-accent": "var(--light-brown)",
+                        "--nav-accent-text": getTextColorForBackground("#c96a4a"),
+                      } as React.CSSProperties
+                }
+              >
               <Link
                 href="/login"
-                className={`px-2 sm:px-3 py-1 sm:py-1.5 text-body rounded-xs bg-transparent transition-opacity hover:opacity-90 ${!isArtistPage ? "text-[var(--foreground)]/90" : ""} sm:hover:bg-(--light-brown) sm:hover:text-[var(--background)]`}
+                className={`px-2 sm:px-3 py-1 sm:py-1.5 text-body rounded-xs bg-transparent transition-opacity hover:opacity-90 ${!isArtistPage ? "text-[var(--foreground)]/90" : ""} sm:hover:bg-[var(--nav-accent)] sm:hover:text-[var(--nav-accent-text)]`}
               >
                 Login
               </Link>
               <Link
                 href="/signup"
-                className={`px-2 sm:px-3 py-1 sm:py-1.5 text-body rounded-xs bg-transparent transition-opacity hover:opacity-90 ${!isArtistPage ? "text-[var(--foreground)]/90" : ""} sm:hover:bg-(--light-brown) sm:hover:text-[var(--background)]`}
+                className={`px-2 sm:px-3 py-1 sm:py-1.5 text-body rounded-xs bg-transparent transition-opacity hover:opacity-90 ${!isArtistPage ? "text-[var(--foreground)]/90" : ""} sm:hover:bg-[var(--nav-accent)] sm:hover:text-[var(--nav-accent-text)]`}
                 style={isArtistPage && customColors?.text ? { color: customColors.text, borderColor: `${customColors.text}66` } : undefined}
               >
                 Sign Up

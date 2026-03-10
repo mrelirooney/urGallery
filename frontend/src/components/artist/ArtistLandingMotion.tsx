@@ -46,6 +46,7 @@ export default function ArtistLandingMotion({ pagesCount = 1 }: ArtistLandingMot
       if (!compact) return;
       compact = false;
       rootEl.classList.remove("artist-compact");
+      window.dispatchEvent(new CustomEvent("artist-compact-change", { detail: { compact: false } }));
       const siteNav = get("site-navbar");
       const target = header.offsetTop - ((siteNav as HTMLElement | null)?.offsetHeight ?? 0);
       isAuto = true;

@@ -92,7 +92,7 @@ class SavePortfolioView(APIView):
 
     def _get_portfolio(self, artist_slug, portfolio_slug):
         owner = get_object_or_404(Profile, slug=artist_slug).user
-        return get_object_or_404(Portfolio, user=owner, slug=portfolio_slug, privacy__in=["public", "link_only"])
+        return get_object_or_404(Portfolio, user=owner, slug=portfolio_slug, privacy__in=["public", "private"])
 
     def post(self, request, artist_slug, portfolio_slug):
         portfolio = self._get_portfolio(artist_slug, portfolio_slug)

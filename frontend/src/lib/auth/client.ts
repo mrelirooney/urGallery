@@ -141,8 +141,9 @@ export type EditorPortfolioApi = {
   title: string;
   slug: string;
   description: string;
-  // NOTE: your backend uses "public" | "private" | "draft" | "link_only"
-  privacy: "public" | "private" | "draft" | "link_only";
+  // NOTE: your backend uses "public" | "private" | "draft"
+  privacy: "public" | "private" | "draft";
+  password?: string; // plaintext for owner display (empty if hashed/legacy)
   has_unpublished_changes: boolean;
   pages: any[]; // you can tighten this later
 };

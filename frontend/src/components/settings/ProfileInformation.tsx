@@ -4,6 +4,11 @@ import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { Camera } from "lucide-react";
+import {
+  resizeImageForUpload,
+  AVATAR_RESIZE_OPTIONS,
+  BANNER_RESIZE_OPTIONS,
+} from "@/lib/imageUtils";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "";
 
@@ -140,14 +145,16 @@ export default function ProfileInformation({ onSaveRef, onSaveComplete }: Profil
       formDataToSend.append("first_name", formData.firstName);
       formDataToSend.append("last_name", formData.lastName);
       
-      // Add avatar if changed
+      // Add avatar if changed (resized for profile pics)
       if (avatarFile) {
-        formDataToSend.append("avatar", avatarFile);
+        const avatarToUpload = await resizeImageForUpload(avatarFile, AVATAR_RESIZE_OPTIONS);
+        formDataToSend.append("avatar", avatarToUpload);
       }
-      
-      // Add banner if changed
+
+      // Add banner if changed (resized for web)
       if (bannerFile) {
-        formDataToSend.append("banner_image", bannerFile);
+        const bannerToUpload = await resizeImageForUpload(bannerFile, BANNER_RESIZE_OPTIONS);
+        formDataToSend.append("banner_image", bannerToUpload);
       }
 
       const res = await fetch(`${API_BASE}/api/my/profile/`, {

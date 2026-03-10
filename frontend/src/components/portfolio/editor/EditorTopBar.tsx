@@ -4,8 +4,17 @@
 
 import React, { useState } from "react";
 import type { PortfolioPageData } from "./PageRenderer";
+import { hexToRgba, getTextColorForBackground } from "@/lib/colorUtils";
 
 export type EditorTopBarProps = {
+  /** Custom colors from artist profile (profile bg = background) */
+  customColors?: {
+    background: string;
+    foreground: string;
+    text: string;
+    accent: string;
+  };
+
   // actions
   onCancel: () => void;
   onUndo: () => void;
@@ -36,6 +45,7 @@ export type EditorTopBarProps = {
 };
 
 export default function EditorTopBar({
+  customColors,
   onCancel,
   onUndo,
   onRedo,
@@ -64,44 +74,158 @@ export default function EditorTopBar({
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
+  const profileBg = customColors?.background ?? "#faf7f2";
+  const accent = customColors?.accent ?? "#c96a4a";
+  const barTextColor = getTextColorForBackground(profileBg);
+  const accentTextColor = getTextColorForBackground(accent);
+
   return (
     <div
-      className="w-full px-0 text-neutral-100 flex flex-col gap-0 relative z-50"
+      className="w-full px-0 flex flex-col gap-0 relative z-50 backdrop-blur-md"
       style={{
-        background: "linear-gradient(to bottom, var(--artist-background, #11100e) .5%, var(--artist-background, #11100e) .5%, transparent 0%)",
-        color: "var(--artist-text, #faf7f2)",
+        backgroundColor: hexToRgba(profileBg, 1),
+        color: barTextColor,
+        boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
       }}
     >
-      <div className="max-w-6xl xl:max-w-7xl xl-lg:max-w-[1310px] 2xl:max-w-[1310px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-16 2xl:px-20 w-full flex flex-col gap-0">
+      <div className="max-w-6xl xl:max-w-7xl xl-lg:max-w-[1310px] 2xl:max-w-[1310px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-16 2xl:px-20 w-full flex flex-col gap-0 pt-0">
       {/* --- Top row buttons --- */}
       <div className="flex items-center justify-between">
-        <button onClick={onCancel} className="text-sm opacity-80 hover:opacity-100">
+        <button
+          onClick={onCancel}
+          className="text-base px-4 py-2 rounded-xs transition-colors opacity-80 hover:opacity-100"
+          style={{ color: barTextColor }}
+          onMouseEnter={(e) => {
+            if (!e.currentTarget.disabled) {
+              e.currentTarget.style.backgroundColor = accent;
+              e.currentTarget.style.color = accentTextColor;
+            }
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "transparent";
+            e.currentTarget.style.color = barTextColor;
+          }}
+        >
           Back
         </button>
 
         <div className="flex gap-3">
-          <button disabled={!canUndo} onClick={onUndo} className="btn-small text-sm">
+          <button
+            disabled={!canUndo}
+            onClick={onUndo}
+            className="btn-small text-base px-4 py-2 rounded-xs transition-colors disabled:opacity-50"
+            style={{ color: barTextColor }}
+            onMouseEnter={(e) => {
+              if (!e.currentTarget.disabled) {
+                e.currentTarget.style.backgroundColor = accent;
+                e.currentTarget.style.color = accentTextColor;
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "transparent";
+              e.currentTarget.style.color = barTextColor;
+            }}
+          >
             Undo
           </button>
-          <button disabled={!canRedo} onClick={onRedo} className="btn-small text-sm">
+          <button
+            disabled={!canRedo}
+            onClick={onRedo}
+            className="btn-small text-base px-4 py-2 rounded-xs transition-colors disabled:opacity-50"
+            style={{ color: barTextColor }}
+            onMouseEnter={(e) => {
+              if (!e.currentTarget.disabled) {
+                e.currentTarget.style.backgroundColor = accent;
+                e.currentTarget.style.color = accentTextColor;
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "transparent";
+              e.currentTarget.style.color = barTextColor;
+            }}
+          >
             Redo
           </button>
 
-          <button onClick={onAdd} className="btn-small text-sm hidden lg:inline-block">
-            Add
+          <button
+            onClick={onAdd}
+            className="btn-small text-base px-4 py-2 rounded-xs transition-colors hidden lg:inline-block"
+            style={{ color: barTextColor }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = accent;
+              e.currentTarget.style.color = accentTextColor;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "transparent";
+              e.currentTarget.style.color = barTextColor;
+            }}
+          >
+            Add Page
           </button>
-          <button disabled={disableDelete} onClick={onDeletePage} className="btn-small text-sm hidden lg:inline-block">
-            Delete
+          <button
+            disabled={disableDelete}
+            onClick={onDeletePage}
+            className="btn-small text-base px-4 py-2 rounded-xs transition-colors disabled:opacity-50 hidden lg:inline-block"
+            style={{ color: barTextColor }}
+            onMouseEnter={(e) => {
+              if (!e.currentTarget.disabled) {
+                e.currentTarget.style.backgroundColor = accent;
+                e.currentTarget.style.color = accentTextColor;
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "transparent";
+              e.currentTarget.style.color = barTextColor;
+            }}
+          >
+            Delete Page
           </button>
 
-          <button onClick={onOpenPrivacy} className="btn-small text-sm">
+          <button
+            onClick={onOpenPrivacy}
+            className="btn-small text-base px-4 py-2 rounded-xs transition-colors"
+            style={{ color: barTextColor }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = accent;
+              e.currentTarget.style.color = accentTextColor;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "transparent";
+              e.currentTarget.style.color = barTextColor;
+            }}
+          >
             Privacy
           </button>
 
-          <button onClick={onSaveDraft} className="btn-small text-sm">
-            Save
+          <button
+            onClick={onSaveDraft}
+            className="btn-small text-base px-4 py-2 rounded-xs transition-colors"
+            style={{ color: barTextColor }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = accent;
+              e.currentTarget.style.color = accentTextColor;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "transparent";
+              e.currentTarget.style.color = barTextColor;
+            }}
+          >
+            Save Draft
           </button>
-          <button onClick={onPublish} className="btn-primary text-sm">
+
+          <button
+            onClick={onPublish}
+            className="btn-primary text-base px-4 py-2 rounded-xs transition-colors"
+            style={{ color: barTextColor }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = accent;
+              e.currentTarget.style.color = accentTextColor;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "transparent";
+              e.currentTarget.style.color = barTextColor;
+            }}
+          >
             Publish
           </button>
         </div>
@@ -145,15 +269,15 @@ export default function EditorTopBar({
                 setDragIndex(null);
                 setDragOverIndex(null);
               }}
-              className={`w-20 h-12 rounded-xs border transition-transform ${
-                isActive ? "border-3 border-white/50" : "border-neutral-600"
-              } ${
-                isDragged
-                  ? "opacity-60"
-                  : isDragOver
-                    ? "ring-2 ring-var(--artist-text, #C96A4A) ring-offset-2 ring-[var(--artist-text, #C96A4A)]"
-                    : ""
+              className={`w-20 h-12 rounded-xs border-2 transition-transform ${
+                isDragged ? "opacity-60" : ""
               }`}
+              style={{
+                borderColor: isActive ? accent : `${barTextColor}99`,
+                ...(isDragOver && {
+                  boxShadow: `0 0 0 2px ${profileBg}, 0 0 0 4px ${customColors?.accent ?? "#c96a4a"}`,
+                }),
+              }}
             >
               {(pageThumbnails[index] ?? page.mediaSrc) ? (
                 <img
@@ -174,20 +298,30 @@ export default function EditorTopBar({
             value={portfolioTitle}
             onChange={(e) => onChangePortfolioTitle(e.target.value)}
             placeholder="Portfolio title"
-            className="min-w-[21vw] rounded-xs border bg-transparent px-3 py-1 text-sm uppercase tracking-wide focus:border-neutral-500 focus:outline-none"
+            className="min-w-[21vw] rounded-xs border bg-transparent px-3 py-1 text-base uppercase tracking-wide focus:outline-none"
             style={{
-              color: "var(--artist-background, #11100e)",
-              borderColor: "var(--artist-background, #11100e)",
+              color: barTextColor,
+              borderColor: barTextColor,
             }}
           />
           <button
             type="button"
             onClick={onChangeLayout}
-            className="rounded-xs border px-3 py-1 text-sm bg-transparent"
+            className="rounded-xs border px-4 py-2 text-base transition-colors"
             style={{
-              color: "var(--artist-background, #11100e)",
-              borderColor: "var(--artist-background, #11100e)",
+              color: barTextColor,
+              borderColor: barTextColor,
               backgroundColor: "transparent",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = accent;
+              e.currentTarget.style.color = accentTextColor;
+              e.currentTarget.style.borderColor = accent;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "transparent";
+              e.currentTarget.style.color = barTextColor;
+              e.currentTarget.style.borderColor = barTextColor;
             }}
           >
             Layouts
