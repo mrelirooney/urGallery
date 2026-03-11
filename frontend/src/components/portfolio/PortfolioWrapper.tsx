@@ -2,7 +2,6 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { MessageCircle, Lock, LockOpen, Eye, EyeOff, Copy } from "lucide-react";
-import Pagination from "./primitives/Pagination";
 import PageRenderer, {
   PortfolioPageData,
   LayoutType,
@@ -10,6 +9,7 @@ import PageRenderer, {
 } from "./PageRenderer";
 import PortfolioControls from "@/components/portfolio/PortfolioControls";
 import CommentsSection from "@/components/portfolio/CommentsSection";
+import { useArtistScroll } from "@/components/artist/ArtistScrollContext";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE ?? "";
@@ -35,6 +35,7 @@ type ApiPage = {
   id: number;
   title: string;
   description: string;
+  description_body?: string;
   order: number;
   layout?: LayoutType | null;
   media_image: string | null;
@@ -91,7 +92,8 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [controlsVisible, setControlsVisible] = useState(true);
-  const [isPortfolioView, setIsPortfolioView] = useState(false);
+  const artistScroll = useArtistScroll();
+  const isPortfolioView = artistScroll?.isPortfolioView ?? false;
   const [shareCopied, setShareCopied] = useState(false);
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -107,6 +109,7 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
   const [unlockErrorShake, setUnlockErrorShake] = useState(false);
   const passwordInputRef = useRef<HTMLInputElement>(null);
   const idleRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [isTablet, setIsTablet] = useState(false);
 
   // Live-view privacy toggle (owner only)
   const [privacyModalOpen, setPrivacyModalOpen] = useState(false);
@@ -122,8 +125,18 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
     if (stored) setUnlocked(true);
   }, [artistSlug, slug]);
 
-  // Hide controls after 1s of no mouse/touch movement
+  // Tablet: 768px–1023px
   useEffect(() => {
+    const mq = window.matchMedia("(min-width: 768px) and (max-width: 1023px)");
+    const handler = () => setIsTablet(mq.matches);
+    handler();
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+
+  // Hide controls after 1s of no mouse/touch movement (laptop only; tablet uses tap-to-toggle)
+  useEffect(() => {
+    if (isTablet) return;
     function scheduleHide() {
       if (idleRef.current) clearTimeout(idleRef.current);
       setControlsVisible(true);
@@ -131,32 +144,20 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
     }
     window.addEventListener("mousemove", scheduleHide);
     window.addEventListener("touchmove", scheduleHide);
-    scheduleHide(); // initial schedule
+    scheduleHide();
     return () => {
       window.removeEventListener("mousemove", scheduleHide);
       window.removeEventListener("touchmove", scheduleHide);
       if (idleRef.current) clearTimeout(idleRef.current);
     };
-  }, []);
+  }, [isTablet]);
 
   // Sync visibility to compact profile bar and footer (they listen for this event)
   useEffect(() => {
     window.dispatchEvent(new CustomEvent("portfolio-overlay-visibility", { detail: { visible: controlsVisible } }));
   }, [controlsVisible]);
 
-  // Show PortfolioControls only when user has scrolled to portfolio (artist-compact)
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const checkCompact = () => setIsPortfolioView(document.documentElement.classList.contains("artist-compact"));
-    checkCompact(); // initial check (e.g. page loaded with #portfolio-shell)
-    const observer = new MutationObserver(checkCompact);
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
-    window.addEventListener("artist-compact-change", checkCompact);
-    return () => {
-      observer.disconnect();
-      window.removeEventListener("artist-compact-change", checkCompact);
-    };
-  }, []);
+  // isPortfolioView now comes from ArtistScrollContext (scroll progress > 50%)
 
 
   useEffect(() => {
@@ -220,6 +221,7 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
               id: page.id,
               title: page.title,
               description: page.description,
+              descriptionBody: page.description_body ?? "",
               // Fall back to your default layout if null/undefined
               layoutType: (page.layout || "layout-1") as LayoutType,
               mediaSrc,
@@ -437,8 +439,8 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
   }
 
   return (
-    <section 
-      className="w-full flex flex-col justify-between"
+      <section 
+      className="w-full flex-1 flex flex-col min-h-0"
       style={{ 
         backgroundColor: customColors?.text || '#11100e',
         color: customColors?.background || '#faf7f2',
@@ -468,22 +470,43 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
         onToggleComments={() => setCommentsOpen((v) => !v)}
       />
 
-      <div className={`min-h-[85vh] md:min-h-[85vh] w-full pt-0 pb-4 md:pt-8 md:pb-8 flex flex-col justify-between relative z-10 ${isPrivateBlurred ? "select-none" : ""}`}>
-        <div className="flex flex-col justify-start md:justify-center gap-6 relative z-10 min-h-[calc(70vh-1.5rem)] max-h-[calc(100vh-8rem)]">
-          {/* Content: blur fades out on success */}
+      <div
+        className={`flex-1 min-h-0 w-full relative z-10 flex flex-col ${isPrivateBlurred ? "select-none" : ""}`}
+        onClick={
+          isTablet && isPortfolioView
+            ? () => setControlsVisible((v) => !v)
+            : undefined
+        }
+        role={isTablet && isPortfolioView ? "button" : undefined}
+        tabIndex={isTablet && isPortfolioView ? 0 : undefined}
+        onKeyDown={
+          isTablet && isPortfolioView
+            ? (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setControlsVisible((v) => !v);
+                }
+              }
+            : undefined
+        }
+      >
+        <div className="flex-1 min-h-0 relative z-10 flex flex-col">
+          {/* Layout frame: consistent height for all layouts; centering happens within each layout */}
           <div
-            className="flex flex-col justify-start md:justify-center gap-6 min-h-0 transition-[filter] duration-[1500ms] ease-out"
+            className="flex-1 min-h-0 w-full transition-[filter] duration-[1500ms] ease-out"
             style={{
               filter: isPrivateBlurred ? `blur(${blurOpacity * 24}px)` : "none",
               pointerEvents: isPrivateBlurred ? "none" : "auto",
               userSelect: isPrivateBlurred ? "none" : "auto",
             }}
           >
-            <PageRenderer
-              pages={pages}
-              currentPageIndex={currentPageIndex}
-              customColors={customColors}
-            />
+            <div className="h-full w-full min-h-0">
+              <PageRenderer
+                pages={pages}
+                currentPageIndex={currentPageIndex}
+                customColors={customColors}
+              />
+            </div>
           </div>
           {/* Overlay: sibling of blurred content so it stays sharp and clickable */}
           {isPrivateBlurred && showModal && (
@@ -589,8 +612,8 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
           )}
         </div>
 
-        {/* Mobile: comment + pagination (in flow) */}
-        <div className={`flex md:hidden items-center justify-between relative z-20 top-5 mb-6 transition-opacity duration-300 ${controlsVisible ? "opacity-100" : "opacity-0 pointer-events-none"} ${isPrivateBlurred ? "pointer-events-none" : ""}`}>
+        {/* Mobile: comment button only (pagination moved to PortfolioControls overlay bottom center) */}
+        <div className={`flex md:hidden items-center justify-start relative z-20 top-5 mb-6 transition-opacity duration-300 ${controlsVisible ? "opacity-100" : "opacity-0 pointer-events-none"} ${isPrivateBlurred ? "pointer-events-none" : ""}`}>
           <button
             type="button"
             onClick={() => setCommentsOpen((v) => !v)}
@@ -600,13 +623,6 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
           >
             <MessageCircle size={18} />
           </button>
-          <div className="flex-1" />
-          <Pagination
-            totalPages={pages.length}
-            currentPage={currentPageIndex + 1}
-            onChangePage={(idx) => setCurrentPageIndex(idx)}
-            customColors={customColors}
-          />
         </div>
 
         <CommentsSection

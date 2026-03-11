@@ -90,8 +90,8 @@ export default function PortfolioControls({
   };
 
   const controlsPointerEvents = controlsVisible && !isPrivateBlurred ? "pointer-events-auto" : "pointer-events-none";
-  const containerClass = `fixed left-0 right-0 w-full z-20 hidden md:flex flex-col justify-between py-3 transition-opacity duration-300 pointer-events-none ${controlsVisible ? "opacity-100" : "opacity-0"}`;
-  const innerClass = "w-full max-w-8xl lg:max-w-8xl xl:max-w-8xl 2xl:max-w-8xl mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-16 2xl:px-20 flex flex-col justify-between flex-1 min-h-0";
+  const containerClass = `fixed left-0 right-0 w-full z-20 flex flex-col justify-end md:justify-between py-3 transition-opacity duration-300 pointer-events-none ${controlsVisible ? "opacity-100" : "opacity-0"}`;
+  const innerClass = "w-full max-w-6xl lg:max-w-7xl xl:max-w-7xl 2xl:max-w-7xl mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-16 2xl:px-20 flex flex-col justify-end md:justify-between flex-1 min-h-0";
 
   return (
     <div
@@ -104,8 +104,8 @@ export default function PortfolioControls({
       }}
     >
       <div className={innerClass}>
-      {/* Row 1: title + privacy (left) | share, comment, edit, save (right) */}
-      <div className={`flex items-center justify-between gap-4 relative z-0 ${controlsPointerEvents}`}>
+      {/* Row 1: title + privacy (left) | share, comment, edit, save (right) – hidden on mobile */}
+      <div className={`hidden md:flex items-center justify-between gap-4 relative z-0 ${controlsPointerEvents}`}>
         <div className="flex items-center gap-2 min-w-0">
           <div
             role="button"
@@ -281,8 +281,8 @@ export default function PortfolioControls({
         </div>
       </div>
 
-      {/* Row 2: pagination at bottom right */}
-      <div className={`flex justify-end min-w-0 relative z-0 ${controlsPointerEvents}`}>
+      {/* Row 2: pagination – bottom center on mobile/tablet, bottom right on desktop */}
+      <div className={`flex justify-center lg:justify-end min-w-0 relative z-0 ${controlsPointerEvents}`}>
         <Pagination
           totalPages={totalPages}
           currentPage={currentPageIndex + 1}

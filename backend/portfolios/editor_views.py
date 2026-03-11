@@ -63,6 +63,7 @@ def _get_or_create_draft(slug: str, user) -> DraftPortfolio:
             draft_portfolio=draft,
             title=page.title,
             description=page.description,
+            description_body=getattr(page, "description_body", "") or "",
             layout=page.layout,
             media_shape=page.media_shape,
             media_image=page.media_image,  # Copy the image too
@@ -308,6 +309,7 @@ def publish_portfolio(request, slug):
                     portfolio=portfolio,
                     title=dpage.title,
                     description=dpage.description,
+                    description_body=getattr(dpage, "description_body", "") or "",
                     layout=dpage.layout,
                     order=dpage.order,
                     media_image=None,

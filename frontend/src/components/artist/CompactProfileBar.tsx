@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { hexToRgba, getTextColorForBackground, isLightColor } from "@/lib/colorUtils";
 import { useFrostedGlassHover } from "@/components/layout/FrostedGlassHoverContext";
+import { useArtistScroll } from "@/components/artist/ArtistScrollContext";
 
 type Props = {
   profileBackground: string;
@@ -18,24 +18,22 @@ export default function CompactProfileBar({
   children,
 }: Props) {
   const frostedCtx = useFrostedGlassHover();
+  const artistScroll = useArtistScroll();
   const isFrostedHovered = frostedCtx?.isHovered ?? false;
-  const [overlayVisible, setOverlayVisible] = useState(true);
-
-  useEffect(() => {
-    const handler = (e: Event) => {
-      const ev = e as CustomEvent<{ visible: boolean }>;
-      setOverlayVisible(ev.detail?.visible ?? true);
-    };
-    window.addEventListener("portfolio-overlay-visibility", handler);
-    return () => window.removeEventListener("portfolio-overlay-visibility", handler);
-  }, []);
-  const frostedOpacity = frostedCtx ? (isFrostedHovered ? 0.75 : 0.05) : 0.05;
+  const frostedOpacity = frostedCtx ? (isFrostedHovered ? .99 : 0.05) : 0.05;
   const baseTextColor = portfolioBackground
     ? getTextColorForBackground(portfolioBackground)
     : profileText;
   const textColor = isFrostedHovered ? "#faf7f2" : baseTextColor;
   const bgForBorder = portfolioBackground ?? profileBackground;
   const borderOpacity = isLightColor(bgForBorder) ? 0.3 : 0.1;
+
+  // Scroll-based compact bar fade: 0–50% = hidden, 50–100% = fade in
+  const compactOpacity =
+    artistScroll && artistScroll.scrollProgress > 0.5
+      ? (artistScroll.scrollProgress - 0.5) / 0.5
+      : 0;
+  const compactPointerEvents = compactOpacity < 0.01 ? "none" : "auto";
 
   return (
     <div
@@ -50,10 +48,10 @@ export default function CompactProfileBar({
         ["--compact-bar-text" as string]: textColor,
         borderBottomWidth: 1,
         borderBottomColor: hexToRgba("#faf7f2", borderOpacity),
-        opacity: overlayVisible ? undefined : 0,
-        pointerEvents: overlayVisible ? undefined : "none",
+        opacity: compactOpacity,
+        pointerEvents: compactPointerEvents,
       }}
-      className="opacity-0 sticky mt-20 md:mt-0 md:top-14 lg:mt-0 lg:top-0 top-0 z-50 hidden backdrop-blur-md overflow-hidden relative shrink-0 transition-all duration-300 shadow-[0_4px_12px_rgba(0,0,0,0.15)]"
+      className="fixed top-0 left-0 right-0 z-[70] backdrop-blur-md overflow-hidden transition-all duration-200 shadow-[0_4px_12px_rgba(0,0,0,0.15)]"
     >
       <div
         className="transition-opacity duration-200"

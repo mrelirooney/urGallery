@@ -165,7 +165,7 @@ export default async function ArtistPage(
         profileText={customColors.profileText}
         portfolioBackground={customColors.text}
       >
-        <div className="max-w-8xl lg:max-w-8xl xl:max-w-8xl 2xl:max-w-8xl mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-16 2xl:px-20 py-4 md:py-4 lg:py-2 flex flex-col lg:min-h-0 lg:justify-start">
+        <div className="max-w-6xl lg:max-w-7xl xl:max-w-7xl 2xl:max-w-7xl mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-16 2xl:px-20 py-4 md:py-0 md:h-14 md:flex md:items-center lg:py-2 lg:h-auto lg:flex-col lg:min-h-0 lg:justify-start">
           {/* Phone: back arrow, avatar, hamburger, portfolio title */}
           <div className="flex items-center justify-between md:hidden">
             <BackArrowButton />
@@ -185,7 +185,7 @@ export default async function ArtistPage(
           </div>
 
           {/* Tablet + Laptop: thin bar - pic + name left, contact buttons right */}
-          <div className="hidden md:flex items-center justify-between gap-4 py-1">
+          <div className="hidden md:flex w-full items-center justify-between gap-4 py-1">
             <div className="flex items-center gap-3 min-w-0">
               <div className="h-10 w-10 shrink-0 rounded-full overflow-hidden border border-neutral-300 flex items-center justify-center bg-neutral-200">
                 {hasAvatar ? (
@@ -213,7 +213,7 @@ export default async function ArtistPage(
           color: customColors.portfolioText,
           fontFamily: "var(--artist-font, 'Raleway'), sans-serif",
         }}
-        className="relative overflow-hidden flex-1 min-h-0 min-h-dvh pb-14"
+        className="relative overflow-hidden h-dvh pt-30 pb-0 flex flex-col"
       >
         {profile?.theme?.svg_url && (
           <ThemePatternLayer
@@ -225,7 +225,7 @@ export default async function ArtistPage(
             }}
           />
         )}
-        <div className="max-w-6xl xl:max-w-7xl xl-lg:max-w-[1600px] 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-16 2xl:px-20">
+        <div className="flex-1 flex flex-col min-h-0 w-full max-w-6xl xl:max-w-7xl xl-lg:max-w-[1600px] 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-16 2xl:px-20">
           {portfolios.length > 0 ? (
             <PortfolioSelector
               artistSlug={profile.slug}

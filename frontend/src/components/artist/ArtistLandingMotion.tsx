@@ -1,6 +1,9 @@
 "use client";
 import { useEffect } from "react";
 
+/** V0–V1: Scroll-to-compact (auto-jump to portfolio) disabled – re-enable in V2 */
+const ENABLE_SCROLL_TO_COMPACT = false;
+
 type ArtistLandingMotionProps = {
   pagesCount?: number; // only thing we actually use
 };
@@ -12,6 +15,8 @@ export default function ArtistLandingMotion({ pagesCount = 1 }: ArtistLandingMot
     // expose pages count to CSS / anyone else
     const root = document.documentElement;
     root.style.setProperty("--pages-count", String(Math.max(1, pagesCount)));
+
+    if (!ENABLE_SCROLL_TO_COMPACT) return;
 
     const get = (id: string) => document.getElementById(id);
     const shell = get("portfolio-shell");

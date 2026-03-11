@@ -27,6 +27,7 @@ class PageSummarySerializer(serializers.ModelSerializer):
             "id",
             "title",
             "description",
+            "description_body",
             "order",
             "layout",
             "media_image",
@@ -124,6 +125,7 @@ class PageEditorSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "description",
+            "description_body",
             "order",
             "layout",
             "media_shape",
@@ -164,6 +166,7 @@ class PageEditorInputSerializer(serializers.Serializer):
     id = serializers.CharField(required=False, allow_null=True, allow_blank=True)
     title = serializers.CharField(required=False, allow_blank=True)
     description = serializers.CharField(required=False, allow_blank=True)
+    description_body = serializers.CharField(required=False, allow_blank=True)
     layout = serializers.CharField(required=False)
     media_shape = serializers.CharField(required=False)
     media_shape_2 = serializers.CharField(required=False, allow_blank=True)
@@ -261,6 +264,8 @@ class PortfolioEditorSaveSerializer(serializers.ModelSerializer):
                         page.title = page_data.get("title", "Untitled Page")
                     if "description" in page_data:
                         page.description = page_data.get("description", "")
+                    if "description_body" in page_data:
+                        page.description_body = page_data.get("description_body", "")
                     if layout_value:
                         page.layout = layout_value
                     if "media_shape" in page_data:
@@ -279,6 +284,7 @@ class PortfolioEditorSaveSerializer(serializers.ModelSerializer):
                         draft_portfolio=instance,
                         title=page_data.get("title", "Untitled Page"),
                         description=page_data.get("description", ""),
+                        description_body=page_data.get("description_body", ""),
                         layout=layout_value or "layout-1",
                         media_shape=media_shape_value,
                         media_shape_2=page_data.get("media_shape_2", "1:1"),
@@ -329,6 +335,7 @@ class PublicPageSummarySerializer(serializers.ModelSerializer):
             "id",
             "title",
             "description",
+            "description_body",
             "order",
             "layout",
             "media_image",
@@ -375,6 +382,7 @@ class PublicPageSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "description",
+            "description_body",
             "order",
             "layout",
             "media_image",

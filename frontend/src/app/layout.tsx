@@ -6,6 +6,7 @@ import ConditionalNavbar from "@/components/layout/ConditionalNavbar";
 import LayoutWrapper from "@/components/layout/LayoutWrapper";
 import ColorThemeGuard from "@/components/artist/ColorThemeGuard";
 import { FrostedGlassHoverProvider } from "@/components/layout/FrostedGlassHoverContext";
+import { ArtistScrollProvider } from "@/components/artist/ArtistScrollContext";
 import MainWithPadding from "@/components/layout/MainWithPadding";
 
 const geistSans = Geist({
@@ -38,14 +39,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       >
         <ColorThemeGuard />
         <FrostedGlassHoverProvider>
-          {/* Shared page container: constrained for app routes, full-width for profile/portfolio */}
-          <LayoutWrapper>
-            <ConditionalNavbar />
-            <MainWithPadding>
-              {children}
-            </MainWithPadding>
-            <ConditionalFooter />
-          </LayoutWrapper>
+          <ArtistScrollProvider>
+            {/* Shared page container: constrained for app routes, full-width for profile/portfolio */}
+            <LayoutWrapper>
+              <ConditionalNavbar />
+              <MainWithPadding>
+                {children}
+              </MainWithPadding>
+              <ConditionalFooter />
+            </LayoutWrapper>
+          </ArtistScrollProvider>
         </FrostedGlassHoverProvider>
       </body>
     </html>

@@ -108,6 +108,20 @@ class Portfolio(models.Model):
 # ---------------------------------------------------------
 class PortfolioPageLayout(models.TextChoices):
     LAYOUT_1 = "layout-1", "layout-1"
+    LAYOUT_2 = "layout-2", "layout-2"
+    LAYOUT_3 = "layout-3", "layout-3"
+    LAYOUT_4 = "layout-4", "layout-4"
+    LAYOUT_5 = "layout-5", "layout-5"
+    LAYOUT_6 = "layout-6", "layout-6"
+    LAYOUT_7 = "layout-7", "layout-7"
+    LAYOUT_8 = "layout-8", "layout-8"
+    LAYOUT_9 = "layout-9", "layout-9"
+    LAYOUT_10 = "layout-10", "layout-10"
+    LAYOUT_11 = "layout-11", "layout-11"
+    LAYOUT_12 = "layout-12", "layout-12"
+    LAYOUT_13 = "layout-13", "layout-13"
+    LAYOUT_14 = "layout-14", "layout-14"
+    LAYOUT_15 = "layout-15", "layout-15"
 
 
 MEDIA_SHAPE_CHOICES = [
@@ -165,6 +179,9 @@ class Page(models.Model):
 
     title_2 = models.CharField(max_length=255, blank=True)
     description_2 = models.TextField(blank=True)
+
+    # Body/paragraph text for layout-4 (sub header = description, body = description_body)
+    description_body = models.TextField(blank=True)
 
     class Meta:
         ordering = ["order", "id"]
@@ -338,6 +355,8 @@ class DraftPage(models.Model):
 
     title_2 = models.CharField(max_length=255, blank=True)
     description_2 = models.TextField(blank=True)
+
+    description_body = models.TextField(blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

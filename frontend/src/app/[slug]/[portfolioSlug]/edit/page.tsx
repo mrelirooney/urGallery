@@ -40,6 +40,7 @@ type EditorPortfolioApi = {
     id: number;
     title: string;
     description: string;
+    description_body?: string;
     order: number;
     layout: LayoutType;
     media_image: string | null;
@@ -175,6 +176,7 @@ export default function EditPortfolioPage() {
       layoutType: (page.layout || "layout-1") as LayoutType,
       title: page.title,
       description: page.description,
+      descriptionBody: page.description_body ?? "",
       mediaSrc: page.media_image
         ? page.media_image.startsWith("http")
           ? page.media_image

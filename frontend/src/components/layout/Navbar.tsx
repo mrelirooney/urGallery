@@ -13,6 +13,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Menu, X, ArrowLeft, Search } from "lucide-react";
 import { hexToRgba, isLightColor, getTextColorForBackground } from "@/lib/colorUtils";
 import { useFrostedGlassHover } from "@/components/layout/FrostedGlassHoverContext";
+import { useArtistScroll } from "@/components/artist/ArtistScrollContext";
 
 export default function Navbar() {
   const [customColors, setCustomColors] = useState<{
@@ -172,6 +173,16 @@ export default function Navbar() {
   const bgForBorder = customColors?.portfolioBg ?? customColors?.background ?? "#faf7f2";
   const borderOpacity = isLightColor(bgForBorder) ? 0.3 : 0.1;
 
+  // Scroll-based navbar fade: 0–50% scroll = fade out, 50–100% = hidden
+  const artistScroll = useArtistScroll();
+  const navOpacity =
+    isArtistPage && artistScroll
+      ? artistScroll.scrollProgress <= 0.5
+        ? 1 - artistScroll.scrollProgress / 0.5
+        : 0
+      : 1;
+  const navPointerEvents = navOpacity < 0.01 ? "none" : "auto";
+
   // --- 4. Return JSX ---
   return (
     <>
@@ -190,7 +201,7 @@ export default function Navbar() {
         ref={frostedCtx?.getRefCallback("nav")}
         onMouseEnter={() => frostedCtx?.onMouseEnter("nav")}
         onMouseLeave={(e) => frostedCtx?.onMouseLeave("nav", e.relatedTarget)}
-        className={`fixed top-0 left-0 right-0 z-55 transition-colors duration-200 ${isArtistPage && customColors ? "border-b backdrop-blur-md shadow-[0_4px_12px_rgba(0,0,0,0.15)]" : ""}`}
+        className={`fixed top-0 left-0 right-0 z-55 transition-all duration-200 ${isArtistPage && customColors ? "border-b backdrop-blur-md shadow-[0_4px_12px_rgba(0,0,0,0.15)]" : ""}`}
         style={{
           backgroundColor: isArtistPage && customColors
             ? hexToRgba(customColors.background, frostedOpacity)
@@ -198,6 +209,11 @@ export default function Navbar() {
           ...(isArtistPage && customColors && {
             borderBottomWidth: 1,
             borderBottomColor: hexToRgba("#faf7f2", borderOpacity),
+            transition: "background-color 0.2s ease, border-color 0.2s ease",
+          }),
+          ...(isArtistPage && artistScroll && {
+            opacity: navOpacity,
+            pointerEvents: navPointerEvents,
           }),
         }}
       >

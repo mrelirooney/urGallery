@@ -24,6 +24,7 @@ export const designTokens = {
       medium: "42rem",   // 672px — search, settings sections
       wide: "72rem",     // 1152px — navbar, footer, hero (replaces max-w-6xl)
       site: "80rem",     // 1280px — main content, portfolio (replaces max-w-7xl)
+      "7.5xl": "85rem",  // 1360px — between 7xl (1280px) and 8xl (1536px)
     },
   
     fontSize: {

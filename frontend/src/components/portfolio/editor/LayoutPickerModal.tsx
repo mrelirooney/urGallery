@@ -12,6 +12,15 @@ interface LayoutPickerModalProps {
 
 const LAYOUT_OPTIONS: { value: LayoutType; label: string }[] = [
   { value: "layout-1", label: "layout-1" },
+  { value: "layout-2", label: "layout-2" },
+  { value: "layout-3", label: "layout-3" },
+  { value: "layout-4", label: "layout-4" },
+  { value: "layout-5", label: "layout-5" },
+  { value: "layout-6", label: "layout-6" },
+  { value: "layout-8", label: "layout-8" },
+  { value: "layout-9", label: "layout-9" },
+  { value: "layout-11", label: "layout-11" },
+  { value: "layout-12", label: "layout-12" },
 ];
 
 export default function LayoutPickerModal({

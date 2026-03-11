@@ -31,6 +31,7 @@ interface EditorPageApi {
   id: number;
   title: string;
   description: string;
+  description_body?: string;
   order: number;
   layout: LayoutType;
   media_image: string | null;
@@ -64,6 +65,7 @@ function mapApiPagesToEditor(
       layoutType: (apiPage.layout || "layout-1") as LayoutType,
       title: apiPage.title,
       description: apiPage.description,
+      descriptionBody: apiPage.description_body ?? "",
       mediaSrc,
       mediaShape: (apiPage.media_shape || "1:1") as MediaShapeType,
       mediaSrc2,
@@ -99,6 +101,7 @@ const createEmptyPage = (): PortfolioPageData => ({
   layoutType: "layout-1",
   title: "",
   description: "",
+  descriptionBody: "",
   mediaSrc: null,
   mediaShape: "1:1",
   mediaSrc2: null,
@@ -373,6 +376,7 @@ export default function PortfolioEditorShell({
         layoutType: data.layout,
         title: data.title,
         description: data.description,
+        descriptionBody: data.description_body ?? "",
         mediaSrc: data.media_image,
         mediaShape2: (data.media_shape ?? "1:1") as MediaShapeType,
         mediaSrc2: data.media_image_2,
@@ -493,6 +497,7 @@ export default function PortfolioEditorShell({
         id: page.id,
         title: page.title,
         description: page.description,
+        description_body: page.descriptionBody ?? "",
         layout: page.layoutType,
         media_shape: page.mediaShape2,
         media_shape_2: page.mediaShape2_2,
@@ -649,6 +654,13 @@ export default function PortfolioEditorShell({
     newDescription: string,
   ) => {
     updatePage(pageIndex, (page) => ({ ...page, description: newDescription }));
+  };
+
+  const handleChangePageDescriptionBody = (
+    pageIndex: number,
+    newDescriptionBody: string,
+  ) => {
+    updatePage(pageIndex, (page) => ({ ...page, descriptionBody: newDescriptionBody }));
   };
 
   const handleChangeMediaShape = (
@@ -885,7 +897,7 @@ export default function PortfolioEditorShell({
 
       {/* Canvas area */}
       <section
-        className="flex-1 justify-center items-center min-w-0 min-h-0 shadow-lg flex flex-col -mt-14 relative overflow-hidden"
+        className="h-[calc(100dvh-8rem)] justify-center items-center min-w-0 shadow-lg flex flex-col -mt-14 relative overflow-hidden"
         style={{
           backgroundColor: "var(--artist-background, #11100e)",
           color: "var(--artist-text, #faf7f2)",
@@ -901,10 +913,10 @@ export default function PortfolioEditorShell({
             }}
           />
         )}
-        <div className="w-full max-w-6xl xl:max-w-7xl xl-lg:max-w-[1310px] 2xl:max-w-[1310px] mx-auto px-4 sm:px-6 md:px-10 lg:px-10 xl:px-8 2xl:px-20 shrink-0 relative z-10 max-h-[calc(100vh-8rem)]">
-        {/* Actual page canvas */}
-        <div className="flex justify-center min-h-0">
-          <div className="w-full">
+        <div className="w-full max-w-6xl xl:max-w-7xl xl-lg:max-w-[1310px] 2xl:max-w-[1310px] mx-auto px-4 sm:px-6 md:px-10 lg:px-10 xl:px-8 2xl:px-20 shrink-0 relative z-10 h-full flex flex-col">
+        {/* Actual page canvas – fixed frame */}
+        <div className="flex-1 min-h-0 flex justify-center">
+          <div className="w-full h-full min-h-0">
             <PageRenderer
               key={`page-${currentPage?.id ?? currentPageIndex}-${layoutOverride ?? currentPage?.layoutType ?? "default"}`}
               pages={pages}
@@ -914,6 +926,7 @@ export default function PortfolioEditorShell({
               layoutOverride={layoutOverride}
               onChangeTitle={handleChangePageTitle}
               onChangeDescription={handleChangePageDescription}
+              onChangeDescriptionBody={handleChangePageDescriptionBody}
               onChangeImage={handleChangeImage}
               onChangeTitle2={handleChangeTitle2}
               onChangeLayout={handleChangeLayout}

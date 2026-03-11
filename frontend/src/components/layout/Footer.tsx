@@ -6,6 +6,7 @@ import Link from "next/link";
 import Container from "./Container";
 import { hexToRgba, getTextColorForBackground, isLightColor } from "@/lib/colorUtils";
 import { useFrostedGlassHover } from "@/components/layout/FrostedGlassHoverContext";
+import { useArtistScroll } from "@/components/artist/ArtistScrollContext";
 
 const footerLinks = [
   { href: "/about", label: "About" },
@@ -70,23 +71,23 @@ export default function Footer() {
     /^\/[^/]+(\/[^/]+)*$/.test(pathname);
 
   const frostedCtx = useFrostedGlassHover();
+  const artistScroll = useArtistScroll();
   const isFrostedHovered = frostedCtx?.isHovered ?? false;
   const isEditorPage = pathname?.includes("/edit");
-  const [overlayVisible, setOverlayVisible] = useState(true);
 
-  useEffect(() => {
-    const handler = (e: Event) => {
-      const ev = e as CustomEvent<{ visible: boolean }>;
-      setOverlayVisible(ev.detail?.visible ?? true);
-    };
-    window.addEventListener("portfolio-overlay-visibility", handler);
-    return () => window.removeEventListener("portfolio-overlay-visibility", handler);
-  }, []);
+  // On artist pages: footer hidden until 50% scroll, then fades in like compact profile bar
+  const footerOpacity =
+    isArtistPage && artistScroll
+      ? artistScroll.scrollProgress > 0.5
+        ? (artistScroll.scrollProgress - 0.5) / 0.5
+        : 0
+      : 1;
+  const footerPointerEvents = isArtistPage && artistScroll && footerOpacity < 0.01 ? "none" : "auto";
   const frostedOpacity =
     isEditorPage && customColors
       ? 1
       : isArtistPage && customColors && frostedCtx
-        ? (isFrostedHovered ? 0.75 : 0.05)
+        ? (isFrostedHovered ? .99 : 0.05)
         : 0.05;
 
   const footerBg = customColors?.background || "var(--background)";
@@ -103,12 +104,12 @@ export default function Footer() {
   const borderOpacity = isLightColor(bgForBorder) ? 0.3 : 0.1;
 
   const containerClass = isArtistPage
-    ? "h-auto md:h-14 flex flex-col md:flex-row items-center justify-space-between md:justify-between text-xs max-w-7.5xl lg:max-w-7.5xl xl:max-w-7.5xl 2xl:max-w-7.5xl mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-16 2xl:px-20 py-3 md:py-0 gap-3 sm:gap-4 md:gap-0 opacity-70"
+    ? "h-auto md:h-14 flex flex-col md:flex-row items-center justify-space-between md:justify-between text-xs max-w-6xl lg:max-w-7xl xl:max-w-7xl 2xl:max-w-7xl mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-16 2xl:px-20 py-3 md:py-0 gap-3 sm:gap-4 md:gap-0 opacity-70"
     : "h-auto md:h-14 flex flex-col md:flex-row items-center justify-space-between md:justify-between text-xs max-w-full px-0 py-3 md:py-0 gap-3 sm:gap-4 md:gap-0 opacity-70";
 
   const footerClassName =
     isArtistPage && customColors
-      ? `relative z-[50] -mt-14 backdrop-blur-md transition-all duration-300 shadow-[0_-4px_12px_rgba(0,0,0,0.15)] ${overlayVisible ? "" : "opacity-0 pointer-events-none"}`
+      ? "artist-page-footer fixed bottom-0 left-0 right-0 z-[50] backdrop-blur-md transition-all duration-300 shadow-[0_-4px_12px_rgba(0,0,0,0.15)]"
       : hideFooterBorder
         ? ""
         : "border-t-2 border-[#faf7f2]";
@@ -125,6 +126,10 @@ export default function Footer() {
         ...(isArtistPage && customColors && {
           borderTopWidth: 1,
           borderTopColor: hexToRgba("#faf7f2", borderOpacity),
+        }),
+        ...(isArtistPage && artistScroll && {
+          opacity: footerOpacity,
+          pointerEvents: footerPointerEvents,
         }),
       }}
     >
