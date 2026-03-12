@@ -208,7 +208,7 @@ export default function CommentsSection({
     <>
       {isOpen && (
         <div
-          className="fixed inset-0 z-60 transition-opacity"
+          className="fixed inset-0 z-[100] transition-opacity"
           style={{ backgroundColor: bg, opacity: 0.85 }}
           onClick={onClose}
         />
@@ -217,7 +217,7 @@ export default function CommentsSection({
       <div
         ref={panelRef}
         className={`fixed right-0 top-0 bottom-0 w-full sm:w-[400px] h-screen flex flex-col
-          shadow-xl z-60 transform transition-transform duration-300 ease-in-out
+          shadow-xl z-[100] transform transition-transform duration-300 ease-in-out
           ${isOpen ? "translate-x-0" : "translate-x-full"}
         `}
         style={{ backgroundColor: text }}

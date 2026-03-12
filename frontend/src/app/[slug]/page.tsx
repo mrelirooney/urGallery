@@ -121,20 +121,34 @@ export default async function ArtistPage(
       <main className="flex flex-col flex-1 min-h-0 relative z-50">
         <ArtistLandingMotion pagesCount={firstPortfolio?.pages_count ?? 1} />
 
-        {/* Artist Header Section */}
-        <section id="artist-profile-section" style={{ backgroundColor: customColors.background, fontFamily: "var(--artist-font, 'Raleway'), sans-serif" }} className="relative z-50 overflow-hidden">
-        {/* Theme pattern layer (behind content) - inline SVG for dynamic colors */}
-        {profile?.theme?.svg_url && (
-          <ThemePatternLayer
-            svgUrl={profile.theme.svg_url}
-            colorOverrides={{
-              "--artist-background": customColors.accent,
-              "--artist-accent": customColors.accent,
-              "--artist-text": customColors.accent,
+        {/* Wrapper: profile + portfolio – single gradient spans both */}
+        <div className="relative flex-1 flex flex-col min-h-0">
+          {/* Single gradient: diagonal off-black→off-white, 6% opacity, transparent center */}
+          <div
+            className="absolute inset-0 z-[5] pointer-events-none"
+            style={{
+              background: "linear-gradient(to top right, #11100e 0%, #2d2a28 65%, #faf7f2 100%)",
+              opacity: 0.13,
+              maskImage: "radial-gradient(ellipse 100% 100% at 50% 50%, transparent 30%, black 70%)",
+              WebkitMaskImage: "radial-gradient(ellipse 100% 100% at 50% 50%, transparent 30%, black 70%)",
             }}
+            aria-hidden
           />
-        )}
-        {/* Banner Image - Full width, outside container */}
+
+          {/* Artist Header Section */}
+          <section id="artist-profile-section" style={{ backgroundColor: customColors.background, fontFamily: "var(--artist-font, 'Raleway'), sans-serif" }} className="relative overflow-hidden">
+          {/* Theme pattern layer (behind content) - inline SVG for dynamic colors */}
+          {profile?.theme?.svg_url && (
+            <ThemePatternLayer
+              svgUrl={profile.theme.svg_url}
+              colorOverrides={{
+                "--artist-background": customColors.accent,
+                "--artist-accent": customColors.accent,
+                "--artist-text": customColors.accent,
+              }}
+            />
+          )}
+          {/* Banner Image - Full width, outside container */}
         {profile?.banner_image_url && (
           <div className="absolute top-0 left-0 right-0 h-30 md:h-[20vh] lg:h-[33vh] overflow-hidden">
             <img
@@ -159,12 +173,12 @@ export default async function ArtistPage(
         </div>
       </section>
 
-      {/* Compact sticky profile (appears in compact mode) */}
-      <CompactProfileBar
-        profileBackground={customColors.background}
-        profileText={customColors.profileText}
-        portfolioBackground={customColors.text}
-      >
+          {/* Compact sticky profile (appears in compact mode) */}
+          <CompactProfileBar
+            profileBackground={customColors.background}
+            profileText={customColors.profileText}
+            portfolioBackground={customColors.text}
+          >
         <div className="max-w-6xl lg:max-w-7xl xl:max-w-7xl 2xl:max-w-7xl mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-16 2xl:px-20 py-4 md:py-0 md:h-14 md:flex md:items-center lg:py-2 lg:h-auto lg:flex-col lg:min-h-0 lg:justify-start">
           {/* Phone: back arrow, avatar, hamburger, portfolio title */}
           <div className="flex items-center justify-between md:hidden">
@@ -200,32 +214,32 @@ export default async function ArtistPage(
             </div>
             <CompactContactButtons profile={profile} customColors={customColors} textColor="var(--compact-bar-text)" />
           </div>
-        </div>
-      </CompactProfileBar>
+          </div>
+          </CompactProfileBar>
 
-      {/* Portfolio Section */}
-      <div id="portfolio-sentinel" />
+          {/* Portfolio Section */}
+          <div id="portfolio-sentinel" />
 
-      <section 
-        id="portfolio-shell" 
-        style={{ 
-          backgroundColor: customColors.text,
-          color: customColors.portfolioText,
-          fontFamily: "var(--artist-font, 'Raleway'), sans-serif",
-        }}
-        className="relative overflow-hidden h-dvh pt-30 pb-0 flex flex-col"
-      >
-        {profile?.theme?.svg_url && (
-          <ThemePatternLayer
-            svgUrl={profile.theme.svg_url}
-            colorOverrides={{
-              "--artist-background": customColors.accent,
-              "--artist-accent": customColors.accent,
-              "--artist-text": customColors.accent,
+          <section 
+            id="portfolio-shell" 
+            style={{ 
+              backgroundColor: customColors.text,
+              color: customColors.portfolioText,
+              fontFamily: "var(--artist-font, 'Raleway'), sans-serif",
             }}
-          />
-        )}
-        <div className="flex-1 flex flex-col min-h-0 w-full max-w-6xl xl:max-w-7xl xl-lg:max-w-[1600px] 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-16 2xl:px-20">
+            className="relative overflow-hidden h-dvh pt-30 pb-0 flex flex-col"
+          >
+            {profile?.theme?.svg_url && (
+              <ThemePatternLayer
+                svgUrl={profile.theme.svg_url}
+                colorOverrides={{
+                  "--artist-background": customColors.accent,
+                  "--artist-accent": customColors.accent,
+                  "--artist-text": customColors.accent,
+                }}
+              />
+            )}
+            <div className="flex-1 flex flex-col min-h-0 w-full max-w-6xl xl:max-w-7xl xl-lg:max-w-[1600px] 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-16 2xl:px-20 relative z-10">
           {portfolios.length > 0 ? (
             <PortfolioSelector
               artistSlug={profile.slug}
@@ -237,9 +251,10 @@ export default async function ArtistPage(
           ) : (
             <EmptyPortfolioMessage profileSlug={profile.slug} customColors={customColors} />
           )}
+            </div>
+          </section>
         </div>
-      </section>
-    </main>
+      </main>
     </>
   );
 }

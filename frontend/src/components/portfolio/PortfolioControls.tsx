@@ -90,7 +90,7 @@ export default function PortfolioControls({
   };
 
   const controlsPointerEvents = controlsVisible && !isPrivateBlurred ? "pointer-events-auto" : "pointer-events-none";
-  const containerClass = `fixed left-0 right-0 w-full z-20 flex flex-col justify-end md:justify-between py-3 transition-opacity duration-300 pointer-events-none ${controlsVisible ? "opacity-100" : "opacity-0"}`;
+  const containerClass = `fixed left-0 right-0 w-full z-[100] flex flex-col justify-end md:justify-between py-3 transition-opacity duration-300 pointer-events-none ${controlsVisible ? "opacity-100" : "opacity-0"}`;
   const innerClass = "w-full max-w-6xl lg:max-w-7xl xl:max-w-7xl 2xl:max-w-7xl mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-16 2xl:px-20 flex flex-col justify-end md:justify-between flex-1 min-h-0";
 
   return (
