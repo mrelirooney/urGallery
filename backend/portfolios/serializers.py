@@ -36,6 +36,8 @@ class PageSummarySerializer(serializers.ModelSerializer):
             "media_shape_2",
             "title_2",
             "description_2",
+            "title_3",
+            "description_3",
             "created_at",
             "updated_at",
         ]
@@ -134,6 +136,8 @@ class PageEditorSerializer(serializers.ModelSerializer):
             "media_image_2",
             "title_2",
             "description_2",
+            "title_3",
+            "description_3",
             "created_at",
             "updated_at",
         ]
@@ -172,6 +176,8 @@ class PageEditorInputSerializer(serializers.Serializer):
     media_shape_2 = serializers.CharField(required=False, allow_blank=True)
     title_2 = serializers.CharField(required=False, allow_blank=True)
     description_2 = serializers.CharField(required=False, allow_blank=True)
+    title_3 = serializers.CharField(required=False, allow_blank=True)
+    description_3 = serializers.CharField(required=False, allow_blank=True)
     order = serializers.IntegerField(required=False)
 
 
@@ -276,6 +282,10 @@ class PortfolioEditorSaveSerializer(serializers.ModelSerializer):
                         page.title_2 = page_data.get("title_2", "")
                     if "description_2" in page_data:
                         page.description_2 = page_data.get("description_2", "")
+                    if "title_3" in page_data:
+                        page.title_3 = page_data.get("title_3", "")
+                    if "description_3" in page_data:
+                        page.description_3 = page_data.get("description_3", "")
                     page.order = page_order
                     page.save()
                 else:
@@ -290,6 +300,8 @@ class PortfolioEditorSaveSerializer(serializers.ModelSerializer):
                         media_shape_2=page_data.get("media_shape_2", "1:1"),
                         title_2=page_data.get("title_2", ""),
                         description_2=page_data.get("description_2", ""),
+                        title_3=page_data.get("title_3", ""),
+                        description_3=page_data.get("description_3", ""),
                         order=page_order,
                     )
             
@@ -344,6 +356,8 @@ class PublicPageSummarySerializer(serializers.ModelSerializer):
             "media_shape_2",
             "title_2",
             "description_2",
+            "title_3",
+            "description_3",
             "created_at",
         ]
 
@@ -391,6 +405,8 @@ class PublicPageSerializer(serializers.ModelSerializer):
             "media_shape_2",
             "title_2",
             "description_2",
+            "title_3",
+            "description_3",
             "created_at",
         ]
 

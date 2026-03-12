@@ -180,6 +180,9 @@ class Page(models.Model):
     title_2 = models.CharField(max_length=255, blank=True)
     description_2 = models.TextField(blank=True)
 
+    title_3 = models.CharField(max_length=255, blank=True)
+    description_3 = models.TextField(blank=True)
+
     # Body/paragraph text for layout-4 (sub header = description, body = description_body)
     description_body = models.TextField(blank=True)
 
@@ -355,6 +358,9 @@ class DraftPage(models.Model):
 
     title_2 = models.CharField(max_length=255, blank=True)
     description_2 = models.TextField(blank=True)
+
+    title_3 = models.CharField(max_length=255, blank=True)
+    description_3 = models.TextField(blank=True)
 
     description_body = models.TextField(blank=True)
 

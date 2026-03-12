@@ -3,7 +3,7 @@
 import React, { useRef } from "react";
 import { getTextColorForBackground } from "@/lib/colorUtils";
 
-export type LayoutType = "layout-1" | "layout-2" | "layout-3" | "layout-4" | "layout-5" | "layout-6" | "layout-8" | "layout-9" | "layout-11" | "layout-12";
+export type LayoutType = "layout-1" | "layout-2" | "layout-3" | "layout-4" | "layout-5" | "layout-6" | "layout-8" | "layout-9" | "layout-11" | "layout-12" | "layout-13" | "layout-14" | "layout-15";
 
 export type MediaShapeType = "1:1" | "4:5" | "9:16" | "16:9" | "5:4" | "21:9";
 
@@ -20,6 +20,8 @@ export interface PortfolioPageData {
   mediaShape2?: MediaShapeType;
   mediaShape2_2?: MediaShapeType;
   description2?: string;
+  title3?: string;
+  description3?: string;
 }
 
 export interface PageRendererProps {
@@ -37,6 +39,9 @@ export interface PageRendererProps {
   onChangeDescriptionBody?: (pageIndex: number, newDesc: string) => void;
   onChangeImage?: (pageIndex: number, file: File | null) => void;
   onChangeTitle2?: (pageIndex: number, newTitle: string) => void;
+  onChangeDescription2?: (pageIndex: number, newDesc: string) => void;
+  onChangeTitle3?: (pageIndex: number, newTitle: string) => void;
+  onChangeDescription3?: (pageIndex: number, newDesc: string) => void;
   onChangeLayout?: (pageIndex: number, layout: LayoutType) => void;
   onChangeMediaShape?: (pageIndex: number, shape: MediaShapeType) => void;
 }
@@ -51,6 +56,10 @@ export default function PageRenderer({
   onChangeDescription,
   onChangeDescriptionBody,
   onChangeImage,
+  onChangeTitle2,
+  onChangeDescription2,
+  onChangeTitle3,
+  onChangeDescription3,
 }: PageRendererProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -827,7 +836,352 @@ export default function PageRenderer({
     );
   }
 
-  // layout-12: Title above; one orange band (upper-mid); image bottom-aligned left; description right with orange border
+  // layout-13: Row 1 = MASSIVE HEADER (title) full width + 15px orange left accent; Row 2 = 60% image | 40% BIG HEADER + descriptionBody + 15px orange right accent
+  if (layoutType === "layout-13") {
+    const accentHex13 = customColors?.accent || "#c96a4a";
+    const portfolioBg13 = customColors?.text || "#11100e";
+    const textColor13 = getTextColorForBackground(portfolioBg13);
+
+    const layout13Media = (
+      <div
+        onClick={handleMediaClick}
+        className={`absolute inset-0 w-full h-full flex items-center justify-center overflow-hidden ${isEditor ? "cursor-pointer" : ""}`}
+      >
+        {mediaSrc ? (
+          <img src={mediaSrc} alt="Portfolio media" className="w-full h-full object-cover" />
+        ) : (
+          <div
+            className="flex h-full w-full min-h-[200px] items-center justify-center text-sm border-2 border-dashed border-neutral-500/50 rounded-md"
+            style={{ color: "#faf7f2", opacity: 0.9 }}
+          >
+            {isEditor ? "Click to add image" : "No media"}
+          </div>
+        )}
+        {isEditor && onChangeImage && (
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+        )}
+      </div>
+    );
+
+    return (
+      <div className="w-screen relative left-1/2 -translate-x-1/2 h-full min-h-0">
+        <div className="w-full h-full flex flex-col" data-layout="layout-13">
+          {/* Below lg: tablet stacked */}
+          <div className="flex flex-col lg:hidden w-full flex-1 min-h-[70vh]">
+            <div className="h-[4px] w-full shrink-0" style={{ backgroundColor: accentHex13 }} />
+            <div className="flex flex-col items-center text-center py-6 px-8">
+              <input
+                className="w-full portfolio-header-massive font-bold bg-transparent rounded-md py-2 text-center outline-none focus:ring-2 focus:ring-white/50"
+                style={{ color: textColor13 }}
+                value={title}
+                onChange={(e) => onChangeTitle?.(safeIndex, e.target.value)}
+                placeholder="Page title"
+              />
+              <input
+                className="w-full portfolio-header-big font-bold bg-transparent rounded-md py-2 mt-2 text-center outline-none focus:ring-2 focus:ring-white/50"
+                style={{ color: textColor13 }}
+                value={description}
+                onChange={(e) => onChangeDescription?.(safeIndex, e.target.value)}
+                placeholder="Sub header"
+              />
+            </div>
+            <div className="w-full aspect-video overflow-hidden relative shrink-0">
+              {layout13Media}
+            </div>
+            <textarea
+              className="w-full portfolio-description whitespace-pre-line bg-transparent rounded-md py-2 mt-6 px-8 outline-none focus:ring-2 focus:ring-white/50 min-h-[80px] resize-none"
+              style={{ color: textColor13, opacity: 0.9 }}
+              value={descriptionBody}
+              onChange={(e) => onChangeDescriptionBody?.(safeIndex, e.target.value)}
+              placeholder="Body text"
+            />
+            <div className="h-[4px] w-full shrink-0 mt-6" style={{ backgroundColor: accentHex13 }} />
+          </div>
+          {/* Laptop: Row 1 = title + left accent; Row 2 = 60% image | 40% text + right accent (full bleed) */}
+          <div className="hidden lg:flex lg:flex-col lg:flex-1 lg:min-h-0">
+            <div className="shrink-0 py-6 pl-12">
+              <div className="shrink-0 pl-8 border-l-[15px] pointer-events-auto" style={{ borderLeftColor: accentHex13, color: textColor13 }}>
+                <input
+                  className="w-full portfolio-header-massive font-bold bg-transparent rounded-md py-2 outline-none focus:ring-2 focus:ring-white/50"
+                  style={{ color: textColor13 }}
+                  value={title}
+                  onChange={(e) => onChangeTitle?.(safeIndex, e.target.value)}
+                  placeholder="Page title"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-[3fr_2fr] gap-0 flex-1 min-h-0">
+              <div className="relative min-h-0 overflow-hidden">
+                {layout13Media}
+              </div>
+              <div className="flex flex-col justify-center py-8 pr-12 pl-2 overflow-y-auto text-right pointer-events-auto">
+                <div className="shrink-0 pr-8 border-r-[15px]" style={{ borderRightColor: accentHex13, color: textColor13 }}>
+                  <input
+                    className="w-full portfolio-header-big font-bold bg-transparent rounded-md py-2 outline-none focus:ring-2 focus:ring-white/50 text-right"
+                    style={{ color: textColor13 }}
+                    value={description}
+                    onChange={(e) => onChangeDescription?.(safeIndex, e.target.value)}
+                    placeholder="Sub header"
+                  />
+                  <textarea
+                    className="w-full portfolio-description whitespace-pre-line bg-transparent rounded-md py-2 mt-4 outline-none focus:ring-2 focus:ring-white/50 min-h-[80px] resize-none text-right"
+                    style={{ color: textColor13, opacity: 0.9 }}
+                    value={descriptionBody}
+                    onChange={(e) => onChangeDescriptionBody?.(safeIndex, e.target.value)}
+                    placeholder="Body text"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // layout-14: Three equal columns – block 1 & 3 thin orange border, block 2 solid accent background; full bleed
+  if (layoutType === "layout-14") {
+    const accentHex14 = customColors?.accent || "#c96a4a";
+    const portfolioBg14 = customColors?.text || "#11100e";
+    const textColor14 = getTextColorForBackground(portfolioBg14);
+    const accentTextColor14 = getTextColorForBackground(accentHex14);
+    const title2 = page.title2 ?? "";
+    const description2 = page.description2 ?? "";
+    const title3 = page.title3 ?? "";
+    const description3 = page.description3 ?? "";
+
+    return (
+      <div className="w-screen relative left-1/2 -translate-x-1/2 h-full min-h-0">
+        <div className="w-full h-full flex flex-col" data-layout="layout-14">
+          {/* Below lg: stacked vertically */}
+          <div className="flex flex-col lg:hidden w-full flex-1 min-h-[70vh] gap-6 py-8 px-6">
+            <div className="p-6 border-2 rounded-sm pointer-events-auto" style={{ borderColor: accentHex14, color: textColor14 }}>
+              <input
+                className="w-full portfolio-header-big font-bold bg-transparent rounded-md py-2 outline-none focus:ring-2 focus:ring-white/50"
+                style={{ color: textColor14 }}
+                value={title}
+                onChange={(e) => onChangeTitle?.(safeIndex, e.target.value)}
+                placeholder="Block 1 title"
+              />
+              <textarea
+                className="w-full portfolio-description whitespace-pre-line bg-transparent rounded-md py-2 mt-2 outline-none focus:ring-2 focus:ring-white/50 min-h-[60px] resize-none"
+                style={{ color: textColor14, opacity: 0.9 }}
+                value={description}
+                onChange={(e) => onChangeDescription?.(safeIndex, e.target.value)}
+                placeholder="Block 1 description"
+              />
+            </div>
+            <div className="p-6 rounded-sm pointer-events-auto" style={{ backgroundColor: accentHex14, color: accentTextColor14 }}>
+              <input
+                className="w-full portfolio-header-big font-bold bg-transparent rounded-md py-2 outline-none focus:ring-2 focus:ring-white/50"
+                style={{ color: accentTextColor14 }}
+                value={title2}
+                onChange={(e) => onChangeTitle2?.(safeIndex, e.target.value)}
+                placeholder="Block 2 title"
+              />
+              <textarea
+                className="w-full portfolio-description whitespace-pre-line bg-transparent rounded-md py-2 mt-2 outline-none focus:ring-2 focus:ring-white/50 min-h-[60px] resize-none"
+                style={{ color: accentTextColor14, opacity: 0.95 }}
+                value={description2}
+                onChange={(e) => onChangeDescription2?.(safeIndex, e.target.value)}
+                placeholder="Block 2 description"
+              />
+            </div>
+            <div className="p-6 border-2 rounded-sm pointer-events-auto" style={{ borderColor: accentHex14, color: textColor14 }}>
+              <input
+                className="w-full portfolio-header-big font-bold bg-transparent rounded-md py-2 outline-none focus:ring-2 focus:ring-white/50"
+                style={{ color: textColor14 }}
+                value={title3}
+                onChange={(e) => onChangeTitle3?.(safeIndex, e.target.value)}
+                placeholder="Block 3 title"
+              />
+              <textarea
+                className="w-full portfolio-description whitespace-pre-line bg-transparent rounded-md py-2 mt-2 outline-none focus:ring-2 focus:ring-white/50 min-h-[60px] resize-none"
+                style={{ color: textColor14, opacity: 0.9 }}
+                value={description3}
+                onChange={(e) => onChangeDescription3?.(safeIndex, e.target.value)}
+                placeholder="Block 3 description"
+              />
+            </div>
+          </div>
+          {/* Laptop: three equal columns, full bleed; boxes max 50% height, centered in layout frame (mirrors public PageRenderer) */}
+          <div className="hidden lg:flex lg:flex-1 lg:min-h-0 lg:items-start lg:justify-center">
+            <div className="grid grid-cols-3 gap-0 max-h-[50%] w-full">
+              <div className="flex flex-col justify-center p-8 overflow-y-auto pointer-events-auto">
+                <input
+                  className="w-full portfolio-header-big font-bold bg-transparent rounded-md py-2 outline-none focus:ring-2 focus:ring-white/50 text-center pb-2"
+                  style={{ color: textColor14 }}
+                  value={title}
+                  onChange={(e) => onChangeTitle?.(safeIndex, e.target.value)}
+                  placeholder="Block 1 title"
+                />
+                <div
+                  className="flex flex-col justify-center p-8 overflow-y-auto border-2 text-center pointer-events-auto"
+                  style={{ borderColor: accentHex14, color: textColor14 }}
+                >
+                  <textarea
+                    className="w-full portfolio-description whitespace-pre-line bg-transparent rounded-md py-2 outline-none focus:ring-2 focus:ring-white/50 min-h-[60px] resize-none"
+                    style={{ color: textColor14, opacity: 0.9 }}
+                    value={description}
+                    onChange={(e) => onChangeDescription?.(safeIndex, e.target.value)}
+                    placeholder="Block 1 description"
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col justify-center p-0 overflow-y-auto pointer-events-auto">
+                <input
+                  className="w-full portfolio-header-big font-bold bg-transparent rounded-md py-2 outline-none focus:ring-2 focus:ring-white/50 text-center pb-2"
+                  style={{ color: textColor14 }}
+                  value={title2}
+                  onChange={(e) => onChangeTitle2?.(safeIndex, e.target.value)}
+                  placeholder="Block 2 title"
+                />
+                <div
+                  className="flex flex-col justify-center p-8 overflow-y-auto text-center pointer-events-auto"
+                  style={{ backgroundColor: accentHex14, color: accentTextColor14 }}
+                >
+                  <textarea
+                    className="w-full portfolio-description whitespace-pre-line bg-transparent rounded-md py-2 outline-none focus:ring-2 focus:ring-white/50 min-h-[60px] resize-none"
+                    style={{ color: accentTextColor14, opacity: 0.95 }}
+                    value={description2}
+                    onChange={(e) => onChangeDescription2?.(safeIndex, e.target.value)}
+                    placeholder="Block 2 description"
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col justify-center p-8 overflow-y-auto pointer-events-auto">
+                <input
+                  className="w-full portfolio-header-big font-bold bg-transparent rounded-md py-2 outline-none focus:ring-2 focus:ring-white/50 text-center pb-2"
+                  style={{ color: textColor14 }}
+                  value={title3}
+                  onChange={(e) => onChangeTitle3?.(safeIndex, e.target.value)}
+                  placeholder="Block 3 title"
+                />
+                <div
+                  className="flex flex-col justify-center p-8 overflow-y-auto border-2 text-center pointer-events-auto"
+                  style={{ borderColor: accentHex14, color: textColor14 }}
+                >
+                  <textarea
+                    className="w-full portfolio-description whitespace-pre-line bg-transparent rounded-md py-2 outline-none focus:ring-2 focus:ring-white/50 min-h-[60px] resize-none"
+                    style={{ color: textColor14, opacity: 0.9 }}
+                    value={description3}
+                    onChange={(e) => onChangeDescription3?.(safeIndex, e.target.value)}
+                    placeholder="Block 3 description"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // layout-15: Two equal columns, both accent background; below lg: single full-width block with two sections + divider
+  if (layoutType === "layout-15") {
+    const accentHex15 = customColors?.accent || "#c96a4a";
+    const accentTextColor15 = getTextColorForBackground(accentHex15);
+    const title2 = page.title2 ?? "";
+    const description2 = page.description2 ?? "";
+
+    return (
+      <div className="w-screen relative left-1/2 -translate-x-1/2 h-full min-h-0">
+        <div className="w-full h-full flex flex-col" data-layout="layout-15">
+          {/* Below lg: single full-width block, two sections, divider */}
+          <div className="flex flex-col lg:hidden w-full flex-1 min-h-[70vh] py-8 px-6">
+            <div className="w-full flex flex-col rounded-sm pointer-events-auto" style={{ backgroundColor: accentHex15, color: accentTextColor15 }}>
+              <div className="p-8">
+                <input
+                  className="w-full portfolio-header-big font-bold bg-transparent rounded-md py-2 outline-none focus:ring-2 focus:ring-white/50"
+                  style={{ color: accentTextColor15 }}
+                  value={title}
+                  onChange={(e) => onChangeTitle?.(safeIndex, e.target.value)}
+                  placeholder="Block 1 title"
+                />
+                <textarea
+                  className="w-full portfolio-description whitespace-pre-line bg-transparent rounded-md py-2 mt-2 outline-none focus:ring-2 focus:ring-white/50 min-h-[60px] resize-none"
+                  style={{ color: accentTextColor15, opacity: 0.9 }}
+                  value={description}
+                  onChange={(e) => onChangeDescription?.(safeIndex, e.target.value)}
+                  placeholder="Block 1 description"
+                />
+              </div>
+              <div className="border-t" style={{ borderColor: accentTextColor15 }} />
+              <div className="p-8">
+                <input
+                  className="w-full portfolio-header-big font-bold bg-transparent rounded-md py-2 outline-none focus:ring-2 focus:ring-white/50"
+                  style={{ color: accentTextColor15 }}
+                  value={title2}
+                  onChange={(e) => onChangeTitle2?.(safeIndex, e.target.value)}
+                  placeholder="Block 2 title"
+                />
+                <textarea
+                  className="w-full portfolio-description whitespace-pre-line bg-transparent rounded-md py-2 mt-2 outline-none focus:ring-2 focus:ring-white/50 min-h-[60px] resize-none"
+                  style={{ color: accentTextColor15, opacity: 0.95 }}
+                  value={description2}
+                  onChange={(e) => onChangeDescription2?.(safeIndex, e.target.value)}
+                  placeholder="Block 2 description"
+                />
+              </div>
+            </div>
+          </div>
+          {/* Laptop: two equal columns, both accent background (mirrors public structure with gap) */}
+          <div className="hidden lg:grid lg:grid-cols-2 lg:flex-1 lg:min-h-0 lg:gap-0">
+            <div className="flex flex-col justify-center pl-8 pr-4 overflow-y-auto">
+              <div
+                className="flex flex-col justify-center p-8 overflow-y-auto pointer-events-auto"
+                style={{ backgroundColor: accentHex15, color: accentTextColor15 }}
+              >
+                <input
+                  className="w-full portfolio-header-big font-bold bg-transparent rounded-md py-2 outline-none focus:ring-2 focus:ring-white/50"
+                  style={{ color: accentTextColor15 }}
+                  value={title}
+                  onChange={(e) => onChangeTitle?.(safeIndex, e.target.value)}
+                  placeholder="Block 1 title"
+                />
+                <textarea
+                  className="w-full portfolio-description whitespace-pre-line bg-transparent rounded-md py-2 mt-2 outline-none focus:ring-2 focus:ring-white/50 min-h-[60px] resize-none"
+                  style={{ color: accentTextColor15, opacity: 0.9 }}
+                  value={description}
+                  onChange={(e) => onChangeDescription?.(safeIndex, e.target.value)}
+                  placeholder="Block 1 description"
+                />
+              </div>
+            </div>
+            <div className="flex flex-col justify-center pl-4 pr-8 overflow-y-auto">
+              <div
+                className="flex flex-col justify-center p-8 overflow-y-auto pointer-events-auto"
+                style={{ backgroundColor: accentHex15, color: accentTextColor15 }}
+              >
+                <input
+                  className="w-full portfolio-header-big font-bold bg-transparent rounded-md py-2 outline-none focus:ring-2 focus:ring-white/50"
+                  style={{ color: accentTextColor15 }}
+                  value={title2}
+                  onChange={(e) => onChangeTitle2?.(safeIndex, e.target.value)}
+                  placeholder="Block 2 title"
+                />
+                <textarea
+                  className="w-full portfolio-description whitespace-pre-line bg-transparent rounded-md py-2 mt-2 outline-none focus:ring-2 focus:ring-white/50 min-h-[60px] resize-none"
+                  style={{ color: accentTextColor15, opacity: 0.95 }}
+                  value={description2}
+                  onChange={(e) => onChangeDescription2?.(safeIndex, e.target.value)}
+                  placeholder="Block 2 description"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // layout-12: Title above; one orange band (taller); image bottom-aligned left overlapping band; description below band (60% width, right-aligned, transparent, border-r)
   if (layoutType === "layout-12") {
     const accentHex12 = customColors?.accent || "#c96a4a";
     const portfolioBg12 = customColors?.text || "#11100e";
@@ -862,7 +1216,7 @@ export default function PageRenderer({
 
     return (
       <div className="w-screen relative left-1/2 -translate-x-1/2 h-full min-h-0">
-        <div className="w-full h-full relative overflow-hidden flex flex-col px-8" data-layout="layout-12">
+        <div className="w-full h-full relative overflow-hidden flex flex-col" data-layout="layout-12">
           {/* Below lg: simple stacked */}
           <div className="flex flex-col lg:hidden w-full flex-1 min-h-[70vh] relative z-10">
             <input
@@ -888,39 +1242,37 @@ export default function PageRenderer({
               />
             </div>
           </div>
-          {/* Laptop: title row; one band; image (bottom) | description (border-right) */}
+          {/* Laptop: title; band + image; gap; description (60% width, right-aligned) */}
           <div className="hidden lg:flex lg:flex-col lg:flex-1 lg:min-h-0 lg:relative">
             <input
-              className="w-full portfolio-header-big font-bold bg-transparent rounded-md py-2 outline-none focus:ring-2 focus:ring-white/50 shrink-0 pt-6 pb-4"
+              className="w-full portfolio-header-big font-bold bg-transparent rounded-md py-2 outline-none focus:ring-2 focus:ring-white/50 shrink-0 mt-10 pt-6 pb-4 w-[75%] mx-auto"
               style={{ color: textColor12 }}
               value={title}
               onChange={(e) => onChangeTitle?.(safeIndex, e.target.value)}
               placeholder="Page title"
             />
-            <div className="relative flex-1 min-h-0 flex">
-              {/* One orange band – a little higher than halfway */}
-              <div className="absolute top-[38%] left-0 right-0 h-[14%] z-0 pointer-events-none" style={{ backgroundColor: accentHex12 }} />
-              <div className="grid grid-cols-[1fr_3fr] gap-0 flex-1 min-h-0 relative z-10">
-                {/* Image: bottom-aligned, ~58% height, overlaps band */}
-                <div className="relative flex items-end min-h-0">
-                  <div className="absolute bottom-0 left-0 right-0 h-[58%] overflow-hidden">
-                    {layout12Media}
-                  </div>
-                </div>
-                {/* Description: thick orange right border only */}
-                <div
-                  className="flex flex-col justify-center py-6 overflow-y-auto border-r-[16px] pointer-events-auto"
-                  style={{ borderRightColor: accentHex12, color: textColor12 }}
-                >
-                  <textarea
-                    className="w-full portfolio-description whitespace-pre-line bg-transparent rounded-md py-2 outline-none focus:ring-2 focus:ring-white/50 min-h-[80px] resize-none"
-                    style={{ color: textColor12, opacity: 0.9 }}
-                    value={description}
-                    onChange={(e) => onChangeDescription?.(safeIndex, e.target.value)}
-                    placeholder="Description"
-                  />
-                </div>
+            <div className="relative flex-1 min-h-0">
+              {/* Orange band – taller */}
+              <div className="absolute top-[25%] left-0 right-0 h-[33%] z-0 pointer-events-none" style={{ backgroundColor: accentHex12 }} />
+              {/* Image: left 25%, bottom-aligned with band, overlaps band */}
+              <div className="absolute left-0 bottom-0 w-[25%] h-[55%] z-10 overflow-hidden">
+                {layout12Media}
               </div>
+            </div>
+            {/* Vertical gap between band and description */}
+            <div className="h-6 shrink-0" />
+            {/* Description: 60% width, right-aligned, transparent, thick orange right border */}
+            <div
+              className="w-[60%] ml-auto shrink-0 py-4 overflow-y-auto border-r-[16px] bg-transparent text-right pointer-events-auto"
+              style={{ borderRightColor: accentHex12, color: textColor12 }}
+            >
+              <textarea
+                className="w-full portfolio-description whitespace-pre-line bg-transparent rounded-md py-2 outline-none focus:ring-2 focus:ring-white/50 min-h-[80px] resize-none text-right"
+                style={{ color: textColor12, opacity: 0.9 }}
+                value={description}
+                onChange={(e) => onChangeDescription?.(safeIndex, e.target.value)}
+                placeholder="Description"
+              />
             </div>
           </div>
         </div>

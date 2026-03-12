@@ -44,6 +44,8 @@ type ApiPage = {
   media_shape_2: MediaShapeType | null;
   title_2: string;
   description_2: string;
+  title_3: string;
+  description_3: string;
 };
 
 type ApiPortfolio = {
@@ -232,6 +234,8 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
               mediaShape2: (page.media_shape_2 || "1:1") as MediaShapeType,
               title2: page.title_2 || "",
               description2: page.description_2 || "",
+              title3: page.title_3 || "",
+              description3: page.description_3 || "",
               pageNumber: index + 1,
             };
           });

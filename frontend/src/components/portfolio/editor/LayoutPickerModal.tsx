@@ -20,7 +20,10 @@ const LAYOUT_OPTIONS: { value: LayoutType; label: string }[] = [
   { value: "layout-8", label: "layout-8" },
   { value: "layout-9", label: "layout-9" },
   { value: "layout-11", label: "layout-11" },
-  { value: "layout-12", label: "layout-12" },
+  // layout-12 hidden (WIP)
+  { value: "layout-13", label: "layout-13" },
+  { value: "layout-14", label: "layout-14" },
+  { value: "layout-15", label: "layout-15" },
 ];
 
 export default function LayoutPickerModal({

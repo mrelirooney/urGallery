@@ -3,7 +3,7 @@ import React from "react";
 import { getTextColorForBackground } from "@/lib/colorUtils";
 
 /** All supported layouts – must match Django choices exactly */
-export type LayoutType = "layout-1" | "layout-2" | "layout-3" | "layout-4" | "layout-5" | "layout-6" | "layout-8" | "layout-9" | "layout-11" | "layout-12";
+export type LayoutType = "layout-1" | "layout-2" | "layout-3" | "layout-4" | "layout-5" | "layout-6" | "layout-8" | "layout-9" | "layout-11" | "layout-12" | "layout-13" | "layout-14" | "layout-15";
 
 export type MediaShapeType = "1:1" | "9:16" | "16:9" | "4:5" | "5:4" | "21:9";
 
@@ -21,6 +21,8 @@ export type PortfolioPageData = {
   mediaShape2?: MediaShapeType;
   title2?: string;
   description2?: string;
+  title3?: string;
+  description3?: string;
 };
 
 type PageRendererProps = {
@@ -499,7 +501,179 @@ export default function PageRenderer({
     );
   }
 
-  // layout-12: Title above; one orange band (upper-mid); image bottom-aligned left; description right with orange border
+  // layout-13: Row 1 = MASSIVE HEADER (title) full width + 15px orange left accent; Row 2 = 60% image | 40% BIG HEADER + descriptionBody + 15px orange right accent
+  if (layoutType === "layout-13") {
+    const accentHex = customColors?.accent || "#c96a4a";
+    const portfolioBg = customColors?.text || "#11100e";
+    const textColor = getTextColorForBackground(portfolioBg);
+
+    const mediaEl13 = mediaSrc ? (
+      <img src={mediaSrc} alt="Portfolio media" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+    ) : (
+      <div
+        className="absolute inset-0 w-full h-full min-h-[120px] flex items-center justify-center text-sm"
+        style={{ backgroundColor: "rgb(130, 130, 130)", color: "#faf7f2", opacity: 0.8 }}
+      >
+        No media selected
+      </div>
+    );
+
+    return (
+      <div className="w-screen relative left-1/2 -translate-x-1/2 h-full min-h-0">
+        <div className="w-full h-full flex flex-col" data-layout="layout-13">
+          {/* Below lg: tablet stacked – horizontal lines, centered headers, full-width media, paragraph */}
+          <div className="flex flex-col lg:hidden w-full flex-1 min-h-[70vh]">
+            <div className="h-[4px] w-full shrink-0" style={{ backgroundColor: accentHex }} />
+            <div className="flex flex-col items-center text-center py-6 px-8">
+              <h2 className="portfolio-header-massive font-bold" style={{ color: textColor }}>{title || "\u00A0"}</h2>
+              <h3 className="portfolio-header-big font-bold mt-2" style={{ color: textColor }}>{description || "\u00A0"}</h3>
+            </div>
+            <div className="w-full aspect-video overflow-hidden relative shrink-0">
+              {mediaEl13}
+            </div>
+            <p className="whitespace-pre-line portfolio-description py-6 px-8 opacity-90" style={{ color: textColor }}>{descriptionBody || "\u00A0"}</p>
+            <div className="h-[4px] w-full shrink-0" style={{ backgroundColor: accentHex }} />
+          </div>
+          {/* Laptop: Row 1 = title + left accent; Row 2 = 60% image | 40% text + right accent (full bleed) */}
+          <div className="hidden lg:flex lg:flex-col lg:flex-1 lg:min-h-0">
+            <div className="shrink-0 py-6 pl-12">
+              <div className="shrink-0 pl-8 border-l-[15px] " style={{ borderLeftColor: accentHex, color: textColor }}>
+                <h2 className="portfolio-header-massive font-bold" >{title || "\u00A0"}</h2>
+              </div>
+            </div>
+            <div className="grid grid-cols-[3fr_2fr] gap-0 flex-1 min-h-0">
+              <div className="relative min-h-0 overflow-hidden">
+                {mediaEl13}
+              </div>
+              <div
+                className="flex flex-col justify-center py-8 pr-12 pl-2 overflow-y-auto text-right">
+                <div className="shrink-0 pr-8 border-r-[15px] " style={{ borderRightColor: accentHex, color: textColor }}>
+                  <h3 className="portfolio-header-big font-bold">{description || "\u00A0"}</h3>
+                  <p className="whitespace-pre-line portfolio-description mt-4 opacity-90">{descriptionBody || "\u00A0"}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // layout-14: Three equal columns – block 1 & 3 thin orange border, block 2 solid accent background; full bleed
+  if (layoutType === "layout-14") {
+    const accentHex = customColors?.accent || "#c96a4a";
+    const portfolioBg = customColors?.text || "#11100e";
+    const textColor = getTextColorForBackground(portfolioBg);
+    const accentTextColor = getTextColorForBackground(accentHex);
+    const title2 = page.title2 ?? "";
+    const description2 = page.description2 ?? "";
+    const title3 = page.title3 ?? "";
+    const description3 = page.description3 ?? "";
+
+    return (
+      <div className="w-screen relative left-1/2 -translate-x-1/2 h-full min-h-0">
+        <div className="w-full h-full flex flex-col" data-layout="layout-14">
+          {/* Below lg: stacked vertically */}
+          <div className="flex flex-col lg:hidden w-full flex-1 min-h-[70vh] gap-6 py-8 px-6">
+            <div className="p-6 border-2 rounded-sm" style={{ borderColor: accentHex, color: textColor }}>
+              <h3 className="portfolio-header-big font-bold">{title || "\u00A0"}</h3>
+              <p className="whitespace-pre-line portfolio-description mt-2 opacity-90">{description || "\u00A0"}</p>
+            </div>
+            <div className="p-6 rounded-sm" style={{ backgroundColor: accentHex, color: accentTextColor }}>
+              <h3 className="portfolio-header-big font-bold">{title2 || "\u00A0"}</h3>
+              <p className="whitespace-pre-line portfolio-description mt-2 opacity-95">{description2 || "\u00A0"}</p>
+            </div>
+            <div className="p-6 border-2 rounded-sm" style={{ borderColor: accentHex, color: textColor }}>
+              <h3 className="portfolio-header-big font-bold">{title3 || "\u00A0"}</h3>
+              <p className="whitespace-pre-line portfolio-description mt-2 opacity-90">{description3 || "\u00A0"}</p>
+            </div>
+          </div>
+          {/* Laptop: three equal columns, full bleed; boxes max 50% height, centered in layout frame */}
+          <div className="hidden lg:flex lg:flex-1 lg:min-h-0 lg:items-start lg:justify-center">
+            <div className="grid grid-cols-3 gap-0 max-h-[50%] w-full">
+              <div className="flex flex-col justify-center p-8 overflow-y-auto">
+                <h3 className="portfolio-header-big font-bold text-center pb-2">{title || "\u00A0"}</h3>
+                <div
+                  className="flex flex-col justify-center p-8 overflow-y-auto border-2 text-center"
+                  style={{ borderColor: accentHex, color: textColor }}
+                >
+                  <p className="whitespace-pre-line portfolio-description mt-2 opacity-90">{description || "\u00A0"}</p>
+                </div>
+              </div>
+            <div className="flex flex-col justify-center p-0 overflow-y-auto">
+              <h3 className="portfolio-header-big font-bold text-center pb-2">{title2 || "\u00A0"}</h3>
+              <div
+                className="flex flex-col justify-center p-8 overflow-y-auto text-center"
+                style={{ backgroundColor: accentHex, color: accentTextColor }}
+              >
+                <p className="whitespace-pre-line portfolio-description mt-2 opacity-95">{description2 || "\u00A0"}</p>
+              </div>
+            </div>
+              <div className="flex flex-col justify-center p-8 overflow-y-auto">
+              <h3 className="portfolio-header-big font-bold text-center pb-2">{title3 || "\u00A0"}</h3>
+                <div
+                  className="flex flex-col justify-center p-8 overflow-y-auto border-2 text-center"
+                  style={{ borderColor: accentHex, color: textColor }}
+                >
+                  <p className="whitespace-pre-line portfolio-description mt-2 opacity-90">{description3 || "\u00A0"}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // layout-15: Two equal columns, both accent background; below lg: single full-width block with two sections + divider
+  if (layoutType === "layout-15") {
+    const accentHex = customColors?.accent || "#c96a4a";
+    const accentTextColor = getTextColorForBackground(accentHex);
+    const title2 = page.title2 ?? "";
+    const description2 = page.description2 ?? "";
+
+    return (
+      <div className="w-screen relative left-1/2 -translate-x-1/2 h-full min-h-0">
+        <div className="w-full h-full flex flex-col" data-layout="layout-15">
+          {/* Below lg: single full-width block, two sections, divider */}
+          <div className="flex flex-col lg:hidden w-full flex-1 min-h-[70vh] py-8 px-6">
+            <div className="w-full flex flex-col rounded-sm" style={{ backgroundColor: accentHex, color: accentTextColor }}>
+              <div className="p-8">
+                <h3 className="portfolio-header-big font-bold">{title || "\u00A0"}</h3>
+                <p className="whitespace-pre-line portfolio-description mt-2 opacity-90">{description || "\u00A0"}</p>
+              </div>
+              <div className="border-t" style={{ borderColor: accentTextColor }} />
+              <div className="p-8">
+                <h3 className="portfolio-header-big font-bold">{title2 || "\u00A0"}</h3>
+                <p className="whitespace-pre-line portfolio-description mt-2 opacity-95">{description2 || "\u00A0"}</p>
+              </div>
+            </div>
+          </div>
+          {/* Laptop: two equal columns, both accent background */}
+          <div className="hidden lg:grid lg:grid-cols-2 lg:flex-1 lg:min-h-0 lg:gap-0">
+            <div className="flex flex-col justify-center pl-8 pr-4 overflow-y-auto">
+              <div
+                className="flex flex-col justify-center p-8 overflow-y-auto"
+                style={{ backgroundColor: accentHex, color: accentTextColor }}
+              >
+                <h3 className="portfolio-header-big font-bold">{title || "\u00A0"}</h3>
+                <p className="whitespace-pre-line portfolio-description mt-2 opacity-90">{description || "\u00A0"}</p>
+              </div>
+            </div>
+            <div className="flex flex-col justify-center pl-4 pr-8 overflow-y-auto">
+              <div className="flex flex-col justify-center p-8 overflow-y-auto" style={{ backgroundColor: accentHex, color: accentTextColor }}
+              >
+                <h3 className="portfolio-header-big font-bold">{title2 || "\u00A0"}</h3>
+                <p className="whitespace-pre-line portfolio-description mt-2 opacity-95">{description2 || "\u00A0"}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // layout-12: Title above; one orange band (taller); image bottom-aligned left overlapping band; description below band (60% width, right-aligned, transparent, border-r)
   if (layoutType === "layout-12") {
     const accentHex = customColors?.accent || "#c96a4a";
     const portfolioBg = customColors?.text || "#11100e";
@@ -518,7 +692,7 @@ export default function PageRenderer({
 
     return (
       <div className="w-screen relative left-1/2 -translate-x-1/2 h-full min-h-0">
-        <div className="w-full h-full relative overflow-hidden flex flex-col px-8" data-layout="layout-12">
+        <div className="w-full h-full relative overflow-hidden flex flex-col" data-layout="layout-12">
           {/* Below lg: simple stacked */}
           <div className="flex flex-col lg:hidden w-full flex-1 min-h-[70vh] relative z-10">
             <h2 className="portfolio-header-big font-bold shrink-0 pt-4" style={{ color: textColor }}>{title || "\u00A0"}</h2>
@@ -532,27 +706,25 @@ export default function PageRenderer({
               <p className="whitespace-pre-line portfolio-description opacity-90">{description || "\u00A0"}</p>
             </div>
           </div>
-          {/* Laptop: title row; one band; image (bottom) | description (border-right) */}
+          {/* Laptop: title; band + image; gap; description (60% width, right-aligned) */}
           <div className="hidden lg:flex lg:flex-col lg:flex-1 lg:min-h-0 lg:relative">
-            <h2 className="portfolio-header-big font-bold shrink-0 pt-6 pb-4" style={{ color: textColor }}>{title || "\u00A0"}</h2>
-            <div className="relative flex-1 min-h-0 flex">
-              {/* One orange band – a little higher than halfway */}
-              <div className="absolute top-[38%] left-0 right-0 h-[14%] z-0" style={{ backgroundColor: accentHex }} />
-              <div className="grid grid-cols-[1fr_3fr] gap-0 flex-1 min-h-0 relative z-10">
-                {/* Image: bottom-aligned, ~58% height, overlaps band */}
-                <div className="relative flex items-end min-h-0">
-                  <div className="absolute bottom-0 left-0 right-0 h-[58%] overflow-hidden">
-                    {mediaEl12}
-                  </div>
-                </div>
-                {/* Description: thick orange right border only */}
-                <div
-                  className="flex flex-col justify-center py-6 overflow-y-auto border-r-[16px]"
-                  style={{ borderRightColor: accentHex, color: textColor }}
-                >
-                  <p className="whitespace-pre-line portfolio-description opacity-90">{description || "\u00A0"}</p>
-                </div>
+            <h2 className="portfolio-header-big font-bold shrink-0 mt-10 pt-6 pb-4 w-[75%] mx-auto" style={{ color: textColor }}>{title || "\u00A0"}</h2>
+            <div className="relative flex-1 min-h-0">
+              {/* Orange band – taller */}
+              <div className="absolute top-[25%] left-0 right-0 h-[33%] z-0" style={{ backgroundColor: accentHex }} />
+              {/* Image: left 25%, bottom-aligned with band, overlaps band */}
+              <div className="absolute left-[15%] bottom-0 w-[25%]	min-h-[350px] h-[55%] z-10 overflow-hidden">
+                {mediaEl12}
               </div>
+            </div>
+            {/* Vertical gap between band and description */}
+            <div className="h-6 shrink-0" />
+            {/* Description: 60% width, right-aligned, transparent, thick orange right border */}
+            <div
+              className="w-[60%] ml-auto shrink-0 py-4 overflow-y-auto border-r-[16px] bg-transparent text-right"
+              style={{ borderRightColor: accentHex, color: textColor }}
+            >
+              <p className="whitespace-pre-line portfolio-description opacity-90">{description || "\u00A0"}</p>
             </div>
           </div>
         </div>

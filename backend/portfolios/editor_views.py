@@ -71,6 +71,8 @@ def _get_or_create_draft(slug: str, user) -> DraftPortfolio:
             media_image_2=page.media_image_2,
             title_2=page.title_2,
             description_2=page.description_2,
+            title_3=getattr(page, "title_3", "") or "",
+            description_3=getattr(page, "description_3", "") or "",
             order=page.order,
         )
 
@@ -318,6 +320,8 @@ def publish_portfolio(request, slug):
                     media_shape_2=dpage.media_shape_2,
                     title_2=dpage.title_2,
                     description_2=dpage.description_2,
+                    title_3=dpage.title_3 or "",
+                    description_3=dpage.description_3 or "",
                 )
                 # Explicitly copy media files to the live Page's upload_to path
                 if dpage.media_image:

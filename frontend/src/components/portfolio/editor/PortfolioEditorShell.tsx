@@ -40,6 +40,8 @@ interface EditorPageApi {
   media_shape_2: MediaShapeType | null;
   title_2: string;
   description_2: string;
+  title_3: string;
+  description_3: string;
 }
 
 /** Map API draft pages to frontend format, preserving local blob URLs when backend has no media */
@@ -72,6 +74,8 @@ function mapApiPagesToEditor(
       mediaShape2: (apiPage.media_shape_2 || "1:1") as MediaShapeType,
       title2: apiPage.title_2 || "",
       description2: apiPage.description_2 || "",
+      title3: apiPage.title_3 || "",
+      description3: apiPage.description_3 || "",
     };
   });
 }
@@ -108,6 +112,8 @@ const createEmptyPage = (): PortfolioPageData => ({
   mediaShape2: "1:1",
   title2: "",
   description2: "",
+  title3: "",
+  description3: "",
 });
 
 export type PrivacyState = "public" | "private";
@@ -383,6 +389,8 @@ export default function PortfolioEditorShell({
         mediaShape2_2: (data.media_shape_2 ?? "1:1") as MediaShapeType,
         title2: data.title_2,
         description2: data.description_2,
+        title3: data.title_3 ?? "",
+        description3: data.description_3 ?? "",
       };
 
       updateState((prev) => {
@@ -503,6 +511,8 @@ export default function PortfolioEditorShell({
         media_shape_2: page.mediaShape2_2,
         title_2: page.title2,
         description_2: page.description2,
+        title_3: page.title3 ?? "",
+        description_3: page.description3 ?? "",
         order: index,
       })),
     };
@@ -845,6 +855,14 @@ export default function PortfolioEditorShell({
     updatePage(pageIndex, (page) => ({ ...page, description2: newDesc }));
   };
 
+  const handleChangeTitle3 = (pageIndex: number, newTitle: string) => {
+    updatePage(pageIndex, (page) => ({ ...page, title3: newTitle }));
+  };
+
+  const handleChangeDescription3 = (pageIndex: number, newDesc: string) => {
+    updatePage(pageIndex, (page) => ({ ...page, description3: newDesc }));
+  };
+
   const handleChangePortfolioTitle = (value: string) => {
     updateState((prev) => ({ ...prev, title: value }));
   };
@@ -929,6 +947,9 @@ export default function PortfolioEditorShell({
               onChangeDescriptionBody={handleChangePageDescriptionBody}
               onChangeImage={handleChangeImage}
               onChangeTitle2={handleChangeTitle2}
+              onChangeDescription2={handleChangeDescription2}
+              onChangeTitle3={handleChangeTitle3}
+              onChangeDescription3={handleChangeDescription3}
               onChangeLayout={handleChangeLayout}
               onChangeMediaShape={handleChangeMediaShape}
             />
