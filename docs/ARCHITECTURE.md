@@ -22,11 +22,11 @@
 
 ### Structure
 
-- `src/app/` — App Router pages (`/`, `/login`, `/signup`, `/settings`, `/saves`, `/[slug]`, `/[slug]/[portfolioSlug]`, `/[slug]/[portfolioSlug]/edit`, `/forgot-password`, `/reset-password`)
+- `src/app/` — App Router pages (`/`, `/login`, `/signup`, `/settings`, `/saves`, `/help`, `/[slug]`, `/[slug]/[portfolioSlug]`, `/[slug]/[portfolioSlug]/edit`, `/forgot-password`, `/reset-password`)
 - `src/components/` — React components (`artist/`, `portfolio/`, `layout/`, `auth/`, `settings/`)
 - `src/lib/` — API client, auth client, types, helpers
-  - `lib/api.ts` — thin `apiFetch` wrapper (cookies + CSRF, no localStorage)
-  - `lib/auth/client.ts` — **all** frontend → backend API calls (`AuthAPI`, `EditorAPI`)
+  - `lib/api.ts` — optional `apiFetch` wrapper (cookies + CSRF); many components use direct `fetch` with `API_BASE` + credentials + CSRF + ngrok-skip-browser-warning
+  - `lib/auth/client.ts` — auth and editor flows (`AuthAPI`, `EditorAPI`); other endpoints (profile, hashtags, saves, comments, etc.) use direct `fetch` in components
   - `lib/api/artistLanding.ts` — server-side artist landing fetch
   - `lib/types.ts` — shared TypeScript interfaces
 - `src/hooks/` — `useAuth`, `useSearch`, `useHistory`
@@ -36,6 +36,8 @@
 - `NEXT_PUBLIC_API_BASE` — backend base URL (e.g. `http://localhost:8000`)
 - `BACKEND_INTERNAL_URL` — used for Next.js rewrites (proxy target)
 - Rewrites: `/api/*` and `/media/*` proxied to Django (avoids CORS with single origin)
+- **Search:** Next.js API route `GET /api/search?q=<term>` proxies to Django `/api/artists/search/?q=<term>`; frontend `useSearch` calls this route (forwards cookies)
+- **ngrok (local dev):** When using ngrok to tunnel (e.g. for mobile testing or webhooks), add the ngrok URL to backend `ALLOWED_HOSTS` and `CORS_ALLOWED_ORIGINS`. Frontend sends `ngrok-skip-browser-warning: true` on API calls to bypass ngrok's interstitial.
 - `credentials: "include"` on all fetch calls for HttpOnly cookies
 - `X-CSRFToken` header on all mutations (read from `csrftoken` cookie)
 - **Tokens are in HttpOnly cookies. Never read them from localStorage.**
@@ -103,6 +105,9 @@
 
 /api/my/
   profile/                    GET, PATCH  (FormData: avatar, banner_image, resume_file)
+  hashtags/                   GET   → list user's hashtags
+  hashtags/add/               POST  → add hashtag (body: { name: "..." })
+  hashtags/<id>/              DELETE → remove hashtag by UserHashtag id
   portfolios/                 GET, POST
   portfolios/<slug>/          GET, PATCH, DELETE
   saves/                      GET   (?sort=alpha, ?q=<term>)
@@ -139,13 +144,15 @@
 | **User** | email, first_name, last_name, display_name, title, location, bio, avatar |
 | **Profile** | user (1:1), slug, tier (free\|pro\|premium), display_name, title, location, bio, default_avatar, avatar_s3_key, banner_image, resume_file, social URLs, contact_order, color fields, font_family, theme |
 | **Portfolio** | user, title, slug, privacy, password (hashed, for private), order_index, pages_count, cover_page |
-| **Page** | portfolio, title, description, order, layout, media_image, media_shape, media_image_2, media_shape_2, title_2, description_2 |
+| **Page** | portfolio, title, description, description_body, order, layout, media_image, media_shape, media_image_2, media_shape_2, title_2, description_2, title_3, description_3 |
 | **DraftPortfolio** | user, slug, title, privacy, has_unpublished_changes |
 | **DraftPage** | draft_portfolio, (same fields as Page) |
 | **Comment** | portfolio, author (user), body, created_at |
 | **SavedArtist** | user (saver), profile (saved), created_at |
 | **SavedPortfolio** | user (saver), portfolio (saved), created_at |
 | **Theme** | key, name, version, is_active, svg_file, preview_image, css_vars_json |
+| **Media** | title, description, cover_image, file, external_url, owner |
+| **PageMedia** | page, media, order (M2M-style) |
 | **Hashtag** | name, slug |
 | **UserHashtag** | user, hashtag |
 | **Notification** | user, type, title, body, action_url, read_at |
@@ -226,7 +233,8 @@
 |----------|---------|---------|
 | `DEBUG` | Django debug mode | `False` |
 | `SECRET_KEY` | Django secret key | (random string) |
-| `ALLOWED_HOSTS` | Comma-separated allowed hosts | `urgallery.io,www.urgallery.io` |
+| `ALLOWED_HOSTS` | Comma-separated allowed hosts | `urgallery.io,www.urgallery.io` (prod); `127.0.0.1,localhost,<ngrok-subdomain>.ngrok-free.dev` (local + ngrok) |
+| `CORS_ALLOWED_ORIGINS` | Comma-separated frontend origins | `https://urgallery.io` (prod); `http://localhost:3000,http://127.0.0.1:3000,https://<ngrok-subdomain>.ngrok-free.dev` (local + ngrok) |
 | `DATABASE_URL` | PostgreSQL connection string | `postgres://user:pw@host/db` |
 | `PUBLIC_API_BASE` | Browser-accessible API URL (media URLs) | `https://api.urgallery.io` |
 | `FRONTEND_BASE_URL` | Frontend URL for password reset emails | `https://urgallery.io` |

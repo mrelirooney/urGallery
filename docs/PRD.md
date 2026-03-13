@@ -23,14 +23,16 @@
 - Privacy levels: `draft`, `private`, `public`. Private portfolios require a password; same URL for all.
 - Artist search on homepage.
 - Category section on homepage: browse artists by title and location (complements search for discovery).
+- Explorer page: when a user searches for a type of artist, recommends portfolios from artists with similar job titles and niches.
 - Save artists and portfolios: all users can save for later; no public metrics (not social-media-like). Saves page with chronological/alphabetical sort and search.
 - Subscription tiers: Free, Pro, Premium (monthly billing via Stripe).
 - Settings: profile, **Discoverability** (contact links, hashtags), **resume upload** (optional), customization (colors, theme, font), **Security** (change password, change email), billing (manage subscription, cancel, downgrade), help form.
 - Public artist landing page with theme patterns, custom colors, and custom fonts.
+- Admin analytics (admin users only): site-wide metrics (visitors, users, revenue, location, titles, portfolio counts) in Settings or dedicated admin route.
 
 ---
 
-## Category Section
+## Category Section (V1)
 
 - **Purpose:** Browsable categories for discovery (e.g. recruiters/HR browsing by role or location). Complements search: search is for direct lookup; categories are for exploration.
 - **Source data:** Derived from Profile `title` and `location`. Categories are the distinct values users have set (e.g. "Photographer", "Graphic Designer", "New York", "Los Angeles").
@@ -40,11 +42,23 @@
 
 ---
 
+## Explorer Page (V1)
+
+- **Purpose:** When a user searches for a type of artist (e.g. "Photographer", "Graphic Designer"), the Explorer page recommends portfolios from artists with similar job titles and niches.
+- **Flow:** User enters a search term on the homepage (or Explorer page) → lands on Explorer page with search results + a "Recommended for you" or "Similar artists" section showing portfolios from artists in the same niche/job title.
+- **Source data:** Derived from Profile `title`, hashtags, and optionally `location`. Match search term to titles and hashtags; return artists with similar titles/niches; surface their public portfolios.
+- **Placement:** Dedicated route (e.g. `/explore` or `/explore?q=photographer`). Can be reached from homepage search (submit → navigate to Explorer with results) or direct link.
+- **UI:** Search bar at top; grid or list of portfolio cards (cover image, artist name, title, portfolio name). Click opens artist landing with that portfolio in view.
+- **API:** `GET /api/artists/explore/?q=<term>` (or similar) returns recommended portfolios/artists filtered by job title and niche similarity. Complements existing search and category APIs.
+- **All tiers.** Discovery is open to everyone.
+
+---
+
 ## Comments — ✅ Implemented (laptop)
 
 - **Scope:** Each portfolio can receive, store, and display comments. Available on all tiers (Free, Pro, Premium).
 - **Who can comment:** Any authenticated user who has access to the portfolio (public = any logged-in user; private = users who have unlocked it).
-- **Placement:** Slide-in panel from left (same z-index as portfolio menu); portal-rendered so it overlays footer/compact profile. Scroll lock via `overflow: hidden` on html/body.
+- **Placement:** Slide-in panel from right (same z-index as portfolio menu); portal-rendered so it overlays footer/compact profile. Scroll lock via `overflow: hidden` on html/body.
 - **Data:** Comment = author (user), portfolio, body, created_at. Author can delete own comments.
 - **UI:** Chronological order (oldest at top, newest at bottom); list anchored at bottom, auto-scrolls to newest. Send button: transparent by default; Color #3 background + Color #2 icon on hover. Sign-in prompt for guests.
 
@@ -64,7 +78,7 @@
 
 ## Saves
 
-- **What:** Save artists and/or portfolios for later. No follower/following count—keeps urGallery professional, not social-media-like.
+- **What:** Save artists and/or portfolios for later. No follower/following count — keeps urGallery professional, not social-media-like.
 - **Who:** All tiers (authenticated). Save button on artist profile and portfolio view.
 - **Saves page:** List of saved artists and portfolios. Default sort: chronological (newest first). Optional: alphabetical. Search by artist name, portfolio name, title, location.
 - **Privacy:** No one sees who saved what. No public "saved X times" metric.
@@ -97,6 +111,19 @@
 - **Settings placement:** Cancel/downgrade controls in Settings (e.g. "Manage subscription" or "Billing"). Link to Stripe Customer Portal for self-service, or in-app downgrade flow.
 - **Transparency:** Clear messaging that cancellation stops future charges, access lasts until period end, and no hidden fees. Users should never feel locked in.
 
+### Downgrade behavior (paid → Free)
+
+- **Portfolios beyond Free limit:** When a user downgrades from Pro/Premium to Free, portfolios beyond the 1-portfolio Free limit are **preserved** (not deleted). They remain in the database and appear in the portfolio menu, but:
+  - They are **blurred out** in the portfolio menu (owner sees them but cannot select or view them).
+  - They are **unreachable** by any user (owner or visitors) until the user upgrades again. No direct links, no API access.
+  - On upgrade, all portfolios become accessible again.
+- **Layouts, themes, colors:** When downgrading from paid to Free, the profile and portfolio(s) revert to default Free options:
+  - **Colors:** Revert to 1 of 9 preset color swatches (no custom profile, portfolio, or accent colors).
+  - **Layouts:** Pages using Pro layouts revert to the nearest Free layout (or a default Free layout).
+  - **Themes:** Revert to a default Free theme.
+  - **Fonts:** Revert to limited Free font set.
+  - Content (text, media) is preserved; only the styling/customization is downgraded.
+
 ### Price raises
 
 - Create new Price in Stripe (e.g. Pro $10/mo).
@@ -106,13 +133,13 @@
 ### Tier features (V1)
 
 **Free**
-- 2 portfolios
-- 6 GB storage per portfolio (12 GB total); 4K images, YouTube/Vimeo embeds, audio
+- 1 portfolio
+- 6 GB storage per portfolio (6 GB total); 4K images, YouTube/Vimeo embeds, audio
 - 9 pages per portfolio
 - 3 hashtags max
 - 24 layout options (fixed set)
-- Limited fonts (5–10)
-- Limited color palette (dropdown options)
+- Limited fonts (9)
+- **Colors:** Fixed to 1 of 9 preset color swatches only. No custom profile, portfolio, or accent colors—default color layout for their page unless they upgrade.
 - urGallery branding on portfolio
 - YouTube/Vimeo embeds only (no direct video uploads)
 - No custom video backgrounds
@@ -120,6 +147,8 @@
 - Basic analytics: total profile visits + total comments only (1 day, 1 week, 1 month; 30-day max display; no CSV/PDF; backend stores full history for upgrades)
 - No search priority
 - PDF exports allowed but with urGallery branding
+- **Try-before-you-buy:** Free users can use Pro/Premium features (layouts, themes, colors, fonts) while editing profile or portfolio—with warnings—but cannot publish changes until they upgrade. See Editor Functionality.
+- **Try-before-you-buy (editor):** Free users can browse and use Pro/Premium features (layouts, themes, colors, fonts) while editing profile or portfolio—but cannot publish changes that use them. See Editor Functionality.
 - *Goal:* Let artists build something legit but feel the ceiling quickly.
 
 **Pro** ($8/mo)
@@ -130,7 +159,7 @@
 - Category visibility boost (more than Free)
 - All layouts (ongoing access to new layouts as they're added)
 - Full font library
-- Full color picker
+- Full color picker (profile, portfolio, accent—choose any colors)
 - Direct video uploads (up to 1080p; 4K auto-transcoded to 1080p)
 - 10 GB storage per portfolio (50 GB total across 5 portfolios)
 - Analytics
@@ -148,10 +177,8 @@
 - Category visibility boost (more than Pro)
 - Featured in category section (Premium only)
 - Recruitment Mode (toggle off fancy backgrounds for corporate/recruiter viewing)
-- Advanced themes
-- Animated backgrounds
+- Animated theme backgrounds
 - Video theme backgrounds
-- Unlimited PDF exports
 - 25 GB storage per portfolio (250 GB cap total for entire profile)
 - 4K video uploads
 - More customization options
@@ -170,7 +197,7 @@
 
 ### Storage & video resolution
 
-- **Free:** 6 GB per portfolio (12 GB total); 4K images, YouTube/Vimeo embeds, audio only.
+- **Free:** 6 GB per portfolio (6 GB total, 1 portfolio); 4K images, YouTube/Vimeo embeds, audio only.
 - **Pro:** 10 GB per portfolio (50 GB total across 5 portfolios). Video up to 1080p; 4K uploads auto-transcoded to 1080p.
 - **Premium:** 25 GB per portfolio, 250 GB cap total for entire profile. Video up to 4K.
 - **Bandwidth:** Use Cloudflare R2 or Backblaze B2 + Cloudflare for media storage to minimize egress costs (free egress vs ~$0.09/GB on AWS).
@@ -184,6 +211,7 @@
 
 **Free — minimal**
 - Total profile visits and total comments only. Displayed for 1 day, 1 week, 1 month. Data shown only for last 30 days. No CSV or PDF. Backend stores full history for future upgrades; Free users see only these two metrics within the 30-day window.
+- **Analytics page (Settings):** Most of the Analytics page is blurred for Free users. Only the two Free metrics (profile visits, comments) are visible. All other metrics (Pro/Premium) appear behind a blur overlay with "Upgrade to Pro to see this" (or similar). Optionally show blurred chart shapes or section headers so Free users see what they're missing without accessing the data.
 
 **Pro — basic analytics**
 - Profile visits (month to month)
@@ -210,6 +238,27 @@
 - Processed PDF report (full metrics; charts, summaries, presentation-ready)
 - Scheduled monthly email report (PDF delivered to inbox)
 
+### Admin analytics (admin users only)
+
+- **Purpose:** Site-wide metrics for platform admins. Only users with admin/staff privileges can access.
+- **Placement:** Admin section in Settings (e.g. "Admin" or "Site analytics" nav item), or dedicated `/admin/analytics` route. Visible only when `user.is_staff` or equivalent.
+- **Metrics:**
+  - **Visitors:** Site-wide visitor counts (total, unique, by time period)
+  - **Users:** Total users, paying users (Pro + Premium), non-paying users (Free)
+  - **Location data:** User/visitor geography (country, region) aggregated
+  - **Title data:** Distribution of artist titles (e.g. Photographer, Graphic Designer) across the platform
+  - **Portfolio counts:** Total portfolios, portfolios per tier, pages per portfolio (aggregated)
+  - **Total pages across all portfolios:** Sum of pages across all portfolios site-wide
+  - **Total comments:** Site-wide comment count
+  - **Save count:** Total saves (artists + portfolios) across the platform
+  - **Device breakdown:** Mobile vs desktop (visitor/usage)
+  - **Referrers:** Where traffic came from (sources, domains)
+  - **Revenue:** Money generated per month (from Stripe); total revenue all-time
+  - **Exports:** CSV export of basic metrics; processed PDF report
+- **Data sources:** Django DB aggregates, Stripe API for revenue, analytics/telemetry for visitors. Consider OTEL or existing analytics pipeline.
+- **API:** `GET /api/admin/analytics/` (or similar) — admin-only; returns aggregated metrics. Frontend renders charts/tables.
+- **Access control:** Backend enforces `is_staff` or `is_superuser`; 403 for non-admins.
+
 ---
 
 ## User Accounts
@@ -229,7 +278,7 @@
   - `resume_file` (optional): uploaded PDF; stored in `resumes/`. If set, shown as "Resume" link on profile.
   - Social links: `website_url`, `instagram_url`, `twitter_url`, `behance_url`, `dribbble_url`, `youtube_url`, `tiktok_url`, `linkedin_url`, `twitch_url`, `email_contact`.
   - `contact_order` (JSON array) for ordering contact buttons.
-  - Customization: `color_A`, `color_B`, `color_C` (hex).
+  - Customization: `background_color`, `foreground_color`, `text_color`, `accent_color` (hex).
   - `font_family` (Google Font name).
   - `theme` (FK to Theme).
 - **DefaultAvatar**: predefined avatar options (s3_key, label).
@@ -259,9 +308,9 @@
 ## Portfolio Pages
 
 - **Page** / **DraftPage**:
-  - Text fields: `massive_header`, `big_header`, `sub_header`, `description`. Some pages use all four; others use a subset.
+  - Text fields: `title`, `description`, `description_body`, `title_2`, `description_2`, `title_3`, `description_3`. Layouts use subsets of these.
   - `order`, `layout` (enum; see Layout System).
-  - `media_image`, `media_video`, `media_audio`, `media_shape` (1:1, 9:16, 16:9, 4:5, 5:4, 21:9).
+  - `media_image`, `media_shape` (1:1, 9:16, 16:9, 4:5, 5:4), `media_image_2`, `media_shape_2`.
 - Pages ordered by `order`; `pages_count` auto-updated via signals.
 
 ---
@@ -270,28 +319,33 @@
 
 - **Layout** = structure + accent treatment. Each layout option the user sees = one unique backend value.
 - **Layout access by tier:** Free gets 24 layouts (fixed set). Pro and Premium get all layouts, including new ones as they're added.
-- **Naming:** Short, descriptive suffixes (e.g. `split-box`, `split-L`). No long technical names.
+- **Naming:** Backend uses `layout-1` through `layout-15`; UI labels match (e.g. "layout-1", "layout-2").
 
 ### Layout types (backend `layout` field)
 
-| Backend value | UI label | Structure |
-|---------------|----------|-----------|
-| `split-box` | Split (box) | Text left (cream), orange lines + box accent; media right |
-| `split-L` | Split (L) | L-shaped accent framing text; text left, media right |
-| `split-panels` | Split (panels) | Vertical accent panels left and right; text in center |
-| `split-accent` | Split (accent) | Orange left panel with text; media right |
-| `split-media-left` | Split (media left) | Media left (narrow), text right (stacked) |
-| `split-sidebar` | Split (sidebar) | Narrow sidebar left; large accent block right; no media |
-| `split-band` | Split (band) | Media right; L-shaped text area with bottom band |
-| `split-banner` | Split (banner) | Tall media left; horizontal band; text right |
-| `split-stack` | Split (stack) | Left: header above media; right: text panel |
-| `hero-corners` | Hero (corners) | Centered hero text; four corner accents; no media |
-| `triple` | Triple | Three equal columns; middle has accent background |
-| `double` | Double | Two text columns; no media |
+| Backend value | Structure |
+|---------------|-----------|
+| `layout-1` | Fixed frame – two equal panels, text left, image right (laptop); mobile: vertical stack (image → header → accent block) |
+| `layout-2` | Image full height between accent bands, text overlay on image (tablet/laptop); mobile: media on top, text below, accent band right |
+| `layout-3` | Full-bleed media, centered text + orange bar overlay, four corner accents |
+| `layout-4` | Full-bleed two columns – left 1/3 accent (title, description, body), right 2/3 media |
+| `layout-5` | Constrained frame – left text with L-shaped accent border, right media |
+| `layout-6` | 25% / 75% split – left text, right vertical media strip; split bg (top transparent, bottom accent) |
+| `layout-7` | (Backend only; frontend not implemented) |
+| `layout-8` | Text only – centered accent block, title + line + description, four corner markers |
+| `layout-9` | Full-bleed 60/40 split – left transparent + accent band (title, description), right media |
+| `layout-10` | (Backend only; frontend not implemented) |
+| `layout-11` | Full-bleed 67/33 split – left media, right 33% accent band with title + description |
+| `layout-12` | Title above; tall accent band; image bottom-aligned left overlapping band; description below (60% width, right-aligned). Implemented; hidden in layout picker (WIP). |
+| `layout-13` | Row 1: MASSIVE HEADER full width + left accent; Row 2: 60% image, 40% BIG HEADER + body + right accent |
+| `layout-14` | Three equal columns – blocks 1 & 3 thin accent border, block 2 solid accent background; full bleed |
+| `layout-15` | Two equal columns, both accent background; below lg: single full-width block with two sections + divider |
+
+Refer to the mockups in urGallery/frontend/public/mockups for visuals of how the mockups look
 
 ### Media shape (separate field)
 
-- `media_shape`: `1:1`, `9:16`, `16:9`, `4:5`, `5:4`, `21:9`.
+- `media_shape`: `1:1`, `9:16`, `16:9`, `4:5`, `5:4`.
 - Same layout can use any shape; shape is a page-level property, not part of layout name.
 
 ### Media type (inferred from upload)
@@ -301,7 +355,7 @@
 
 ### Combinations
 
-- 12 layouts × 6 shapes × 3 media types = 198 possible page configurations.
+- 13 layouts in picker (layout-7, layout-10 backend-only; layout-12 implemented but hidden) × 5 shapes × 3 media types = many possible page configurations.
 - Layout, shape, and media type are independent; combined in frontend.
 
 ---
@@ -323,8 +377,14 @@
 - **Page media**: `media_image`, `media_image_2` on Page/DraftPage.
   - Upload paths: `portfolio_pages/` (live), `draft_portfolio_pages/` (draft).
 - **Profile**: `banner_image` → `banners/`; User.avatar → `avatars/`; `resume_file` → `resumes/`.
-- **Theme**: `svg_file` → `themes/svg/`, `preview_image` → `themes/previews/`.
 - Upload via `FormData` PATCH to editor page endpoint; no separate media API.
+
+### Media compression (photos & videos)
+
+- **Purpose:** Compress photos and videos on upload so larger media don't bloat storage or bandwidth. Keeps the site performant and costs manageable.
+- **Photos:** Resize and compress images on upload (e.g. max dimension 2048–4096px, JPEG/WebP at ~80–85% quality). Preserve aspect ratio. Store compressed version; original can be discarded or archived. Apply to portfolio page images, avatars, banners, theme previews.
+- **Videos:** Transcode on upload per tier (see Storage & video resolution). Pro: 4K uploads auto-transcoded to 1080p. Free: no direct video uploads. Premium: 4K allowed. Use efficient codecs (e.g. H.264/H.265) and bitrate limits. Consider async processing (queue) for large uploads.
+- **Implementation:** Backend processing on upload (Pillow/ImageMagick for images; FFmpeg or cloud transcoding for video). Optional: client-side pre-compression before upload to reduce transfer size.
 
 ---
 
@@ -339,6 +399,15 @@
 - **Reorder**: PATCH `/api/portfolios/<portfolio_slug>/editor/reorder/` with `page_ids` array.
 - **Publish**: POST `/api/portfolios/<portfolio_slug>/editor/publish/`.
 - Editor UI: portfolio toolbar (title + actions), horizontal page thumbnails, drag-and-drop reorder (dnd-kit), layout picker, shape picker, privacy modal (includes share/copy-link), image upload per slot.
+- **Undo / Redo:** Undo and redo buttons in the editor toolbar. Track edit history (page content, layout, media, reorder, add/delete page) and allow stepping back/forward. Disable Undo when at oldest state, Redo when at newest. Keyboard shortcuts: Ctrl+Z (undo), Ctrl+Shift+Z or Ctrl+Y (redo).
+
+### Free tier: Try-before-you-buy (editor & profile)
+
+- **Pro feature access:** Free users can select and use Pro/Premium features while editing (layouts, themes, colors, fonts, etc.). They experience the full product during editing.
+- **Warnings:** When a Free user selects a Pro/Premium feature, show a clear warning (tooltip, banner, or badge) that it is a Pro/Premium feature and that they must upgrade to publish.
+- **Publish block:** When a Free user attempts to publish and has used any Pro/Premium feature, the site blocks the action and shows an upgrade modal: "Your portfolio/profile uses Pro features. Upgrade to Pro to publish." Include CTA to upgrade.
+- **Backend:** Publish endpoint validates tier and feature usage; returns error with upgrade prompt when Free user tries to publish Pro-content.
+- **Optional:** Pre-publish summary: "Your portfolio uses X Pro features. Upgrade to publish, or switch to Free features to publish now."
 
 ### Privacy
 
@@ -370,15 +439,15 @@
 | Model | Key Fields |
 |-------|------------|
 | **User** | email, first_name, last_name, display_name, title, location, bio, avatar |
-| **Profile** | user (1:1), slug, tier (free\|pro\|premium), display_name, title, location, bio, default_avatar, avatar_s3_key, banner_image, resume_file, social URLs, contact_order, color fields, font_family, theme |
+| **Profile** | user (1:1), slug, tier (free\|pro\|premium), display_name, title, location, bio, default_avatar, avatar_s3_key, banner_image, resume_file, social URLs, contact_order, hashtags (via user), background_color, foreground_color, text_color, accent_color, font_family, theme |
 | **DefaultAvatar** | s3_key, label |
 | **Portfolio** | user, title, slug, privacy, password (hashed, for private), order_index, pages_count, cover_page |
 | **Comment** | portfolio, user (author), body, created_at |
 | **SavedArtist** | user (saver), profile (saved), created_at |
 | **SavedPortfolio** | user (saver), portfolio (saved), created_at |
-| **Page** | portfolio, massive_header, big_header, sub_header, description, order, layout, media_image, media_shape, media_image_2, media_shape_2, |
+| **Page** | portfolio, title, description, description_body, order, layout, media_image, media_shape, media_image_2, media_shape_2, title_2, description_2, title_3, description_3 |
 | **DraftPortfolio** | user, slug, title, privacy, has_unpublished_changes |
-| **DraftPage** | draft_portfolio, massive_header, big_header, sub_header, description, order, layout, media_image, media_shape, media_image_2, media_shape_2, |
+| **DraftPage** | draft_portfolio, title, description, description_body, order, layout, media_image, media_shape, media_image_2, media_shape_2, title_2, description_2, title_3, description_3 |
 | **Theme** | key, name, version, is_active, svg_file, preview_image, css_vars_json |
 | **Media** | title, description, cover_image, file, external_url, owner |
 | **PageMedia** | page, media, order (M2M-style) |
@@ -412,10 +481,11 @@
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | `search/?q=<term>` | Search by display_name, title, location, slug, hashtags (weighted: name > title > location > hashtag); returns `{ results: [...] }` |
+| GET | `explore/?q=<term>` | Explorer: recommended portfolios from artists with similar job titles/niches. Returns `{ results: [...], portfolios: [...] }` or similar for grid display. |
 | GET | `categories/` | List categories (by type: `title` or `location`); returns `{ titles: [...], locations: [...] }` or similar |
 | GET | `categories/<category_value>/` | List artists in category (filtered by title or location) |
 | GET | `<artist_slug>/` | Artist landing: profile + portfolios (owner sees all; visitor sees public; private listed but locked) |
-| GET | `<artist_slug>/portfolios/<portfolio_slug>/` | Portfolio detail (pages included); private returns metadata + blurred until password) |
+| GET | `<artist_slug>/portfolios/<portfolio_slug>/` | Portfolio detail (pages included); private returns metadata + blurred until password |
 | POST | `<artist_slug>/portfolios/<portfolio_slug>/unlock/` | Validate password for private portfolio; returns access token |
 | PATCH | `<artist_slug>/portfolios/<portfolio_slug>/privacy/` | Toggle public/private (owner only; for live-view toggle) |
 | GET | `<artist_slug>/portfolios/<portfolio_slug>/comments/` | List comments (requires portfolio access) |
@@ -467,6 +537,12 @@
 |--------|------|-------------|
 | POST | `` | Send help/feedback email (authenticated) |
 
+### Admin (`/api/admin/`) — admin users only
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `analytics/` | Site-wide metrics: visitors, total users, paying/non-paying users, location data, title distribution, portfolio counts, revenue per month, total revenue. Requires `is_staff` or `is_superuser`. |
+
 ### Search (Next.js API route)
 
 | Method | Path | Description |
@@ -480,12 +556,15 @@
 | Path | Description |
 |------|-------------|
 | `/` | Home; hero logo + search + category section |
+| `/explore` | Explorer page; `?q=<term>` for search. Recommended portfolios from artists with similar job titles/niches. |
 | `/login` | Login form; **Forgot password** link (mandatory V1) |
 | `/forgot-password` | Request password reset (email input); sends reset link; success message "Check your email" |
 | `/reset-password` | Set new password (from email link); form: email, new password, confirm password; success: "Your password has been changed" + Login button; validates new ≠ current password |
 | `/signup` | Registration (email, password, confirm password; validates passwords match) |
 | `/signup/complete` | Post-signup profile completion |
-| `/settings` | Settings (profile, **Discoverability**, customization, **Security**, billing, about, terms, privacy, help) |
+| `/settings` | Settings (profile, **Discoverability**, customization, **Security**, billing, about, terms, privacy, help). Admin users also see Admin analytics section. |
+| `/help` | Standalone help form; get help or send feedback to urGallery. |
+| `/admin/analytics` | Admin-only: site-wide metrics (visitors, users, revenue, location, titles, portfolio counts). Optional dedicated route; can live under Settings. |
 | `/saves` | Saved artists and portfolios (chronological/alphabetical, search) |
 | `/{artist_slug}` | Artist landing (profile + portfolio section); `?portfolio=<portfolio_slug>` for specific portfolio |
 | `/{artist_slug}/{portfolio_slug}` | Redirects to `/{artist_slug}?portfolio={portfolio_slug}#portfolio-shell` |
@@ -499,7 +578,35 @@
 - Key env vars: `NEXT_PUBLIC_API_BASE`, `HELP_EMAIL_RECIPIENT`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_PRO`, `STRIPE_PRICE_PREMIUM`.
 - See [ARCHITECTURE.md](./ARCHITECTURE.md) for full config, CORS, CSRF, and deployment.
 
+---
 
+## Deployment & DevOps (Factory.ai)
+
+- **Factory.ai** is used for agent-native software development and CI/CD. Droids (AI agents) can automate coding tasks, deployments, and maintenance. See [factory.ai](https://factory.ai) and [Factory docs](https://docs.factory.ai).
+- **Repository:** Code is hosted on GitHub. Changes are pushed to GitHub for Factory to pick up.
+- **Stack for deployment:** Next.js frontend (standalone), Django backend, PostgreSQL, Docker.
+- **Docs for DevOps:** See [DEPLOYMENT.md](./DEPLOYMENT.md) for env vars, Docker build, and production checklist. See [ARCHITECTURE.md](./ARCHITECTURE.md) for full technical stack.
+
+### Pushing to GitHub
+
+From the project root:
+
+```bash
+git status                    # Check what changed
+git add .                     # Stage all changes (or git add <file> for specific files)
+git commit -m "Your message"  # Commit with a descriptive message
+git push origin main          # Push to GitHub (use 'master' if that's your default branch)
+```
+
+**New branch** (e.g. for Factory to review):
+```bash
+git checkout -b feature/your-branch-name
+git add .
+git commit -m "Description of changes"
+git push -u origin feature/your-branch-name
+```
+
+First-time setup: `git remote add origin https://github.com/YOUR_ORG/urGallery.git` (if not already configured).
 
 ---
 
@@ -519,12 +626,16 @@
 | Search result hover styling (background Color 3, text Color 2) | ✅ |
 | Comments on portfolios | ✅ (laptop) |
 | Category section (browse by title/location) | ⬜ |
+| Explorer page (recommended portfolios by job title/niche) | ⬜ |
+| Admin analytics (site-wide metrics for admin users) | ⬜ |
 | Saves (save artists/portfolios, Saves page) | ✅ |
 | Subscription tiers (Stripe billing) | ⬜ |
 | **Hashtags** (Settings management + search integration) | ✅ |
 | Tier-based limits (portfolios, pages, storage) | ⬜ |
 
-**Remaining MVP features: 3** — Category section, Subscription/billing, Tier limits.
+**Remaining MVP features: 5** — Category section, Explorer page, Subscription/billing, Tier limits, Admin analytics.
+
+The portfolio layouts still need refining too.
 
 ---
 
@@ -536,7 +647,7 @@
 - **2FA (V2):** TOTP (authenticator app); optional for users. Recovery codes.
 - **Advanced design tools:** Premium gets first access when released.
 - **Charts and Graphs:** Chart and graphic display for the portfolio pages to show off user's metrics to clients.
-- **Mobile app (V2/V3):** iOS and Android. Same API; native UI. Add when web is validated and resourced.
+- **Mobile app (V2):** iOS and Android. Same API; native UI. Add when web is validated and resourced.
 
 ### Big Vision / Later Versions for Artists
 

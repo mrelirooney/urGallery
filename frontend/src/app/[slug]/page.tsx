@@ -135,6 +135,16 @@ export default async function ArtistPage(
             aria-hidden
           />
 
+          {/* Grain overlay – on top of gradient */}
+          <div
+            className="absolute inset-0 z-[6] pointer-events-none mix-blend-soft-light opacity-[0]"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+              backgroundRepeat: "repeat",
+            }}
+            aria-hidden
+          />
+
           {/* Artist Header Section */}
           <section id="artist-profile-section" style={{ backgroundColor: customColors.background, fontFamily: "var(--artist-font, 'Raleway'), sans-serif" }} className="relative overflow-hidden">
           {/* Theme pattern layer (behind content) - inline SVG for dynamic colors */}
@@ -229,16 +239,16 @@ export default async function ArtistPage(
             }}
             className="relative overflow-hidden h-dvh pt-30 pb-0 flex flex-col"
           >
-            {profile?.theme?.svg_url && (
+            {profile?.theme?.svg_url ? (
               <ThemePatternLayer
-                svgUrl={profile.theme.svg_url}
+                svgUrl={profile?.theme?.svg_url ?? ""}
                 colorOverrides={{
                   "--artist-background": customColors.accent,
                   "--artist-accent": customColors.accent,
                   "--artist-text": customColors.accent,
                 }}
               />
-            )}
+            ) : null}
             <div className="flex-1 flex flex-col min-h-0 w-full max-w-6xl xl:max-w-7xl xl-lg:max-w-[1600px] 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-16 2xl:px-20 relative z-10">
           {portfolios.length > 0 ? (
             <PortfolioSelector

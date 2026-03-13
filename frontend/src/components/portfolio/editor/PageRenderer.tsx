@@ -151,17 +151,18 @@ export default function PageRenderer({
   // layout-2: Image full height between accent bands, text overlay on image (tablet/laptop)
   if (layoutType === "layout-2") {
     const canvasBg = customColors?.background ?? "#faf7f2";
+    const accentHex = customColors?.accent || "#c96a4a";
     const textColor = getTextColorForBackground(canvasBg);
     const overlayTextStyle = {
       color: "#faf7f2",
       textShadow: "0 1px 3px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.4)",
     };
-    const accentStyle = { backgroundColor: "var(--artist-accent, #c96a4a)" };
+    const accentStyle = { backgroundColor: accentHex };
     const rightBandStyle = { ...accentStyle, borderLeft: "1px solid rgba(255,255,255,0.35)" };
 
     return (
       <div className="w-full h-full layout-2-horizontal" data-layout="layout-2">
-        <div className="flex flex-col md:hidden w-full min-h-[70vh]">
+        <div className="flex flex-col lg:hidden w-full min-h-[70vh]">
           <div className="w-full aspect-video overflow-hidden">{mediaContent}</div>
           <div className="flex flex-1">
             <div className="flex-1 px-4 py-6">
@@ -469,6 +470,7 @@ export default function PageRenderer({
     const accentHex = customColors?.accent || "#c96a4a";
     const portfolioBg = customColors?.text ?? "#11100e";
     const textColor = getTextColorForBackground(portfolioBg);
+    const descriptionBodyColor = getTextColorForBackground(accentHex);
 
     const layout6Media = (
       <div
@@ -528,14 +530,14 @@ export default function PageRenderer({
             />
             <textarea
               className="w-full portfolio-description whitespace-pre-line bg-transparent rounded-md pl-4 pr-0 py-2 mt-28 text-right outline-none focus:ring-2 focus:ring-neutral-400/50 min-h-[80px] resize-none"
-              style={{ color: textColor, opacity: 0.9 }}
+              style={{ color: descriptionBodyColor, opacity: 0.9 }}
               value={descriptionBody}
               onChange={(e) => onChangeDescriptionBody?.(safeIndex, e.target.value)}
               placeholder="Body text"
             />
           </div>
         </div>
-        <div className="hidden lg:grid lg:grid-cols-[3fr_7fr] lg:gap-0 lg:h-full lg:min-h-0 w-full px-[8vw] relative z-10">
+        <div className="hidden lg:grid lg:grid-cols-[4fr_6fr] lg:gap-0 lg:h-full lg:min-h-0 w-full px-[8vw] relative z-10">
           <div className="flex items-center justify-center min-h-0 overflow-hidden pl-4">
             <div className="relative w-full h-full min-h-[300px] overflow-hidden shrink-0">
               {layout6Media}
@@ -558,7 +560,7 @@ export default function PageRenderer({
             />
             <textarea
               className="w-full portfolio-description whitespace-pre-line bg-transparent rounded-md pl-4 pr-0 py-2 mt-28 text-right outline-none focus:ring-2 focus:ring-neutral-400/50 min-h-[80px] resize-none"
-              style={{ color: textColor, opacity: 0.9 }}
+              style={{ color: descriptionBodyColor, opacity: 0.9 }}
               value={descriptionBody}
               onChange={(e) => onChangeDescriptionBody?.(safeIndex, e.target.value)}
               placeholder="Body text"
@@ -609,12 +611,12 @@ export default function PageRenderer({
     return (
       <div className="w-full h-full flex items-center justify-center" data-layout="layout-8">
         <div className="flex flex-col lg:hidden w-full min-h-[50vh] px-4 py-8">
-          <div className="w-full flex-1 min-h-0 rounded-sm overflow-hidden">
+          <div className="w-full flex-1 min-h-0 overflow-hidden">
             {layout8Content}
           </div>
         </div>
         <div className="hidden lg:flex lg:items-stretch lg:justify-center lg:w-full lg:h-full lg:min-h-0">
-          <div className="w-[66%] min-w-[280px] max-w-[900px] h-full rounded-sm overflow-hidden shrink-0">
+          <div className="w-[66%] min-w-[280px] max-w-[900px] h-full overflow-hidden shrink-0">
             {layout8Content}
           </div>
         </div>
@@ -961,7 +963,7 @@ export default function PageRenderer({
         <div className="w-full h-full flex flex-col" data-layout="layout-14">
           {/* Below lg: stacked vertically */}
           <div className="flex flex-col lg:hidden w-full flex-1 min-h-[70vh] gap-6 py-8 px-6">
-            <div className="p-6 border-2 rounded-sm pointer-events-auto" style={{ borderColor: accentHex14, color: textColor14 }}>
+            <div className="p-6 border-2 rounded-xs pointer-events-auto" style={{ borderColor: accentHex14, color: textColor14 }}>
               <input
                 className="w-full portfolio-header-big font-bold bg-transparent rounded-md py-2 outline-none focus:ring-2 focus:ring-white/50"
                 style={{ color: textColor14 }}
@@ -977,7 +979,7 @@ export default function PageRenderer({
                 placeholder="Block 1 description"
               />
             </div>
-            <div className="p-6 rounded-sm pointer-events-auto" style={{ backgroundColor: accentHex14, color: accentTextColor14 }}>
+            <div className="p-6 rounded-xs pointer-events-auto" style={{ backgroundColor: accentHex14, color: accentTextColor14 }}>
               <input
                 className="w-full portfolio-header-big font-bold bg-transparent rounded-md py-2 outline-none focus:ring-2 focus:ring-white/50"
                 style={{ color: accentTextColor14 }}
@@ -993,7 +995,7 @@ export default function PageRenderer({
                 placeholder="Block 2 description"
               />
             </div>
-            <div className="p-6 border-2 rounded-sm pointer-events-auto" style={{ borderColor: accentHex14, color: textColor14 }}>
+            <div className="p-6 border-2 rounded-xs pointer-events-auto" style={{ borderColor: accentHex14, color: textColor14 }}>
               <input
                 className="w-full portfolio-header-big font-bold bg-transparent rounded-md py-2 outline-none focus:ring-2 focus:ring-white/50"
                 style={{ color: textColor14 }}
@@ -1013,7 +1015,7 @@ export default function PageRenderer({
           {/* Laptop: three equal columns, full bleed; boxes max 50% height, centered in layout frame (mirrors public PageRenderer) */}
           <div className="hidden lg:flex lg:flex-1 lg:min-h-0 lg:items-start lg:justify-center">
             <div className="grid grid-cols-3 gap-0 max-h-[50%] w-full">
-              <div className="flex flex-col justify-center p-8 overflow-y-auto pointer-events-auto">
+              <div className="flex flex-col justify-center p-3 xl:p-8 overflow-y-auto pointer-events-auto" style={{ color: textColor14 }}>
                 <input
                   className="w-full portfolio-header-big font-bold bg-transparent rounded-md py-2 outline-none focus:ring-2 focus:ring-white/50 text-center pb-2"
                   style={{ color: textColor14 }}
@@ -1022,7 +1024,7 @@ export default function PageRenderer({
                   placeholder="Block 1 title"
                 />
                 <div
-                  className="flex flex-col justify-center p-8 overflow-y-auto border-2 text-center pointer-events-auto"
+                  className="flex flex-col justify-center p-8 overflow-y-auto border-2 rounded-xs text-center pointer-events-auto"
                   style={{ borderColor: accentHex14, color: textColor14 }}
                 >
                   <textarea
@@ -1034,7 +1036,7 @@ export default function PageRenderer({
                   />
                 </div>
               </div>
-              <div className="flex flex-col justify-center p-0 overflow-y-auto pointer-events-auto">
+              <div className="flex flex-col justify-center px-0 xl:px-0 overflow-y-auto pointer-events-auto" style={{ color: textColor14 }}>
                 <input
                   className="w-full portfolio-header-big font-bold bg-transparent rounded-md py-2 outline-none focus:ring-2 focus:ring-white/50 text-center pb-2"
                   style={{ color: textColor14 }}
@@ -1043,8 +1045,8 @@ export default function PageRenderer({
                   placeholder="Block 2 title"
                 />
                 <div
-                  className="flex flex-col justify-center p-8 overflow-y-auto text-center pointer-events-auto"
-                  style={{ backgroundColor: accentHex14, color: accentTextColor14 }}
+                  className="flex flex-col justify-center p-8 overflow-y-auto border-2 rounded-xs text-center pointer-events-auto"
+                  style={{ backgroundColor: accentHex14, color: accentTextColor14, borderColor: accentHex14 }}
                 >
                   <textarea
                     className="w-full portfolio-description whitespace-pre-line bg-transparent rounded-md py-2 outline-none focus:ring-2 focus:ring-white/50 min-h-[60px] resize-none"
@@ -1055,7 +1057,7 @@ export default function PageRenderer({
                   />
                 </div>
               </div>
-              <div className="flex flex-col justify-center p-8 overflow-y-auto pointer-events-auto">
+              <div className="flex flex-col justify-center p-3 xl:p-8 overflow-y-auto pointer-events-auto" style={{ color: textColor14 }}>
                 <input
                   className="w-full portfolio-header-big font-bold bg-transparent rounded-md py-2 outline-none focus:ring-2 focus:ring-white/50 text-center pb-2"
                   style={{ color: textColor14 }}
@@ -1064,7 +1066,7 @@ export default function PageRenderer({
                   placeholder="Block 3 title"
                 />
                 <div
-                  className="flex flex-col justify-center p-8 overflow-y-auto border-2 text-center pointer-events-auto"
+                  className="flex flex-col justify-center p-8 overflow-y-auto border-2 rounded-xs text-center pointer-events-auto"
                   style={{ borderColor: accentHex14, color: textColor14 }}
                 >
                   <textarea
@@ -1095,7 +1097,7 @@ export default function PageRenderer({
         <div className="w-full h-full flex flex-col" data-layout="layout-15">
           {/* Below lg: single full-width block, two sections, divider */}
           <div className="flex flex-col lg:hidden w-full flex-1 min-h-[70vh] py-8 px-6">
-            <div className="w-full flex flex-col rounded-sm pointer-events-auto" style={{ backgroundColor: accentHex15, color: accentTextColor15 }}>
+            <div className="w-full flex flex-col rounded-xs pointer-events-auto" style={{ backgroundColor: accentHex15, color: accentTextColor15 }}>
               <div className="p-8">
                 <input
                   className="w-full portfolio-header-big font-bold bg-transparent rounded-md py-2 outline-none focus:ring-2 focus:ring-white/50"
@@ -1135,7 +1137,7 @@ export default function PageRenderer({
           <div className="hidden lg:grid lg:grid-cols-2 lg:flex-1 lg:min-h-0 lg:gap-0">
             <div className="flex flex-col justify-center pl-8 pr-4 overflow-y-auto">
               <div
-                className="flex flex-col justify-center p-8 overflow-y-auto pointer-events-auto"
+                className="flex flex-col justify-center p-8 overflow-y-auto rounded-xs pointer-events-auto"
                 style={{ backgroundColor: accentHex15, color: accentTextColor15 }}
               >
                 <input
@@ -1156,7 +1158,7 @@ export default function PageRenderer({
             </div>
             <div className="flex flex-col justify-center pl-4 pr-8 overflow-y-auto">
               <div
-                className="flex flex-col justify-center p-8 overflow-y-auto pointer-events-auto"
+                className="flex flex-col justify-center p-8 overflow-y-auto rounded-xs pointer-events-auto"
                 style={{ backgroundColor: accentHex15, color: accentTextColor15 }}
               >
                 <input

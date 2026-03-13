@@ -284,6 +284,7 @@ export default function PageRenderer({
     const accentHex = customColors?.accent || "#c96a4a";
     const portfolioBg = customColors?.text || "#11100e";
     const textColor = getTextColorForBackground(portfolioBg);
+    const descriptionBodyColor = getTextColorForBackground(accentHex);
 
     const mediaEl6 = mediaSrc ? (
       <img src={mediaSrc} alt="Portfolio media" className="w-full h-full object-cover object-center" loading="lazy" />
@@ -314,10 +315,10 @@ export default function PageRenderer({
           <div className="flex-1 px-4 py-6 text-right">
             <h2 className="portfolio-header-big font-bold" style={{ color: textColor }}>{title}</h2>
             <p className="whitespace-pre-line portfolio-description mt-1 opacity-95" style={{ color: textColor }}>{description || "\u00A0"}</p>
-            <p className="whitespace-pre-line portfolio-description opacity-90 mt-32" style={{ color: textColor }}>{descriptionBody || "\u00A0"}</p>
+            <p className="whitespace-pre-line portfolio-description opacity-90 mt-32" style={{ color: descriptionBodyColor }}>{descriptionBody || "\u00A0"}</p>
           </div>
         </div>
-        <div className="hidden lg:grid lg:grid-cols-[3fr_7fr] lg:gap-0 lg:h-full lg:min-h-0 w-full px-[8vw]">
+        <div className="hidden lg:grid lg:grid-cols-[4fr_6fr] lg:gap-0 lg:h-full lg:min-h-0 w-full px-[8vw]">
           <div className="flex items-center justify-center min-h-0 overflow-hidden pl-4">
             <div className="relative w-full h-full min-h-[300px] overflow-hidden shrink-0">
               {mediaEl6}
@@ -326,7 +327,7 @@ export default function PageRenderer({
           <div className="flex flex-col justify-center items-end text-right px-6 lg:px-8 overflow-y-auto min-h-0">
             <h2 className="portfolio-header-big font-bold w-full" style={{ color: textColor }}>{title}</h2>
             <p className="whitespace-pre-line portfolio-description mt-1 opacity-95 w-full" style={{ color: textColor }}>{description || "\u00A0"}</p>
-            <p className="whitespace-pre-line portfolio-description opacity-90 mt-32 w-full" style={{ color: textColor }}>{descriptionBody || "\u00A0"}</p>
+            <p className="whitespace-pre-line portfolio-description opacity-90 mt-32 w-full" style={{ color: descriptionBodyColor }}>{descriptionBody || "\u00A0"}</p>
           </div>
         </div>
         </div>
@@ -362,13 +363,13 @@ export default function PageRenderer({
       <div className="w-full h-full flex items-center justify-center" data-layout="layout-8">
         {/* Mobile: stacked, full width with horizontal padding */}
         <div className="flex flex-col lg:hidden w-full min-h-[50vh] px-4 py-8">
-          <div className="w-full flex-1 min-h-0 rounded-sm overflow-hidden">
+          <div className="w-full flex-1 min-h-0 overflow-hidden">
             {contentBlock}
           </div>
         </div>
         {/* Desktop: 50% width, full height, centered */}
         <div className="hidden lg:flex lg:items-stretch lg:justify-center lg:w-full lg:h-full lg:min-h-0">
-          <div className="w-[66%] min-w-[280px] max-w-[900px] h-full rounded-sm overflow-hidden shrink-0">
+          <div className="w-[66%] min-w-[280px] max-w-[900px] h-full overflow-hidden shrink-0">
             {contentBlock}
           </div>
         </div>
@@ -575,44 +576,45 @@ export default function PageRenderer({
         <div className="w-full h-full flex flex-col" data-layout="layout-14">
           {/* Below lg: stacked vertically */}
           <div className="flex flex-col lg:hidden w-full flex-1 min-h-[70vh] gap-6 py-8 px-6">
-            <div className="p-6 border-2 rounded-sm" style={{ borderColor: accentHex, color: textColor }}>
+            <div className="p-6 border-2 rounded-xs" style={{ borderColor: accentHex, color: textColor }}>
               <h3 className="portfolio-header-big font-bold">{title || "\u00A0"}</h3>
               <p className="whitespace-pre-line portfolio-description mt-2 opacity-90">{description || "\u00A0"}</p>
             </div>
-            <div className="p-6 rounded-sm" style={{ backgroundColor: accentHex, color: accentTextColor }}>
+            <div className="p-6 rounded-xs" style={{ backgroundColor: accentHex, color: accentTextColor }}>
               <h3 className="portfolio-header-big font-bold">{title2 || "\u00A0"}</h3>
               <p className="whitespace-pre-line portfolio-description mt-2 opacity-95">{description2 || "\u00A0"}</p>
             </div>
-            <div className="p-6 border-2 rounded-sm" style={{ borderColor: accentHex, color: textColor }}>
+            <div className="p-6 border-2 rounded-xs" style={{ borderColor: accentHex, color: textColor }}>
               <h3 className="portfolio-header-big font-bold">{title3 || "\u00A0"}</h3>
               <p className="whitespace-pre-line portfolio-description mt-2 opacity-90">{description3 || "\u00A0"}</p>
             </div>
           </div>
           {/* Laptop: three equal columns, full bleed; boxes max 50% height, centered in layout frame */}
+          {/* textColor = off-white on dark portfolio; accentTextColor = off-black on light accent, off-white on dark accent */}
           <div className="hidden lg:flex lg:flex-1 lg:min-h-0 lg:items-start lg:justify-center">
             <div className="grid grid-cols-3 gap-0 max-h-[50%] w-full">
-              <div className="flex flex-col justify-center p-8 overflow-y-auto">
+              <div className="flex flex-col justify-center p-3 xl:p-8 overflow-y-auto" style={{ color: textColor }}>
                 <h3 className="portfolio-header-big font-bold text-center pb-2">{title || "\u00A0"}</h3>
                 <div
-                  className="flex flex-col justify-center p-8 overflow-y-auto border-2 text-center"
+                  className="flex flex-col justify-center p-8 overflow-y-auto border-2 rounded-xs text-center"
                   style={{ borderColor: accentHex, color: textColor }}
                 >
                   <p className="whitespace-pre-line portfolio-description mt-2 opacity-90">{description || "\u00A0"}</p>
                 </div>
               </div>
-            <div className="flex flex-col justify-center p-0 overflow-y-auto">
+            <div className="flex flex-col justify-center px-0 xl:px-0 overflow-y-auto" style={{ color: textColor }}>
               <h3 className="portfolio-header-big font-bold text-center pb-2">{title2 || "\u00A0"}</h3>
               <div
-                className="flex flex-col justify-center p-8 overflow-y-auto text-center"
-                style={{ backgroundColor: accentHex, color: accentTextColor }}
+                className="flex flex-col justify-center p-8 overflow-y-auto border-2 rounded-xs text-center"
+                style={{ backgroundColor: accentHex, color: accentTextColor, borderColor: accentHex, }}
               >
                 <p className="whitespace-pre-line portfolio-description mt-2 opacity-95">{description2 || "\u00A0"}</p>
               </div>
             </div>
-              <div className="flex flex-col justify-center p-8 overflow-y-auto">
+              <div className="flex flex-col justify-center p-3 xl:p-8 overflow-y-auto" style={{ color: textColor }}>
               <h3 className="portfolio-header-big font-bold text-center pb-2">{title3 || "\u00A0"}</h3>
                 <div
-                  className="flex flex-col justify-center p-8 overflow-y-auto border-2 text-center"
+                  className="flex flex-col justify-center p-8 overflow-y-auto border-2 rounded-xs text-center"
                   style={{ borderColor: accentHex, color: textColor }}
                 >
                   <p className="whitespace-pre-line portfolio-description mt-2 opacity-90">{description3 || "\u00A0"}</p>
@@ -637,7 +639,7 @@ export default function PageRenderer({
         <div className="w-full h-full flex flex-col" data-layout="layout-15">
           {/* Below lg: single full-width block, two sections, divider */}
           <div className="flex flex-col lg:hidden w-full flex-1 min-h-[70vh] py-8 px-6">
-            <div className="w-full flex flex-col rounded-sm" style={{ backgroundColor: accentHex, color: accentTextColor }}>
+            <div className="w-full flex flex-col rounded-xs" style={{ backgroundColor: accentHex, color: accentTextColor }}>
               <div className="p-8">
                 <h3 className="portfolio-header-big font-bold">{title || "\u00A0"}</h3>
                 <p className="whitespace-pre-line portfolio-description mt-2 opacity-90">{description || "\u00A0"}</p>
@@ -653,7 +655,7 @@ export default function PageRenderer({
           <div className="hidden lg:grid lg:grid-cols-2 lg:flex-1 lg:min-h-0 lg:gap-0">
             <div className="flex flex-col justify-center pl-8 pr-4 overflow-y-auto">
               <div
-                className="flex flex-col justify-center p-8 overflow-y-auto"
+                className="flex flex-col justify-center p-8 overflow-y-auto rounded-xs"
                 style={{ backgroundColor: accentHex, color: accentTextColor }}
               >
                 <h3 className="portfolio-header-big font-bold">{title || "\u00A0"}</h3>
@@ -661,7 +663,7 @@ export default function PageRenderer({
               </div>
             </div>
             <div className="flex flex-col justify-center pl-4 pr-8 overflow-y-auto">
-              <div className="flex flex-col justify-center p-8 overflow-y-auto" style={{ backgroundColor: accentHex, color: accentTextColor }}
+              <div className="flex flex-col justify-center p-8 overflow-y-auto rounded-xs" style={{ backgroundColor: accentHex, color: accentTextColor }}
               >
                 <h3 className="portfolio-header-big font-bold">{title2 || "\u00A0"}</h3>
                 <p className="whitespace-pre-line portfolio-description mt-2 opacity-95">{description2 || "\u00A0"}</p>
@@ -794,14 +796,17 @@ export default function PageRenderer({
   return (
     <div className="w-full h-full layout-1-magazine" data-layout="layout-1">
       {/* Mobile: vertical stack – image → header → accent block */}
-      <div className="flex flex-col lg:hidden w-full h-full min-h-[70vh]">
+      <div className="flex flex-col justify-center lg:hidden w-full h-full min-h-[70vh]">
         <div className="w-full md:max-w-[50%] md:mx-auto aspect-[9/16] max-h-[50vh] overflow-hidden shrink-0">
           {imageEl}
         </div>
         <div className="px-4 py-6 text-center">
           {headerEl}
         </div>
-        <div className="mx-4 mb-6 rounded-xs overflow-hidden shrink-0" style={{ backgroundColor: accentHex }}>
+        <div
+          className="mx-4 mb-6 rounded-xs overflow-hidden shrink-0"
+          style={{ backgroundColor: accentHex }}
+        >
           {bodyContent}
         </div>
       </div>

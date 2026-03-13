@@ -446,7 +446,6 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
       <section 
       className="w-full flex-1 flex flex-col min-h-0"
       style={{ 
-        backgroundColor: customColors?.text || '#11100e',
         color: customColors?.background || '#faf7f2',
        }}
     >

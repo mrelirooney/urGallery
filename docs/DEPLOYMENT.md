@@ -1,5 +1,7 @@
 # urGallery – Production Deployment
 
+> **Factory.ai:** DevOps may use Factory.ai for CI/CD, automated deployments, and agent-driven updates. See [PRD.md](./PRD.md#deployment--devops-factoryai) for GitHub push instructions and Factory context.
+
 ## Quick Build (EC2)
 
 **Current EC2 URLs** (API :8000, Site :3000):
