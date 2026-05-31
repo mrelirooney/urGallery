@@ -354,7 +354,7 @@ export default function Navbar() {
                       </li>
                       <li>
                         <Link
-                          href="/saves"
+                          href="/settings?section=saves"
                           className="block px-3 py-2 hover:bg-gray-50"
                           role="menuitem"
                           onClick={() => setMenuOpen(false)}
@@ -434,7 +434,7 @@ export default function Navbar() {
                       </li>
                       <li>
                         <Link
-                          href="/saves"
+                          href="/settings?section=saves"
                           className="block px-3 py-2 hover:bg-gray-50"
                           role="menuitem"
                           onClick={() => setMenuOpen(false)}
@@ -470,15 +470,17 @@ export default function Navbar() {
         ) : (
           // --- Logged-out view ---
           <nav className="flex items-center gap-3 sm:gap-4 text-body-sm md:pr-4">
-            {/* Mobile only: Search icon - opens full-screen search overlay */}
-            <button
-              onClick={() => setMobileSearchOpen(true)}
-              className="md:hidden rounded-md p-2 transition hover:opacity-80"
-              style={{ color: isArtistPage ? (customColors?.text || '#11100e') : 'var(--foreground)' }}
-              aria-label="Search"
-            >
-              <Search size={24} />
-            </button>
+            {/* Mobile only: overlay search — artist pages hide inline SearchInput below md; home etc. use SearchInput’s own icon */}
+            {isArtistPage && (
+              <button
+                onClick={() => setMobileSearchOpen(true)}
+                className="md:hidden rounded-md p-2 transition hover:opacity-80"
+                style={{ color: customColors?.text || "#11100e" }}
+                aria-label="Search"
+              >
+                <Search size={24} />
+              </button>
+            )}
             {/* Mobile only: Hamburger on right (only on artist profile pages) */}
             {isArtistPage && (
               <button

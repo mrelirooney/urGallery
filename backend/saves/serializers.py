@@ -43,6 +43,7 @@ class SavedPortfolioSerializer(serializers.ModelSerializer):
     portfolio_title = serializers.CharField(source="portfolio.title", read_only=True)
     artist_slug = serializers.SerializerMethodField()
     artist_display_name = serializers.SerializerMethodField()
+    artist_avatar_url = serializers.SerializerMethodField()
     cover_image_url = serializers.SerializerMethodField()
     background_color = serializers.SerializerMethodField()
     text_color = serializers.SerializerMethodField()
@@ -56,6 +57,7 @@ class SavedPortfolioSerializer(serializers.ModelSerializer):
             "portfolio_title",
             "artist_slug",
             "artist_display_name",
+            "artist_avatar_url",
             "cover_image_url",
             "background_color",
             "text_color",
@@ -71,6 +73,14 @@ class SavedPortfolioSerializer(serializers.ModelSerializer):
     def get_artist_display_name(self, obj):
         profile = getattr(obj.portfolio.user, "profile", None)
         return profile.display_name if profile else None
+
+    def get_artist_avatar_url(self, obj):
+        user = getattr(obj.portfolio, "user", None)
+        avatar = getattr(user, "avatar", None) if user else None
+        if avatar:
+            request = self.context.get("request")
+            return build_media_url(request, avatar.url)
+        return None
 
     def get_cover_image_url(self, obj):
         portfolio = obj.portfolio

@@ -1,39 +1,19 @@
 "use client";
 
-type SettingsSection = 
-  | "profile" 
-  | "customization" 
-  | "contact" 
-  | "security" 
-  | "resume" 
-  | "about" 
-  | "terms" 
-  | "privacy" 
-  | "help";
+import type { SettingsSection } from "./settingsSections";
+import { SETTINGS_MENU_ITEMS } from "./settingsSections";
 
 type Props = {
   activeSection: SettingsSection;
   onSectionChange: (section: SettingsSection) => void;
 };
 
-const menuItems: { id: SettingsSection; label: string }[] = [
-  { id: "profile", label: "Profile" },
-  { id: "customization", label: "Customization" },
-  { id: "contact", label: "Discoverability" },
-  { id: "security", label: "Security" },
-  { id: "resume", label: "Resume" },
-  { id: "about", label: "About" },
-  { id: "terms", label: "Terms" },
-  { id: "privacy", label: "Privacy" },
-  { id: "help", label: "Help" },
-];
-
 export default function SettingsNav({ activeSection, onSectionChange }: Props) {
   return (
     <div className="flex h-screen overflow-hidden bg-[var(--background)] text-[var(--foreground)]">
       <nav className="lg:w-[20%] xl:w-[5%] border-r border-neutral-200 dark:border-neutral-800 bg-[var(--background)] flex-1 overflow-y-auto">
         <ul className="py-4">
-          {menuItems.map((item) => (
+          {SETTINGS_MENU_ITEMS.map((item) => (
             <li key={item.id}>
               <button
                 onClick={() => onSectionChange(item.id)}
@@ -52,16 +32,3 @@ export default function SettingsNav({ activeSection, onSectionChange }: Props) {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

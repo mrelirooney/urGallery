@@ -319,7 +319,30 @@
 
 - **Layout** = structure + accent treatment. Each layout option the user sees = one unique backend value.
 - **Layout access by tier:** Free gets 24 layouts (fixed set). Pro and Premium get all layouts, including new ones as they're added.
-- **Naming:** Backend uses `layout-1` through `layout-15`; UI labels match (e.g. "layout-1", "layout-2").
+- **Naming:** Backend uses `layout-1` through `layout-15`. The layout picker shows human labels with global numbering (e.g. `Layout 01` = `layout-1`, `Layout 08` = `layout-8`).
+
+### Layout categories (picker UI)
+
+Layouts are grouped in the editor **Layouts** panel:
+
+| Category | Layouts | Notes |
+|----------|---------|-------|
+| **Media and Text** | `layout-1`, `2`, `3`, `4`, `5`, `6`, `9`, `11`, `13` | Default expanded category when current page layout is in this group |
+| **Text Only** | `layout-8`, `14`, `15` | No primary media slot |
+| **Media Only** | — | Placeholder: “Layouts Coming soon” (no selectable layouts yet) |
+
+Excluded from picker: `layout-7`, `layout-10` (backend only); `layout-12` (implemented but hidden, WIP).
+
+### Layout picker (editor UI)
+
+- **Trigger:** “Layouts” button in the editor toolbar (`EditorTopBar`).
+- **Panel:** Right slide-in drawer (same interaction pattern as Comments / Portfolio menu), not a centered modal. Close via backdrop click or Escape.
+- **Panel chrome:** Background is off-black (`#11100e`) when the artist profile background is dark, off-white (`#faf7f2`) when profile background is light. Menu text uses contrasting off-white/off-black. Right-aligned title, categories, and options with extra right padding (`pr-8`).
+- **Selection states:** Unselected options at 70% text opacity; hovered or current layout at 100% opacity. Hover row background = accent at 10% opacity; **current** layout row = accent at 20% opacity.
+- **Hover preview:** Live preview of the current page content in the hovered layout, scaled to fit the area left of the panel (1280×720 virtual canvas + CSS `transform: scale`). Preview uses **portfolio section background color** (Color #2 / `text_color`), matching live portfolio and editor canvas—not profile background. Soft glow + thin border behind preview (off-white glow on dark overlay, off-black on light overlay; border at ~35% opacity, glow layers at low opacity).
+- **Click:** Applies layout to the current page (PATCH draft page), closes panel.
+- **Registry:** `layoutRegistry.ts` is the source of truth for categories, labels, and picker-visible layouts.
+- **V1 soft launch:** Portfolio editing is desktop-first; layout picker preview is hidden below `sm` breakpoint.
 
 ### Layout types (backend `layout` field)
 
@@ -398,7 +421,8 @@ Refer to the mockups in urGallery/frontend/public/mockups for visuals of how the
 - **Delete page**: DELETE same URL.
 - **Reorder**: PATCH `/api/portfolios/<portfolio_slug>/editor/reorder/` with `page_ids` array.
 - **Publish**: POST `/api/portfolios/<portfolio_slug>/editor/publish/`.
-- Editor UI: portfolio toolbar (title + actions), horizontal page thumbnails, drag-and-drop reorder (dnd-kit), layout picker, shape picker, privacy modal (includes share/copy-link), image upload per slot.
+- Editor UI: portfolio toolbar (title + actions), horizontal page thumbnails, drag-and-drop reorder (dnd-kit), **layout picker panel** (categorized, hover preview—see Layout System), shape picker, privacy modal (includes share/copy-link), image upload per slot.
+- **Desktop-first (V1 soft launch):** Portfolio editor and layout picker target laptop/desktop; mobile/tablet editing deferred.
 - **Undo / Redo:** Undo and redo buttons in the editor toolbar. Track edit history (page content, layout, media, reorder, add/delete page) and allow stepping back/forward. Disable Undo when at oldest state, Redo when at newest. Keyboard shortcuts: Ctrl+Z (undo), Ctrl+Shift+Z or Ctrl+Y (redo).
 
 ### Free tier: Try-before-you-buy (editor & profile)
@@ -619,6 +643,7 @@ First-time setup: `git remote add origin https://github.com/YOUR_ORG/urGallery.g
 | **Resume upload & display** | ✅ |
 | Multiple portfolios per user | ✅ |
 | Portfolio editor (draft-based, publish) | ✅ |
+| Layout picker panel (categories, hover preview, scaled preview) | ✅ |
 | Privacy levels (public, private with password) | ✅ |
 | Artist search on homepage (incl. hashtag-weighted relevance) | ✅ |
 | Public artist landing page (theme, colors, fonts) | ✅ |
@@ -635,7 +660,7 @@ First-time setup: `git remote add origin https://github.com/YOUR_ORG/urGallery.g
 
 **Remaining MVP features: 5** — Category section, Explorer page, Subscription/billing, Tier limits, Admin analytics.
 
-The portfolio layouts still need refining too.
+Individual layout templates and mobile editor polish are still being refined ahead of June 15 soft launch.
 
 ---
 

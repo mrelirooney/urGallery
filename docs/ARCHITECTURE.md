@@ -31,6 +31,24 @@
   - `lib/types.ts` — shared TypeScript interfaces
 - `src/hooks/` — `useAuth`, `useSearch`, `useHistory`
 
+### Portfolio editor (frontend)
+
+Route: `/{artist_slug}/{portfolio_slug}/edit`. Shell: `PortfolioEditorShell.tsx`.
+
+| Component | Purpose |
+|-----------|---------|
+| `EditorTopBar.tsx` | Toolbar: undo/redo, page thumbnails, portfolio title, **Layouts** button |
+| `PageRenderer.tsx` (editor) | Renders draft page by `layout` enum; editor vs read-only modes |
+| `LayoutPickerPanel.tsx` | Right slide-in layout menu (portal); backdrop, categories, hover/selection states |
+| `ScaledLayoutPreview.tsx` | Hover preview: fixed 1280×720 stage, CSS scale, portfolio-bg colors, glow/border |
+| `layoutRegistry.ts` | Picker categories, human labels (`Layout 01`…), layout-12 exclusion |
+| `PrivacyModal.tsx` | Privacy + publish flow |
+| `PageThumbnailCapture.tsx` | `html2canvas` snapshots for thumbnail strip |
+
+**Layout picker behavior:** Opens from toolbar; accordion categories (Media and Text, Text Only, Media Only placeholder). Hover shows scaled live preview in the gap left of the 400px panel; click PATCHes layout and closes. Panel colors derive from profile lightness (`isLightColor`) using fixed off-black/off-white tokens; preview canvas uses `customColors.text` (portfolio section bg).
+
+**Color tokens (artist pages):** Profile = Color #1 (`background_color` → `--artist-profile-bg`). Portfolio section = Color #2 (`text_color` → `--artist-portfolio-bg`, `--artist-background`). Accent = Color #3 (`accent_color`). Set by `ColorThemeSetter`; cleared on non-artist routes by `ColorThemeGuard`. Artist layout injects `--body-background` gradient via inline script before paint; root `layout.tsx` uses `suppressHydrationWarning` on `<html>`/`<body>` and `globals.css` sets `body { background: var(--body-background, var(--background)) }`.
+
 ### API Integration Rules
 
 - `NEXT_PUBLIC_API_BASE` — backend base URL (e.g. `http://localhost:8000`)

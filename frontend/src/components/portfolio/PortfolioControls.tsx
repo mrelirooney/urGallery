@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { MoreVertical, Share2, Bookmark, MessageCircle, Lock, LockOpen } from "lucide-react";
 import { hexToRgba, getTextColorForBackground } from "@/lib/colorUtils";
 import PortfolioTitle from "./primitives/PortfolioTitle";
@@ -35,7 +35,10 @@ type PortfolioControlsProps = {
   onPageChange: (index: number) => void;
   commentsOpen: boolean;
   onToggleComments: () => void;
+  onPaginationActiveChange?: (active: boolean) => void;
 };
+
+const PAGINATION_IDLE_MS = 1000;
 
 export default function PortfolioControls({
   portfolioTitle,
@@ -59,8 +62,12 @@ export default function PortfolioControls({
   onPageChange,
   commentsOpen,
   onToggleComments,
+  onPaginationActiveChange,
 }: PortfolioControlsProps) {
   const shareCopiedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const paginationIdleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [isOverPagination, setIsOverPagination] = useState(false);
+  const [paginationIdle, setPaginationIdle] = useState(false);
   const textColor = customColors?.portfolioText ?? "var(--artist-portfolio-text, #faf7f2)";
   const portfolioBg = customColors?.text || "#11100e";
   const accent = customColors?.accent || "var(--artist-accent, #c96a4a)";
@@ -89,9 +96,49 @@ export default function PortfolioControls({
     });
   };
 
-  const controlsPointerEvents = controlsVisible && !isPrivateBlurred ? "pointer-events-auto" : "pointer-events-none";
-  const containerClass = `fixed left-0 right-0 w-full z-[100] flex flex-col justify-end md:justify-between py-3 transition-opacity duration-300 pointer-events-none ${controlsVisible ? "opacity-100" : "opacity-0"}`;
+  const clearPaginationIdleTimer = useCallback(() => {
+    if (paginationIdleTimerRef.current) {
+      clearTimeout(paginationIdleTimerRef.current);
+      paginationIdleTimerRef.current = null;
+    }
+  }, []);
+
+  const schedulePaginationIdle = useCallback(() => {
+    clearPaginationIdleTimer();
+    setPaginationIdle(false);
+    paginationIdleTimerRef.current = setTimeout(() => {
+      setPaginationIdle(true);
+    }, PAGINATION_IDLE_MS);
+  }, [clearPaginationIdleTimer]);
+
+  const handlePaginationEnter = useCallback(() => {
+    setIsOverPagination(true);
+    onPaginationActiveChange?.(true);
+    schedulePaginationIdle();
+  }, [onPaginationActiveChange, schedulePaginationIdle]);
+
+  const handlePaginationLeave = useCallback(() => {
+    setIsOverPagination(false);
+    setPaginationIdle(false);
+    clearPaginationIdleTimer();
+    onPaginationActiveChange?.(false);
+  }, [clearPaginationIdleTimer, onPaginationActiveChange]);
+
+  const handlePaginationMove = useCallback(() => {
+    schedulePaginationIdle();
+  }, [schedulePaginationIdle]);
+
+  useEffect(() => {
+    return () => clearPaginationIdleTimer();
+  }, [clearPaginationIdleTimer]);
+
+  const overlayVisible = controlsVisible || isOverPagination;
+  const chromeVisible = controlsVisible && !paginationIdle;
+  const controlsPointerEvents =
+    overlayVisible && !isPrivateBlurred ? "pointer-events-auto" : "pointer-events-none";
+  const containerClass = `fixed left-0 right-0 w-full z-[100] flex flex-col justify-end md:justify-between py-3 transition-opacity duration-300 pointer-events-none ${overlayVisible ? "opacity-100" : "opacity-0"}`;
   const innerClass = "w-full max-w-6xl lg:max-w-7xl xl:max-w-7xl 2xl:max-w-7xl mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-16 2xl:px-20 flex flex-col justify-end md:justify-between flex-1 min-h-0";
+  const chromeClass = `hidden md:flex items-center justify-between gap-4 relative z-0 transition-opacity duration-300 ${chromeVisible ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`;
 
   return (
     <div
@@ -105,7 +152,7 @@ export default function PortfolioControls({
     >
       <div className={innerClass}>
       {/* Row 1: title + privacy (left) | share, comment, edit, save (right) – hidden on mobile */}
-      <div className={`hidden md:flex items-center justify-between gap-4 relative z-0 ${controlsPointerEvents}`}>
+      <div className={chromeClass}>
         <div className="flex items-center gap-2 min-w-0">
           <div
             role="button"
@@ -282,7 +329,13 @@ export default function PortfolioControls({
       </div>
 
       {/* Row 2: pagination – bottom center on mobile/tablet, bottom right on desktop */}
-      <div className={`flex justify-center lg:justify-end min-w-0 relative z-0 ${controlsPointerEvents}`}>
+      <div
+        className={`flex justify-center lg:justify-end min-w-0 relative z-0 transition-opacity duration-300 ${controlsPointerEvents}`}
+        style={{ opacity: paginationIdle ? 0.25 : 1 }}
+        onMouseEnter={handlePaginationEnter}
+        onMouseLeave={handlePaginationLeave}
+        onMouseMove={handlePaginationMove}
+      >
         <Pagination
           totalPages={totalPages}
           currentPage={currentPageIndex + 1}

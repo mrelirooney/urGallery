@@ -111,6 +111,7 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
   const [unlockErrorShake, setUnlockErrorShake] = useState(false);
   const passwordInputRef = useRef<HTMLInputElement>(null);
   const idleRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const paginationActiveRef = useRef(false);
   const [isTablet, setIsTablet] = useState(false);
 
   // Live-view privacy toggle (owner only)
@@ -142,7 +143,11 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
     function scheduleHide() {
       if (idleRef.current) clearTimeout(idleRef.current);
       setControlsVisible(true);
-      idleRef.current = setTimeout(() => setControlsVisible(false), IDLE_HIDE_MS);
+      idleRef.current = setTimeout(() => {
+        if (!paginationActiveRef.current) {
+          setControlsVisible(false);
+        }
+      }, IDLE_HIDE_MS);
     }
     window.addEventListener("mousemove", scheduleHide);
     window.addEventListener("touchmove", scheduleHide);
@@ -471,6 +476,10 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
         onPageChange={setCurrentPageIndex}
         commentsOpen={commentsOpen}
         onToggleComments={() => setCommentsOpen((v) => !v)}
+        onPaginationActiveChange={(active) => {
+          paginationActiveRef.current = active;
+          if (active) setControlsVisible(true);
+        }}
       />
 
       <div

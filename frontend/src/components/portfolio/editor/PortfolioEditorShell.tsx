@@ -9,14 +9,13 @@ import PageRenderer, {
   MediaShapeType,
   PortfolioPageData,
 } from "./PageRenderer";
-import LayoutPickerModal from "./LayoutPickerModal";
+import LayoutPickerPanel from "./LayoutPickerPanel";
+import ThemedAlertModal from "@/components/ui/ThemedAlertModal";
 import PrivacyModal from "./PrivacyModal";
 import useHistory from "@/hooks/useHistory";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
-import { getTextColorForBackground } from "@/lib/colorUtils";
 import { resizeImageForUpload } from "@/lib/imageUtils";
-import { X } from "lucide-react";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE ?? process.env.NEXT_PUBLIC_API_URL ?? "";
@@ -195,14 +194,7 @@ export default function PortfolioEditorShell({
     savePortfolio(undefined, { silent: true }).catch(() => {});
   }, [portfolioSlug, pages]);
 
-  // Lock scroll when modals are open
-  useEffect(() => {
-    if (isDraftSavedModalOpen || isBackWarningModalOpen || isPublishSuccessModalOpen) {
-      const prev = document.body.style.overflow;
-      document.body.style.overflow = "hidden";
-      return () => { document.body.style.overflow = prev; };
-    }
-  }, [isDraftSavedModalOpen, isBackWarningModalOpen, isPublishSuccessModalOpen]);
+  // Scroll lock handled by ThemedAlertModal (alerts/privacy) and LayoutPickerPanel
 
   // Force layout display when user selects a new layout (bypasses any state sync delay)
   const [layoutOverride, setLayoutOverride] = useState<LayoutType | null>(null);
@@ -961,13 +953,16 @@ export default function PortfolioEditorShell({
       {/* Modals */}
       {currentPage && (
         <>
-          <LayoutPickerModal
+          <LayoutPickerPanel
             isOpen={isLayoutModalOpen}
             onClose={handleCloseLayout}
             currentLayout={layoutOverride ?? currentPage.layoutType}
             onSelectLayout={(layout) =>
               handleChangeLayout(currentPageIndex, layout)
             }
+            customColors={customColors}
+            pages={pages}
+            currentPageIndex={currentPageIndex}
           />
 
           <PrivacyModal
@@ -986,132 +981,56 @@ export default function PortfolioEditorShell({
             customColors={customColors}
           />
 
-          {isBackWarningModalOpen && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
-              <div
-                className="w-full max-w-sm mx-4 rounded-xs p-6 shadow-xl relative"
-                style={{
-                  backgroundColor: customColors?.background ?? "#faf7f2",
-                  color: getTextColorForBackground(customColors?.background ?? "#faf7f2"),
-                  border: "1px solid rgba(255, 253, 250, 0.3)",
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={() => setIsBackWarningModalOpen(false)}
-                  className="absolute top-3 right-3 p-1 rounded opacity-70 hover:opacity-100 transition-opacity z-10"
-                  style={{ color: "inherit" }}
-                  aria-label="Close"
-                >
-                  <X size={20} />
-                </button>
-                <h3 className="text-lg font-medium mb-2 text-center">Unsaved changes</h3>
-                <p className="text-sm opacity-80 mb-6 text-center">
-                  Continue without saving?
-                </p>
-                <div className="flex gap-3 justify-center">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsBackWarningModalOpen(false);
-                      goToProfile();
-                    }}
-                    className="px-4 py-2 rounded-xs font-medium text-sm transition-colors"
-                    style={{
-                      backgroundColor: customColors?.text ?? "#11100e",
-                      color: getTextColorForBackground(customColors?.text ?? "#11100e"),
-                    }}
-                  >
-                    Discard
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleSaveAndGo}
-                    className="px-4 py-2 rounded-xs font-medium text-sm transition-colors"
-                    style={{
-                      backgroundColor: customColors?.accent ?? "#c96a4a",
-                      color: getTextColorForBackground(customColors?.accent ?? "#c96a4a"),
-                    }}
-                  >
-                    Save & go
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+          <ThemedAlertModal
+            isOpen={isBackWarningModalOpen}
+            onClose={() => setIsBackWarningModalOpen(false)}
+            customColors={customColors}
+            title="Unsaved changes"
+            secondary={{
+              label: "Discard",
+              onClick: () => {
+                setIsBackWarningModalOpen(false);
+                goToProfile();
+              },
+            }}
+            primary={{
+              label: "Save & go",
+              onClick: handleSaveAndGo,
+            }}
+          >
+            Continue without saving?
+          </ThemedAlertModal>
 
-          {isDraftSavedModalOpen && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
-              <div
-                className="w-full max-w-sm mx-4 rounded-xs p-6 shadow-xl"
-                style={{
-                  backgroundColor: customColors?.background ?? "#faf7f2",
-                  color: getTextColorForBackground(customColors?.background ?? "#faf7f2"),
-                  border: "1px solid rgba(255, 253, 250, 0.3)",
-                }}
-              >
-                <h3 className="text-lg font-medium mb-2 text-center">Draft saved</h3>
-                <p className="text-sm opacity-80 mb-6 text-center">
-                  Keep editing or return to your profile?
-                </p>
-                <div className="flex gap-3 justify-center">
-                  <button
-                    type="button"
-                    onClick={() => setIsDraftSavedModalOpen(false)}
-                    className="px-4 py-2 rounded-xs font-medium text-sm transition-colors"
-                    style={{
-                      backgroundColor: customColors?.text ?? "#11100e",
-                      color: getTextColorForBackground(customColors?.text ?? "#11100e"),
-                    }}
-                  >
-                    Keep editing
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => router.push(`/${artistSlug}`)}
-                    className="px-4 py-2 rounded-xs font-medium text-sm transition-colors"
-                    style={{
-                      backgroundColor: customColors?.accent ?? "#c96a4a",
-                      color: getTextColorForBackground(customColors?.accent ?? "#c96a4a"),
-                    }}
-                  >
-                    Back to profile
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+          <ThemedAlertModal
+            isOpen={isDraftSavedModalOpen}
+            onClose={() => setIsDraftSavedModalOpen(false)}
+            customColors={customColors}
+            title="Draft saved"
+            secondary={{
+              label: "Keep editing",
+              onClick: () => setIsDraftSavedModalOpen(false),
+            }}
+            primary={{
+              label: "Back to profile",
+              onClick: () => router.push(`/${artistSlug}`),
+            }}
+          >
+            Keep editing or return to your profile?
+          </ThemedAlertModal>
 
-          {isPublishSuccessModalOpen && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
-              <div
-                className="w-full max-w-sm mx-4 rounded-xs p-6 shadow-xl"
-                style={{
-                  backgroundColor: customColors?.background ?? "#faf7f2",
-                  color: getTextColorForBackground(customColors?.background ?? "#faf7f2"),
-                  border: "1px solid rgba(255, 253, 250, 0.3)",
-                }}
-              >
-                <h3 className="text-lg font-medium mb-6 text-center">Portfolio Published</h3>
-                <div className="flex justify-center">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsPublishSuccessModalOpen(false);
-                      router.push(`/${artistSlug}`);
-                    }}
-                    className="px-4 py-2 rounded-xs font-medium text-sm transition-colors"
-                    style={{
-                      backgroundColor: customColors?.accent ?? "#c96a4a",
-                      color: getTextColorForBackground(customColors?.accent ?? "#c96a4a"),
-                    }}
-                  >
-                    Go back to profile
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+          <ThemedAlertModal
+            isOpen={isPublishSuccessModalOpen}
+            onClose={() => setIsPublishSuccessModalOpen(false)}
+            customColors={customColors}
+            title="Portfolio Published"
+            primary={{
+              label: "Go back to profile",
+              onClick: () => {
+                setIsPublishSuccessModalOpen(false);
+                router.push(`/${artistSlug}`);
+              },
+            }}
+          />
         </>
       )}
     </div>

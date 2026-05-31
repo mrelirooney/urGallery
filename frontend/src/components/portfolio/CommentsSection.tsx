@@ -4,6 +4,8 @@ import React, { useEffect, useState, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
+import { useSystemSurfaceColors } from "@/hooks/useSystemSurfaceColors";
+import { hexToRgba } from "@/lib/colorUtils";
 import { Trash2, X, Send } from "lucide-react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "";
@@ -70,8 +72,9 @@ export default function CommentsSection({
     ta.style.height = `${Math.min(ta.scrollHeight, 96)}px`;
   }, [body]);
 
-  const bg = customColors?.background || "#faf7f2";
-  const text = customColors?.text || "#11100e";
+  const { surface, foreground } = useSystemSurfaceColors();
+
+  const profileBg = customColors?.background || "#faf7f2";
   const accent = customColors?.accent || "#c96a4a";
 
   const fetchComments = useCallback(async () => {
@@ -209,7 +212,7 @@ export default function CommentsSection({
       {isOpen && (
         <div
           className="fixed inset-0 z-[100] transition-opacity"
-          style={{ backgroundColor: bg, opacity: 0.85 }}
+          style={{ backgroundColor: profileBg, opacity: 0.85 }}
           onClick={onClose}
         />
       )}
@@ -220,16 +223,16 @@ export default function CommentsSection({
           shadow-xl z-[100] transform transition-transform duration-300 ease-in-out
           ${isOpen ? "translate-x-0" : "translate-x-full"}
         `}
-        style={{ backgroundColor: text }}
+        style={{ backgroundColor: surface }}
       >
-        <div className="flex items-center justify-between px-4 py-4 border-b shrink-0" style={{ borderColor: `${bg}30` }}>
-          <h3 className="text-lg font-semibold" style={{ color: bg }}>
+        <div className="flex items-center justify-between px-4 py-4 border-b shrink-0" style={{ borderColor: hexToRgba(foreground, 0.15) }}>
+          <h3 className="text-lg font-semibold" style={{ color: foreground }}>
             Comments
           </h3>
           <button
             onClick={onClose}
             className="p-1.5 rounded-xs transition hover:opacity-80"
-            style={{ color: bg }}
+            style={{ color: foreground }}
             aria-label="Close comments"
           >
             <X size={20} />
@@ -237,11 +240,11 @@ export default function CommentsSection({
         </div>
 
         {authLoading ? (
-          <div className="flex-1 flex items-center justify-center px-4" style={{ color: `${bg}99` }}>
+          <div className="flex-1 flex items-center justify-center px-4" style={{ color: hexToRgba(foreground, 0.6) }}>
             Loading…
           </div>
         ) : !user ? (
-          <div className="flex-1 flex items-center justify-center px-4 text-center" style={{ color: bg }}>
+          <div className="flex-1 flex items-center justify-center px-4 text-center" style={{ color: foreground }}>
             <p className="text-sm">
               <Link href="/login" className="underline font-medium" style={{ color: accent }}>
                 Sign in
@@ -258,16 +261,16 @@ export default function CommentsSection({
               <div
                 className="absolute top-0 left-0 right-0 h-16 pointer-events-none z-10"
                 style={{
-                  background: `linear-gradient(to bottom, ${text} 0%, transparent 100%)`,
+                  background: `linear-gradient(to bottom, ${surface} 0%, transparent 100%)`,
                 }}
               />
               <div className="mt-auto px-4 py-4 space-y-4">
                 {loading ? (
-                  <p className="text-sm" style={{ color: `${bg}99` }}>
+                  <p className="text-sm" style={{ color: hexToRgba(foreground, 0.6) }}>
                     Loading comments…
                   </p>
                 ) : displayComments.length === 0 ? (
-                  <p className="text-sm" style={{ color: `${bg}99` }}>
+                  <p className="text-sm" style={{ color: hexToRgba(foreground, 0.6) }}>
                     No comments yet. Be the first!
                   </p>
                 ) : (
@@ -278,17 +281,17 @@ export default function CommentsSection({
                           src={buildAvatarUrl(c.author_avatar_url)}
                           alt=""
                           className="h-9 w-9 rounded-full object-cover border"
-                          style={{ borderColor: `${bg}40` }}
+                          style={{ borderColor: hexToRgba(foreground, 0.25) }}
                         />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium" style={{ color: bg }}>
+                        <p className="text-sm font-medium" style={{ color: foreground }}>
                           {c.author_display_name}
                         </p>
-                        <p className="text-sm mt-0.5 whitespace-pre-wrap break-words" style={{ color: `${bg}cc` }}>
+                        <p className="text-sm mt-0.5 whitespace-pre-wrap break-words" style={{ color: hexToRgba(foreground, 0.8) }}>
                           {c.body}
                         </p>
-                        <p className="text-xs mt-1" style={{ color: `${bg}99` }}>
+                        <p className="text-xs mt-1" style={{ color: hexToRgba(foreground, 0.6) }}>
                           {new Date(c.created_at).toLocaleDateString(undefined, {
                             month: "short",
                             day: "numeric",
@@ -302,7 +305,7 @@ export default function CommentsSection({
                           type="button"
                           onClick={() => handleDelete(c.id)}
                           className="shrink-0 p-1.5 rounded-xs opacity-70 hover:opacity-100 transition"
-                          style={{ color: bg }}
+                          style={{ color: foreground }}
                           aria-label="Delete comment"
                         >
                           <Trash2 size={16} />
@@ -314,7 +317,7 @@ export default function CommentsSection({
               </div>
             </div>
 
-            <div className="shrink-0 p-4 border-t" style={{ borderColor: `${bg}30` }}>
+            <div className="shrink-0 p-4 border-t" style={{ borderColor: hexToRgba(foreground, 0.15) }}>
               <form onSubmit={handleSubmit} className="flex gap-2">
                 <textarea
                   ref={textareaRef}
@@ -324,9 +327,9 @@ export default function CommentsSection({
                   rows={1}
                   className="flex-1 min-h-[40px] max-h-[96px] px-3 py-2 rounded-xs resize-none overflow-y-auto focus:outline-none focus:ring-2 focus:ring-offset-0 text-sm"
                   style={{
-                    backgroundColor: `${bg}15`,
-                    color: bg,
-                    border: `1px solid ${bg}40`,
+                    backgroundColor: hexToRgba(foreground, 0.08),
+                    color: foreground,
+                    border: `1px solid ${hexToRgba(foreground, 0.2)}`,
                   }}
                   disabled={submitting}
                 />
@@ -336,7 +339,7 @@ export default function CommentsSection({
                   className="shrink-0 p-2 rounded-xs transition disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{
                     backgroundColor: sendHovered && !submitting && body.trim() ? accent : "transparent",
-                    color: sendHovered && !submitting && body.trim() ? "var(--artist-accent-text, #faf7f2)" : bg,
+                    color: sendHovered && !submitting && body.trim() ? "var(--artist-accent-text, #faf7f2)" : foreground,
                   }}
                   onMouseEnter={() => setSendHovered(true)}
                   onMouseLeave={() => setSendHovered(false)}

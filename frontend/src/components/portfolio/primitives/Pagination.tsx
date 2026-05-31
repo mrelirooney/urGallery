@@ -3,6 +3,9 @@
 import React from 'react'
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { hexToRgba, getTextColorForBackground } from "@/lib/colorUtils";
+import { SURFACE_OFF_BLACK } from "@/lib/systemSurfaceTheme";
+
+const NUMBER_HOVER_COLOR = hexToRgba(SURFACE_OFF_BLACK, 0.75);
 
 type PaginationProps = {
   totalPages: number;
@@ -73,7 +76,7 @@ export default function Pagination({ totalPages, currentPage, onChangePage, cust
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = isActive ? accent : frostedBgHover;
-                  e.currentTarget.style.color = isActive ? accentText : fg;
+                  e.currentTarget.style.color = NUMBER_HOVER_COLOR;
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = isActive ? accent : frostedBgDefault;
@@ -81,7 +84,7 @@ export default function Pagination({ totalPages, currentPage, onChangePage, cust
                 }}
                 onFocus={(e) => {
                   e.currentTarget.style.backgroundColor = isActive ? accent : frostedBgHover;
-                  e.currentTarget.style.color = isActive ? accentText : fg;
+                  e.currentTarget.style.color = NUMBER_HOVER_COLOR;
                 }}
                 onBlur={(e) => {
                   e.currentTarget.style.backgroundColor = isActive ? accent : frostedBgDefault;
