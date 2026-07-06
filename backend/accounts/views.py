@@ -134,6 +134,9 @@ class MeView(APIView):
 
             # avatar for navbar
             "avatar_url": avatar_url,
+
+            # admin access (Settings analytics section)
+            "is_superuser": user.is_superuser,
         })
     
 class LogoutView(APIView):

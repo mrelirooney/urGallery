@@ -145,6 +145,17 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
     onSelect ? onSelect(r) : go(r);
   }
 
+  function goToSearchPage(term: string) {
+    const trimmed = term.trim();
+    if (!trimmed) return;
+    setOpen(false);
+    setActive(-1);
+    setIsFocused(false);
+    if (showCloseButton && onClose) onClose();
+    if (isNavbar) setExpanded(false);
+    router.push(`/search?q=${encodeURIComponent(trimmed)}`);
+  }
+
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Escape") {
       setOpen(false);
@@ -159,7 +170,21 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
       }
       return;
     }
+
     const shown = results.slice(0, 6);
+
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (open && active >= 0 && shown[active]) {
+        handleSelect(shown[active]);
+        return;
+      }
+      if (query.trim()) {
+        goToSearchPage(query);
+      }
+      return;
+    }
+
     if (!open || shown.length === 0) return;
 
     if (e.key === "ArrowDown") {
@@ -168,10 +193,6 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
       setActive((i) => Math.max(i - 1, 0));
-    } else if (e.key === "Enter") {
-      e.preventDefault();
-      const r = shown[active] ?? shown[0];
-      if (r) handleSelect(r);
     }
   }
 
@@ -187,13 +208,11 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
         variant === "hero" ? "py-1.5 sm:py-2" : "py-0.5 sm:py-1"
       } ${
         !hasTheme ? "hover:ring-[var(--light-brown)]/100 focus-within:ring-[var(--light-brown)]/70" : ""
-      } ${
-        variant === "hero"
-          ? "shadow-lg shadow-[var(--light-brown)]/90 ring-1 hover:shadow-xl hover:shadow-[var(--light-brown)]/40 focus-within:shadow-xl focus-within:shadow-[var(--light-brown)]/50"
-          : ""
       }`}
       style={{
-        ...(hasTheme ? { boxShadow: `0 0 0 2px ${useAccent ? accentColor : withOpacity50(textColor!)}` } : {}),
+        ...(hasTheme ? {
+          boxShadow: `0 0 0 ${variant === "hero" ? "1px" : "2px"} ${useAccent ? accentColor : withOpacity50(textColor!)}`,
+        } : {}),
         ...(hasInputTheme ? { backgroundColor, color: foregroundColor } : {}),
       }}
       onMouseEnter={() => setIsHovered(true)}
@@ -227,13 +246,7 @@ export default function SearchInput({ placeholder = "Search artists...", onSelec
       ) : (
         <button
           type="button"
-          onClick={() => {
-            if (!query.trim()) return;
-            run(query.trim()).then(() => {
-              const r = results[0];
-              if (r) handleSelect(r);
-            });
-          }}
+          onClick={() => goToSearchPage(query)}
           className="shrink-0 rounded-full text-[var(--foreground)] px-1.5 py-1.5 text-sm font-medium transition-all active:scale-95"
           style={hasTheme ? { color: useAccent ? accentColor : (hasInputTheme ? foregroundColor : textColor) } : hasInputTheme ? { color: foregroundColor } : undefined}
         >

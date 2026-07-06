@@ -10,7 +10,8 @@ export type SettingsSection =
   | "about"
   | "terms"
   | "privacy"
-  | "help";
+  | "help"
+  | "admin";
 
 export const SETTINGS_MENU_ITEMS: { id: SettingsSection; label: string }[] = [
   { id: "profile", label: "Profile" },
@@ -25,6 +26,11 @@ export const SETTINGS_MENU_ITEMS: { id: SettingsSection; label: string }[] = [
   { id: "help", label: "Help" },
 ];
 
+export function getSettingsMenuItems(isSuperuser?: boolean) {
+  if (!isSuperuser) return SETTINGS_MENU_ITEMS;
+  return [...SETTINGS_MENU_ITEMS, { id: "admin" as const, label: "Admin" }];
+}
+
 export const SETTINGS_SECTION_LABELS: Record<SettingsSection, string> = {
   profile: "Profile",
   customization: "Customization",
@@ -36,8 +42,9 @@ export const SETTINGS_SECTION_LABELS: Record<SettingsSection, string> = {
   terms: "Terms",
   privacy: "Privacy",
   help: "Help",
+  admin: "Admin",
 };
 
 export function isSettingsSection(value: string | null): value is SettingsSection {
-  return SETTINGS_MENU_ITEMS.some((item) => item.id === value);
+  return getSettingsMenuItems(true).some((item) => item.id === value);
 }

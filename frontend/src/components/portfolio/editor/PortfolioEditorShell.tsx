@@ -15,6 +15,7 @@ import PrivacyModal from "./PrivacyModal";
 import useHistory from "@/hooks/useHistory";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
+import { resolveLayout4Description } from "@/lib/portfolio/layoutLimits";
 import { resizeImageForUpload } from "@/lib/imageUtils";
 
 const API_BASE =
@@ -30,7 +31,7 @@ interface EditorPageApi {
   id: number;
   title: string;
   description: string;
-  description_body?: string;
+  details?: string;
   order: number;
   layout: LayoutType;
   media_image: string | null;
@@ -61,12 +62,16 @@ function mapApiPagesToEditor(
         ? apiPage.media_image_2
         : `${API_BASE}${apiPage.media_image_2}`
       : (current?.mediaSrc2 ?? null);
+    const layout = (apiPage.layout || "layout-1") as LayoutType;
     return {
       id: apiPage.id,
-      layoutType: (apiPage.layout || "layout-1") as LayoutType,
+      layoutType: layout,
       title: apiPage.title,
-      description: apiPage.description,
-      descriptionBody: apiPage.description_body ?? "",
+      description:
+        layout === "layout-4"
+          ? resolveLayout4Description(apiPage.description, apiPage.details)
+          : apiPage.description,
+      details: layout === "layout-4" ? "" : (apiPage.details ?? ""),
       mediaSrc,
       mediaShape: (apiPage.media_shape || "1:1") as MediaShapeType,
       mediaSrc2,
@@ -104,7 +109,7 @@ const createEmptyPage = (): PortfolioPageData => ({
   layoutType: "layout-1",
   title: "",
   description: "",
-  descriptionBody: "",
+  details: "",
   mediaSrc: null,
   mediaShape: "1:1",
   mediaSrc2: null,
@@ -373,8 +378,11 @@ export default function PortfolioEditorShell({
         id: data.id,
         layoutType: data.layout,
         title: data.title,
-        description: data.description,
-        descriptionBody: data.description_body ?? "",
+        description:
+          data.layout === "layout-4"
+            ? resolveLayout4Description(data.description, data.details)
+            : data.description,
+        details: data.layout === "layout-4" ? "" : (data.details ?? ""),
         mediaSrc: data.media_image,
         mediaShape2: (data.media_shape ?? "1:1") as MediaShapeType,
         mediaSrc2: data.media_image_2,
@@ -497,7 +505,8 @@ export default function PortfolioEditorShell({
         id: page.id,
         title: page.title,
         description: page.description,
-        description_body: page.descriptionBody ?? "",
+        details:
+          page.layoutType === "layout-4" ? "" : (page.details ?? ""),
         layout: page.layoutType,
         media_shape: page.mediaShape2,
         media_shape_2: page.mediaShape2_2,
@@ -658,11 +667,11 @@ export default function PortfolioEditorShell({
     updatePage(pageIndex, (page) => ({ ...page, description: newDescription }));
   };
 
-  const handleChangePageDescriptionBody = (
+  const handleChangePageDetails = (
     pageIndex: number,
-    newDescriptionBody: string,
+    newDetails: string,
   ) => {
-    updatePage(pageIndex, (page) => ({ ...page, descriptionBody: newDescriptionBody }));
+    updatePage(pageIndex, (page) => ({ ...page, details: newDetails }));
   };
 
   const handleChangeMediaShape = (
@@ -907,7 +916,7 @@ export default function PortfolioEditorShell({
 
       {/* Canvas area */}
       <section
-        className="h-[calc(100dvh-8rem)] justify-center items-center min-w-0 shadow-lg flex flex-col -mt-14 relative overflow-hidden"
+        className="h-[calc(100dvh-6.5rem)] justify-center items-center min-w-0 shadow-lg flex flex-col -mt-0 relative overflow-hidden"
         style={{
           backgroundColor: "var(--artist-background, #11100e)",
           color: "var(--artist-text, #faf7f2)",
@@ -936,7 +945,7 @@ export default function PortfolioEditorShell({
               layoutOverride={layoutOverride}
               onChangeTitle={handleChangePageTitle}
               onChangeDescription={handleChangePageDescription}
-              onChangeDescriptionBody={handleChangePageDescriptionBody}
+              onChangeDetails={handleChangePageDetails}
               onChangeImage={handleChangeImage}
               onChangeTitle2={handleChangeTitle2}
               onChangeDescription2={handleChangeDescription2}

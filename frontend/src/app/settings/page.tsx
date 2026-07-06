@@ -12,9 +12,10 @@ import HelpSection from "@/components/settings/HelpSection";
 import SecuritySection from "@/components/settings/SecuritySection";
 import ResumeSection from "@/components/settings/ResumeSection";
 import SavesSection from "@/components/settings/SavesSection";
+import AdminSection from "@/components/settings/AdminSection";
 import {
   type SettingsSection,
-  SETTINGS_MENU_ITEMS,
+  getSettingsMenuItems,
   SETTINGS_SECTION_LABELS,
   isSettingsSection,
 } from "@/components/settings/settingsSections";
@@ -54,6 +55,8 @@ export default function SettingsPage() {
     router.push("/login");
     return null;
   }
+
+  const menuItems = getSettingsMenuItems(user?.is_superuser);
 
   const handleCancel = () => {
     if (activeSection === "security" && securityResetRef.current) {
@@ -181,7 +184,7 @@ export default function SettingsPage() {
         <div className="lg:hidden flex-1 flex flex-col min-w-0">
           <div className={`flex-1 bg-[var(--background)] overflow-y-auto ${showMenu ? "" : "hidden"}`}>
             <ul className="pb-4">
-              {SETTINGS_MENU_ITEMS.map((item) => (
+              {menuItems.map((item) => (
                 <li key={item.id}>
                   <button
                     onClick={() => handleSelectSection(item.id)}
@@ -231,11 +234,18 @@ export default function SettingsPage() {
             <div className={activeSection === "help" ? "" : "hidden"}>
               <HelpSection />
             </div>
+            <div className={activeSection === "admin" ? "" : "hidden"}>
+              <AdminSection />
+            </div>
           </div>
         </div>
 
         <div className="hidden lg:flex flex-1 min-w-0">
-          <SettingsNav activeSection={activeSection} onSectionChange={setActiveSection} />
+          <SettingsNav
+            activeSection={activeSection}
+            onSectionChange={setActiveSection}
+            menuItems={menuItems}
+          />
           <div className="flex-1 bg-[var(--background)] min-w-0 overflow-y-auto">
             <div className={activeSection === "profile" ? "" : "hidden"}>
               <ProfileInformation
@@ -272,6 +282,9 @@ export default function SettingsPage() {
             </div>
             <div className={activeSection === "help" ? "" : "hidden"}>
               <HelpSection />
+            </div>
+            <div className={activeSection === "admin" ? "" : "hidden"}>
+              <AdminSection />
             </div>
           </div>
         </div>

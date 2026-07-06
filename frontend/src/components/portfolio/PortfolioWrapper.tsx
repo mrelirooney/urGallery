@@ -9,6 +9,7 @@ import PageRenderer, {
 } from "./PageRenderer";
 import PortfolioControls from "@/components/portfolio/PortfolioControls";
 import CommentsSection from "@/components/portfolio/CommentsSection";
+import { resolveLayout4Description } from "@/lib/portfolio/layoutLimits";
 import { useArtistScroll } from "@/components/artist/ArtistScrollContext";
 
 const API_BASE =
@@ -35,7 +36,7 @@ type ApiPage = {
   id: number;
   title: string;
   description: string;
-  description_body?: string;
+  details?: string;
   order: number;
   layout?: LayoutType | null;
   media_image: string | null;
@@ -224,13 +225,18 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
               }
             }
 
+            const layout = (page.layout || "layout-1") as LayoutType;
+
             return {
               id: page.id,
               title: page.title,
-              description: page.description,
-              descriptionBody: page.description_body ?? "",
+              description:
+                layout === "layout-4"
+                  ? resolveLayout4Description(page.description, page.details)
+                  : page.description,
+              details: layout === "layout-4" ? "" : (page.details ?? ""),
               // Fall back to your default layout if null/undefined
-              layoutType: (page.layout || "layout-1") as LayoutType,
+              layoutType: layout,
               mediaSrc,
               // Make live view respect saved media shape
               mediaShape: (page.media_shape || "1:1") as MediaShapeType,
@@ -642,6 +648,7 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
           onClose={() => setCommentsOpen(false)}
           artistSlug={artistSlug}
           portfolioSlug={slug}
+          isOwner={isOwner}
           customColors={customColors}
         />
 

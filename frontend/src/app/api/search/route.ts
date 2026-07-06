@@ -6,9 +6,11 @@ export async function GET(req: Request) {
   const q = searchParams.get("q") ?? "";
   if (!q) return NextResponse.json({ results: [] });
 
+  const limit = searchParams.get("limit") ?? "12";
+
   const base = process.env.DJANGO_BASE_URL || process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
   const normalizedBase = base.replace(/\/+$/, "").replace(/\/api$/, "");
-  const url = `${normalizedBase}/api/artists/search/?q=${encodeURIComponent(q)}`;
+  const url = `${normalizedBase}/api/artists/search/?q=${encodeURIComponent(q)}&limit=${encodeURIComponent(limit)}`;
 
   // Forward cookies from the client request to Django
   const cookieHeader = req.headers.get("cookie");

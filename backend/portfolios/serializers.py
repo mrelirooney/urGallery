@@ -27,7 +27,7 @@ class PageSummarySerializer(serializers.ModelSerializer):
             "id",
             "title",
             "description",
-            "description_body",
+            "details",
             "order",
             "layout",
             "media_image",
@@ -127,7 +127,7 @@ class PageEditorSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "description",
-            "description_body",
+            "details",
             "order",
             "layout",
             "media_shape",
@@ -170,7 +170,7 @@ class PageEditorInputSerializer(serializers.Serializer):
     id = serializers.CharField(required=False, allow_null=True, allow_blank=True)
     title = serializers.CharField(required=False, allow_blank=True)
     description = serializers.CharField(required=False, allow_blank=True)
-    description_body = serializers.CharField(required=False, allow_blank=True)
+    details = serializers.CharField(required=False, allow_blank=True, max_length=125)
     layout = serializers.CharField(required=False)
     media_shape = serializers.CharField(required=False)
     media_shape_2 = serializers.CharField(required=False, allow_blank=True)
@@ -270,8 +270,8 @@ class PortfolioEditorSaveSerializer(serializers.ModelSerializer):
                         page.title = page_data.get("title", "Untitled Page")
                     if "description" in page_data:
                         page.description = page_data.get("description", "")
-                    if "description_body" in page_data:
-                        page.description_body = page_data.get("description_body", "")
+                    if "details" in page_data:
+                        page.details = page_data.get("details", "")
                     if layout_value:
                         page.layout = layout_value
                     if "media_shape" in page_data:
@@ -294,7 +294,7 @@ class PortfolioEditorSaveSerializer(serializers.ModelSerializer):
                         draft_portfolio=instance,
                         title=page_data.get("title", "Untitled Page"),
                         description=page_data.get("description", ""),
-                        description_body=page_data.get("description_body", ""),
+                        details=page_data.get("details", ""),
                         layout=layout_value or "layout-1",
                         media_shape=media_shape_value,
                         media_shape_2=page_data.get("media_shape_2", "1:1"),
@@ -347,7 +347,7 @@ class PublicPageSummarySerializer(serializers.ModelSerializer):
             "id",
             "title",
             "description",
-            "description_body",
+            "details",
             "order",
             "layout",
             "media_image",
@@ -396,7 +396,7 @@ class PublicPageSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "description",
-            "description_body",
+            "details",
             "order",
             "layout",
             "media_image",
@@ -451,11 +451,27 @@ class CommentSerializer(serializers.ModelSerializer):
     author_display_name = serializers.SerializerMethodField()
     author_id = serializers.SerializerMethodField()
     author_avatar_url = serializers.SerializerMethodField()
+    is_portfolio_author = serializers.SerializerMethodField()
 
     class Meta:
         model = Comment
-        fields = ["id", "body", "author_id", "author_display_name", "author_avatar_url", "created_at"]
-        read_only_fields = ["id", "author_id", "author_display_name", "author_avatar_url", "created_at"]
+        fields = [
+            "id",
+            "body",
+            "author_id",
+            "author_display_name",
+            "author_avatar_url",
+            "is_portfolio_author",
+            "created_at",
+        ]
+        read_only_fields = [
+            "id",
+            "author_id",
+            "author_display_name",
+            "author_avatar_url",
+            "is_portfolio_author",
+            "created_at",
+        ]
 
     def get_author_display_name(self, obj):
         profile = getattr(obj.author, "profile", None)
@@ -465,6 +481,9 @@ class CommentSerializer(serializers.ModelSerializer):
 
     def get_author_id(self, obj):
         return obj.author_id
+
+    def get_is_portfolio_author(self, obj):
+        return obj.author_id == obj.portfolio.user_id
 
     def get_author_avatar_url(self, obj):
         from config.utils import build_media_url

@@ -308,7 +308,7 @@
 ## Portfolio Pages
 
 - **Page** / **DraftPage**:
-  - Text fields: `title`, `description`, `description_body`, `title_2`, `description_2`, `title_3`, `description_3`. Layouts use subsets of these.
+  - Text fields: `title` (Header), `description` (Description), `details` (Details — small supplementary text: location, date, credits), `title_2`, `description_2`, `title_3`, `description_3`. Layouts use subsets of these.
   - `order`, `layout` (enum; see Layout System).
   - `media_image`, `media_shape` (1:1, 9:16, 16:9, 4:5, 5:4), `media_image_2`, `media_shape_2`.
 - Pages ordered by `order`; `pages_count` auto-updated via signals.
@@ -469,9 +469,9 @@ Refer to the mockups in urGallery/frontend/public/mockups for visuals of how the
 | **Comment** | portfolio, user (author), body, created_at |
 | **SavedArtist** | user (saver), profile (saved), created_at |
 | **SavedPortfolio** | user (saver), portfolio (saved), created_at |
-| **Page** | portfolio, title, description, description_body, order, layout, media_image, media_shape, media_image_2, media_shape_2, title_2, description_2, title_3, description_3 |
+| **Page** | portfolio, title, description, details, order, layout, media_image, media_shape, media_image_2, media_shape_2, title_2, description_2, title_3, description_3 |
 | **DraftPortfolio** | user, slug, title, privacy, has_unpublished_changes |
-| **DraftPage** | draft_portfolio, title, description, description_body, order, layout, media_image, media_shape, media_image_2, media_shape_2, title_2, description_2, title_3, description_3 |
+| **DraftPage** | draft_portfolio, title, description, details, order, layout, media_image, media_shape, media_image_2, media_shape_2, title_2, description_2, title_3, description_3 |
 | **Theme** | key, name, version, is_active, svg_file, preview_image, css_vars_json |
 | **Media** | title, description, cover_image, file, external_url, owner |
 | **PageMedia** | page, media, order (M2M-style) |

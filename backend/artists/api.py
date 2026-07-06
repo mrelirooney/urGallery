@@ -13,6 +13,47 @@ from portfolios.models import Portfolio
 User = get_user_model()
 
 
+def _page_preview_url(request, page):
+    if not page:
+        return None
+    img = page.media_image or page.media_image_2
+    if not img:
+        return None
+    try:
+        return build_media_url(request, img.url)
+    except Exception:
+        return None
+
+
+def _portfolio_preview(request, portfolio):
+    if not portfolio:
+        return None, None, None
+    page = portfolio.cover_page
+    if page is None:
+        pages = sorted(portfolio.pages.all(), key=lambda p: p.order)
+        page = pages[0] if pages else None
+    return (
+        portfolio.slug,
+        portfolio.title or "",
+        _page_preview_url(request, page),
+    )
+
+
+def _primary_public_portfolios_by_user(user_ids):
+    """First public portfolio per user, ordered by order_index then id."""
+    portfolios = (
+        Portfolio.objects.filter(user_id__in=user_ids, privacy="public")
+        .select_related("cover_page")
+        .prefetch_related("pages")
+        .order_by("user_id", "order_index", "id")
+    )
+    by_user = {}
+    for portfolio in portfolios:
+        if portfolio.user_id not in by_user:
+            by_user[portfolio.user_id] = portfolio
+    return by_user
+
+
 # -----------------------------
 # /api/artists/search/?q=<term>
 # -----------------------------
@@ -25,6 +66,12 @@ def search_artists(request):
     q = (request.GET.get("q") or "").strip()
     if not q:
         return Response({"results": []})
+
+    try:
+        limit = int(request.GET.get("limit") or 12)
+    except (TypeError, ValueError):
+        limit = 12
+    limit = max(1, min(limit, 50))
 
     q_slug = q.replace(" ", "-").lower()
 
@@ -76,8 +123,10 @@ def search_artists(request):
             .select_related("profile")
             .distinct()
             .annotate(relevance_score=relevance, _effective_name=effective_name)
-            .order_by("-relevance_score", "_effective_name")[:12]
+            .order_by("-relevance_score", "_effective_name")[:limit]
         )
+
+        portfolio_by_user = _primary_public_portfolios_by_user([u.id for u in rows])
 
         results = []
         for user in rows:
@@ -122,6 +171,11 @@ def search_artists(request):
                     else:
                         avatar_url = build_media_url(request, s3_key) if s3_key else ""
             
+            portfolio = portfolio_by_user.get(user.id)
+            portfolio_slug, portfolio_title, preview_image_url = _portfolio_preview(
+                request, portfolio
+            )
+
             # Only add if we have at least a display_name or slug
             if display_name or slug:
                 results.append({
@@ -130,6 +184,9 @@ def search_artists(request):
                     "title": title,
                     "location": location,
                     "avatar_url": avatar_url,
+                    "portfolio_slug": portfolio_slug,
+                    "portfolio_title": portfolio_title,
+                    "preview_image_url": preview_image_url,
                 })
         
         return Response({"results": results})

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
+import { mapSearchResults } from "@/lib/search/mapResults";
 import type { SearchResult } from "@/lib/search/types";
 
 type State = {
@@ -22,7 +23,7 @@ export function useSearch() {
     setState((s) => ({ ...s, results: [], error: null }));
   }, []);
 
-  const run = useCallback(async (q: string) => {
+  const run = useCallback(async (q: string, limit = 12) => {
     if (abortRef.current) abortRef.current.abort();
     const ac = new AbortController();
     abortRef.current = ac;
@@ -30,27 +31,14 @@ export function useSearch() {
     setState((s) => ({ ...s, loading: true, error: null }));
 
     try {
-      // Call your Next proxy, which calls Django
-      const r = await fetch(`/api/search?q=${encodeURIComponent(q)}`, {
-        signal: ac.signal,
-        cache: "no-store",
-      });
+      const r = await fetch(
+        `/api/search?q=${encodeURIComponent(q)}&limit=${limit}`,
+        { signal: ac.signal, cache: "no-store" },
+      );
 
       if (!r.ok) throw new Error(`Search failed: ${r.status}`);
       const data = await r.json();
-
-      // 🔑 Map Django response -> SearchResult[]
-      // Django returns: { results: [{ slug, display_name, title, location, avatar_url }] }
-      const mapped: SearchResult[] = (data.results ?? []).map((a: any) => ({
-        id: a.slug ?? a.username ?? a.display_name,      // unique key
-        name: a.display_name ?? a.username ?? a.slug,    // display name
-        blurb: a.username ? `@${a.username}` : "",
-        slug: a.slug,
-        username: a.username,
-        avatar_url: a.avatar_url,
-        title: a.title ?? null,
-        location: a.location ?? null,
-      }));
+      const mapped = mapSearchResults(data.results ?? []);
 
       setState({ loading: false, error: null, results: mapped });
     } catch (err: any) {

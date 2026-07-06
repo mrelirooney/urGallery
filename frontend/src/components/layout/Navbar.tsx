@@ -66,6 +66,7 @@ export default function Navbar() {
   
   const isConstrainedLayout =
     pathname === "/" ||
+    pathname?.startsWith("/search") ||
     pathname?.startsWith("/login") ||
     pathname?.startsWith("/signup") ||
     pathname?.startsWith("/forgot-password") ||
@@ -78,15 +79,12 @@ export default function Navbar() {
     pathname === "/terms" ||
     pathname === "/privacy" ||
     pathname === "/help";
-  // Check if we're on any artist page (profile, portfolio, or portfolio/edit)
-  const isArtistPage = pathname && 
-  pathname !== '/' &&
-  !pathname.startsWith('/login') &&
-  !pathname.startsWith('/signup') &&
-  !pathname.startsWith('/settings') &&
-  !pathname.startsWith('/saves') &&
-  !pathname.startsWith('/sandbox') &&
-  /^\/[^\/]+(\/[^\/]+)*$/.test(pathname);
+  // Artist profile, portfolio, or portfolio/edit — not app routes like /search or /about
+  const isArtistPage = Boolean(
+    pathname &&
+      !isConstrainedLayout &&
+      /^\/[^/]+(\/[^/]+)*$/.test(pathname),
+  );
   const isSavesPage = pathname === "/saves";
   const hideNavbar =
   pathname?.startsWith("/portfolio-test") ||      // dev editor route

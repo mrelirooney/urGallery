@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { useSystemSurfaceColors } from "@/hooks/useSystemSurfaceColors";
-import { hexToRgba } from "@/lib/colorUtils";
+import { getTextColorForBackground, hexToRgba } from "@/lib/colorUtils";
 import { Trash2, X, Send } from "lucide-react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "";
@@ -29,6 +29,7 @@ type Comment = {
   author_id: number;
   author_display_name: string;
   author_avatar_url: string | null;
+  is_portfolio_author: boolean;
   created_at: string;
 };
 
@@ -37,6 +38,7 @@ type CommentsSectionProps = {
   onClose: () => void;
   artistSlug: string;
   portfolioSlug: string;
+  isOwner?: boolean;
   customColors?: {
     background: string;
     foreground: string;
@@ -45,11 +47,124 @@ type CommentsSectionProps = {
   };
 };
 
+type CommentBubbleProps = {
+  comment: Comment;
+  isOwn: boolean;
+  profileBg: string;
+  foreground: string;
+  surface: string;
+  canDelete: boolean;
+  onDelete: (id: number) => void;
+};
+
+function CommentBubble({
+  comment,
+  isOwn,
+  profileBg,
+  foreground,
+  surface,
+  canDelete,
+  onDelete,
+}: CommentBubbleProps) {
+  const bubbleBg = isOwn ? profileBg : hexToRgba(foreground, 0.25);
+  const bubbleText = isOwn
+    ? getTextColorForBackground(profileBg)
+    : getTextColorForBackground(foreground);
+  const metaColor = bubbleText;
+  const avatarSrc = buildAvatarUrl(comment.author_avatar_url);
+
+  const bubbleStyle = {
+    backgroundColor: bubbleBg,
+    color: bubbleText,
+  };
+
+  const metaRow = (
+    <p
+      className={`text-xs mt-1.5 ${isOwn ? "text-right" : "text-left"}`}
+      style={{ color: metaColor }}
+    >
+      {comment.author_display_name}
+      {comment.is_portfolio_author && (
+        <>
+          {" "}
+          - <strong>Author</strong>
+        </>
+      )}
+    </p>
+  );
+
+  return (
+    <div className={`group flex w-full ${isOwn ? "justify-end" : "justify-start"}`}>
+      <div className={`relative max-w-[90%] md:max-w-[85%] ${isOwn ? "pl-8" : "pr-8"}`}>
+        {canDelete && (
+          <button
+            type="button"
+            onClick={() => onDelete(comment.id)}
+            className={`absolute top-0 p-1 rounded-xs opacity-0 group-hover:opacity-70 hover:!opacity-100 transition z-10 ${
+              isOwn ? "left-0" : "right-0"
+            }`}
+            style={{ color: foreground }}
+            aria-label="Delete comment"
+          >
+            <Trash2 size={14} />
+          </button>
+        )}
+
+        {/* Tablet / desktop: avatar beside bubble */}
+        <div className={`hidden md:flex gap-2.5 ${isOwn ? "flex-row-reverse" : "flex-row"}`}>
+          <img
+            src={avatarSrc}
+            alt=""
+            className="h-9 w-9 shrink-0 rounded-full object-cover border self-start"
+            style={{ borderColor: hexToRgba(foreground, 0.25) }}
+          />
+          <div className={`min-w-0 ${isOwn ? "items-end" : "items-start"} flex flex-col`}>
+            <div
+              className="px-3 py-2 rounded-xs text-sm whitespace-pre-wrap break-words"
+              style={bubbleStyle}
+            >
+              {comment.body}
+            </div>
+            {metaRow}
+          </div>
+        </div>
+
+        {/* Phone: avatar overlaps bottom corner of bubble */}
+        <div className="md:hidden">
+          <div
+            className="px-3 py-2 rounded-xs text-sm whitespace-pre-wrap break-words"
+            style={bubbleStyle}
+          >
+            {comment.body}
+          </div>
+          <div
+            className={`flex items-end gap-2 -mt-3 relative z-10 ${
+              isOwn ? "flex-row-reverse justify-end" : "flex-row justify-start"
+            }`}
+          >
+            <img
+              src={avatarSrc}
+              alt=""
+              className="h-8 w-8 shrink-0 rounded-full object-cover border"
+              style={{
+                borderColor: hexToRgba(foreground, 0.25),
+                backgroundColor: surface,
+              }}
+            />
+            <div className={`pb-0.5 ${isOwn ? "text-right" : "text-left"}`}>{metaRow}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function CommentsSection({
   isOpen,
   onClose,
   artistSlug,
   portfolioSlug,
+  isOwner = false,
   customColors,
 }: CommentsSectionProps) {
   const { user, loading: authLoading } = useAuth();
@@ -69,7 +184,7 @@ export default function CommentsSection({
     const ta = textareaRef.current;
     if (!ta) return;
     ta.style.height = "auto";
-    ta.style.height = `${Math.min(ta.scrollHeight, 96)}px`;
+    ta.style.height = `${Math.min(ta.scrollHeight, 120)}px`;
   }, [body]);
 
   const { surface, foreground } = useSystemSurfaceColors();
@@ -106,7 +221,6 @@ export default function CommentsSection({
     fetchComments();
   }, [fetchComments]);
 
-  // Scroll to bottom (newest) when comments load or change
   useEffect(() => {
     if (!loading && scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -133,7 +247,6 @@ export default function CommentsSection({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen, onClose]);
 
-  // Lock page scroll when comments open (overflow: hidden avoids breaking fixed compact profile)
   useEffect(() => {
     if (isOpen) {
       document.documentElement.style.overflow = "hidden";
@@ -148,9 +261,9 @@ export default function CommentsSection({
     };
   }, [isOpen]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user || !body.trim()) return;
+  const handleSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!user || !body.trim() || submitting) return;
     setSubmitting(true);
     setError(null);
     try {
@@ -174,7 +287,7 @@ export default function CommentsSection({
         const data = await res.json().catch(() => ({}));
         setError(data.detail || data.body?.[0] || "Failed to post comment.");
       }
-    } catch (err) {
+    } catch {
       setError("Failed to post comment.");
     } finally {
       setSubmitting(false);
@@ -203,9 +316,12 @@ export default function CommentsSection({
   };
 
   const canDelete = (c: Comment) =>
-    user && String(user.id) === String(c.author_id);
+    Boolean(
+      user &&
+        (String(user.id) === String(c.author_id) || isOwner)
+    );
 
-  const displayComments = [...comments]; // chronological: oldest first, newest at bottom
+  const displayComments = [...comments].reverse();
 
   const overlay = (
     <>
@@ -219,13 +335,16 @@ export default function CommentsSection({
 
       <div
         ref={panelRef}
-        className={`fixed right-0 top-0 bottom-0 w-full sm:w-[400px] h-screen flex flex-col
+        className={`fixed right-0 top-0 bottom-0 w-full md:w-[65%] lg:w-[400px] h-screen flex flex-col
           shadow-xl z-[100] transform transition-transform duration-300 ease-in-out
           ${isOpen ? "translate-x-0" : "translate-x-full"}
         `}
         style={{ backgroundColor: surface }}
       >
-        <div className="flex items-center justify-between px-4 py-4 border-b shrink-0" style={{ borderColor: hexToRgba(foreground, 0.15) }}>
+        <div
+          className="flex items-center justify-between px-4 py-4 border-b shrink-0"
+          style={{ borderColor: hexToRgba(foreground, 0.15) }}
+        >
           <h3 className="text-lg font-semibold" style={{ color: foreground }}>
             Comments
           </h3>
@@ -240,11 +359,17 @@ export default function CommentsSection({
         </div>
 
         {authLoading ? (
-          <div className="flex-1 flex items-center justify-center px-4" style={{ color: hexToRgba(foreground, 0.6) }}>
+          <div
+            className="flex-1 flex items-center justify-center px-4"
+            style={{ color: hexToRgba(foreground, 0.6) }}
+          >
             Loading…
           </div>
         ) : !user ? (
-          <div className="flex-1 flex items-center justify-center px-4 text-center" style={{ color: foreground }}>
+          <div
+            className="flex-1 flex items-center justify-center px-4 text-center"
+            style={{ color: foreground }}
+          >
             <p className="text-sm">
               <Link href="/login" className="underline font-medium" style={{ color: accent }}>
                 Sign in
@@ -264,7 +389,7 @@ export default function CommentsSection({
                   background: `linear-gradient(to bottom, ${surface} 0%, transparent 100%)`,
                 }}
               />
-              <div className="mt-auto px-4 py-4 space-y-4">
+              <div className="mt-auto px-4 py-4 space-y-5">
                 {loading ? (
                   <p className="text-sm" style={{ color: hexToRgba(foreground, 0.6) }}>
                     Loading comments…
@@ -275,61 +400,43 @@ export default function CommentsSection({
                   </p>
                 ) : (
                   displayComments.map((c) => (
-                    <div key={c.id} className="flex gap-3">
-                      <div className="shrink-0">
-                        <img
-                          src={buildAvatarUrl(c.author_avatar_url)}
-                          alt=""
-                          className="h-9 w-9 rounded-full object-cover border"
-                          style={{ borderColor: hexToRgba(foreground, 0.25) }}
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium" style={{ color: foreground }}>
-                          {c.author_display_name}
-                        </p>
-                        <p className="text-sm mt-0.5 whitespace-pre-wrap break-words" style={{ color: hexToRgba(foreground, 0.8) }}>
-                          {c.body}
-                        </p>
-                        <p className="text-xs mt-1" style={{ color: hexToRgba(foreground, 0.6) }}>
-                          {new Date(c.created_at).toLocaleDateString(undefined, {
-                            month: "short",
-                            day: "numeric",
-                            hour: "numeric",
-                            minute: "2-digit",
-                          })}
-                        </p>
-                      </div>
-                      {canDelete(c) && (
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(c.id)}
-                          className="shrink-0 p-1.5 rounded-xs opacity-70 hover:opacity-100 transition"
-                          style={{ color: foreground }}
-                          aria-label="Delete comment"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      )}
-                    </div>
+                    <CommentBubble
+                      key={c.id}
+                      comment={c}
+                      isOwn={String(user.id) === String(c.author_id)}
+                      profileBg={profileBg}
+                      foreground={foreground}
+                      surface={surface}
+                      canDelete={canDelete(c)}
+                      onDelete={handleDelete}
+                    />
                   ))
                 )}
               </div>
             </div>
 
-            <div className="shrink-0 p-4 border-t" style={{ borderColor: hexToRgba(foreground, 0.15) }}>
-              <form onSubmit={handleSubmit} className="flex gap-2">
+            <div
+              className="shrink-0 p-4 border-t"
+              style={{ borderColor: hexToRgba(foreground, 0.15) }}
+            >
+              <form onSubmit={handleSubmit} className="flex gap-2 items-end">
                 <textarea
                   ref={textareaRef}
                   value={body}
                   onChange={(e) => setBody(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      void handleSubmit();
+                    }
+                  }}
                   placeholder="Add a comment…"
                   rows={1}
-                  className="flex-1 min-h-[40px] max-h-[96px] px-3 py-2 rounded-xs resize-none overflow-y-auto focus:outline-none focus:ring-2 focus:ring-offset-0 text-sm"
+                  className="flex-1 min-h-[40px] max-h-[120px] px-3 py-2 rounded-xs resize-none overflow-y-auto focus:outline-none focus:ring-2 focus:ring-offset-0 text-sm"
                   style={{
-                    backgroundColor: hexToRgba(foreground, 0.08),
+                    backgroundColor: "transparent",
                     color: foreground,
-                    border: `1px solid ${hexToRgba(foreground, 0.2)}`,
+                    border: `1px solid ${accent}`,
                   }}
                   disabled={submitting}
                 />
@@ -338,8 +445,12 @@ export default function CommentsSection({
                   disabled={submitting || !body.trim()}
                   className="shrink-0 p-2 rounded-xs transition disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{
-                    backgroundColor: sendHovered && !submitting && body.trim() ? accent : "transparent",
-                    color: sendHovered && !submitting && body.trim() ? "var(--artist-accent-text, #faf7f2)" : foreground,
+                    backgroundColor:
+                      sendHovered && !submitting && body.trim() ? accent : "transparent",
+                    color:
+                      sendHovered && !submitting && body.trim()
+                        ? "var(--artist-accent-text, #faf7f2)"
+                        : foreground,
                   }}
                   onMouseEnter={() => setSendHovered(true)}
                   onMouseLeave={() => setSendHovered(false)}
@@ -348,9 +459,7 @@ export default function CommentsSection({
                   <Send size={18} />
                 </button>
               </form>
-              {error && (
-                <p className="text-sm text-red-500 mt-2">{error}</p>
-              )}
+              {error && <p className="text-sm text-red-500 mt-2">{error}</p>}
             </div>
           </>
         )}

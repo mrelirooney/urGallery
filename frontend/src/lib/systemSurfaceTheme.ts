@@ -19,6 +19,20 @@ export function getSystemSurfaceColors(prefersDark: boolean): SystemSurfaceColor
   };
 }
 
+/** Pattern fill/stroke: off-black on light surfaces, off-white on dark (matches text contrast). */
+export function getThemePatternColorOverrides(surfaceHex: string): {
+  "--artist-background": string;
+  "--artist-accent": string;
+  "--artist-text": string;
+} {
+  const patternColor = getSurfaceGlowColor(surfaceHex);
+  return {
+    "--artist-background": patternColor,
+    "--artist-accent": patternColor,
+    "--artist-text": patternColor,
+  };
+}
+
 /** Soft glow on panel edges: off-black on light surfaces, off-white on dark surfaces */
 export function getSurfaceGlowColor(surface: string): string {
   return isLightColor(surface) ? SURFACE_OFF_BLACK : SURFACE_OFF_WHITE;

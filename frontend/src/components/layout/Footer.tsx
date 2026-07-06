@@ -58,17 +58,28 @@ export default function Footer() {
     return () => observer.disconnect();
   }, [pathname]);
 
-  const hideFooterBorder =
+  const isConstrainedLayout =
     pathname === "/" ||
+    pathname?.startsWith("/search") ||
     pathname?.startsWith("/login") ||
-    pathname?.startsWith("/signup");
-  const isArtistPage = pathname &&
-    pathname !== '/' &&
-    !pathname.startsWith('/login') &&
-    !pathname.startsWith('/signup') &&
-    !pathname.startsWith('/settings') &&
-    !pathname.startsWith('/sandbox') &&
-    /^\/[^/]+(\/[^/]+)*$/.test(pathname);
+    pathname?.startsWith("/signup") ||
+    pathname?.startsWith("/forgot-password") ||
+    pathname?.startsWith("/reset-password") ||
+    pathname?.startsWith("/settings") ||
+    pathname?.startsWith("/saves") ||
+    pathname?.startsWith("/sandbox") ||
+    pathname?.startsWith("/svg-layout-test") ||
+    pathname === "/about" ||
+    pathname === "/terms" ||
+    pathname === "/privacy" ||
+    pathname === "/help";
+  const hideFooterBorder =
+    isConstrainedLayout;
+  const isArtistPage = Boolean(
+    pathname &&
+      !isConstrainedLayout &&
+      /^\/[^/]+(\/[^/]+)*$/.test(pathname),
+  );
 
   const frostedCtx = useFrostedGlassHover();
   const artistScroll = useArtistScroll();
@@ -97,7 +108,7 @@ export default function Footer() {
     isEditorPage && customColors
       ? getTextColorForBackground(footerBg)
       : isArtistPage && customColors
-        ? (isFrostedHovered ? "#faf7f2" : baseTextColor)
+        ? (isFrostedHovered ? getTextColorForBackground(footerBg) : baseTextColor)
         : (customColors?.text || "#6b7280");
   const footerAccent = customColors?.accent || "#c96a4a";
   const bgForBorder = portfolioBg ?? customColors?.background ?? "#faf7f2";

@@ -17,6 +17,7 @@ import ThemePatternLayer from "../../components/artist/ThemePatternLayer";
 import EmptyPortfolioMessage from "@/components/artist/EmptyPortfolioMessage";
 import ScrollToPortfolioOnLoad from "@/components/artist/ScrollToPortfolioOnLoad";
 import { getTextColorForBackground } from "@/lib/colorUtils";
+import { getThemePatternColorOverrides } from "@/lib/systemSurfaceTheme";
 import CompactProfileBar from "@/components/artist/CompactProfileBar";
 
 type RouteParams = { slug: string };
@@ -151,11 +152,7 @@ export default async function ArtistPage(
           {profile?.theme?.svg_url && (
             <ThemePatternLayer
               svgUrl={profile.theme.svg_url}
-              colorOverrides={{
-                "--artist-background": customColors.accent,
-                "--artist-accent": customColors.accent,
-                "--artist-text": customColors.accent,
-              }}
+              colorOverrides={getThemePatternColorOverrides(customColors.background)}
             />
           )}
           {/* Banner Image - Full width, outside container */}
@@ -242,11 +239,7 @@ export default async function ArtistPage(
             {profile?.theme?.svg_url ? (
               <ThemePatternLayer
                 svgUrl={profile?.theme?.svg_url ?? ""}
-                colorOverrides={{
-                  "--artist-background": customColors.accent,
-                  "--artist-accent": customColors.accent,
-                  "--artist-text": customColors.accent,
-                }}
+                colorOverrides={getThemePatternColorOverrides(customColors.text)}
               />
             ) : null}
             <div className="flex-1 flex flex-col min-h-0 w-full max-w-6xl xl:max-w-7xl xl-lg:max-w-[1600px] 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-16 2xl:px-20 relative z-10">

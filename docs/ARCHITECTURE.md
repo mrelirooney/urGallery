@@ -162,7 +162,7 @@ Route: `/{artist_slug}/{portfolio_slug}/edit`. Shell: `PortfolioEditorShell.tsx`
 | **User** | email, first_name, last_name, display_name, title, location, bio, avatar |
 | **Profile** | user (1:1), slug, tier (free\|pro\|premium), display_name, title, location, bio, default_avatar, avatar_s3_key, banner_image, resume_file, social URLs, contact_order, color fields, font_family, theme |
 | **Portfolio** | user, title, slug, privacy, password (hashed, for private), order_index, pages_count, cover_page |
-| **Page** | portfolio, title, description, description_body, order, layout, media_image, media_shape, media_image_2, media_shape_2, title_2, description_2, title_3, description_3 |
+| **Page** | portfolio, title, description, details, order, layout, media_image, media_shape, media_image_2, media_shape_2, title_2, description_2, title_3, description_3 |
 | **DraftPortfolio** | user, slug, title, privacy, has_unpublished_changes |
 | **DraftPage** | draft_portfolio, (same fields as Page) |
 | **Comment** | portfolio, author (user), body, created_at |

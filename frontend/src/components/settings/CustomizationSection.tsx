@@ -5,8 +5,9 @@ import { useAuth } from "@/hooks/useAuth";
 import ThemePatternLayer from "../artist/ThemePatternLayer";
 import GoogleFontsLoader from "../artist/GoogleFontsLoader";
 import GoogleFontsAllLoader from "../artist/GoogleFontsAllLoader";
-import { GOOGLE_FONTS, DEFAULT_FONT_FAMILY } from "@/lib/constants";
+import { GOOGLE_FONTS, DEFAULT_FONT_FAMILY, THEME_PATTERN_OPACITY } from "@/lib/constants";
 import { getTextColorForBackground } from "@/lib/colorUtils";
+import { getThemePatternColorOverrides } from "@/lib/systemSurfaceTheme";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "";
 
@@ -219,20 +220,15 @@ export default function CustomizationSection({ onSaveRef }: CustomizationSection
 
   const profileText = getTextColorForBackground(colors.background);
   const portfolioText = getTextColorForBackground(colors.text);
+  const accentText = getTextColorForBackground(colors.accent);
+  const PLACEHOLDER_GREY = "rgb(130, 130, 130)";
+  const previewCardClass =
+    "relative overflow-hidden border border-neutral-200 dark:border-neutral-700 rounded-xs w-full h-[200px]";
+  const previewPortfolioCardClass =
+    "relative overflow-hidden border border-neutral-200 dark:border-neutral-700 rounded-xs w-full h-[160px]";
 
-  // Profile preview: Color #1 bg, accent for pattern
-  const profileThemeOverrides = {
-    "--artist-background": colors.accent,
-    "--artist-accent": colors.accent,
-    "--artist-text": colors.accent,
-  };
-
-  // Portfolio preview: Color #2 bg, accent for pattern
-  const portfolioThemeOverrides = {
-    "--artist-background": colors.accent,
-    "--artist-accent": colors.accent,
-    "--artist-text": colors.accent,
-  };
+  const profileThemeOverrides = getThemePatternColorOverrides(colors.background);
+  const portfolioThemeOverrides = getThemePatternColorOverrides(colors.text);
 
   // Use hovered font for preview when hovering, otherwise selected font
   const previewFont = hoveredFont ?? selectedFont;
@@ -442,95 +438,112 @@ export default function CustomizationSection({ onSaveRef }: CustomizationSection
 
       {/* Right side - Preview (hidden on mobile per wireframe) */}
       <div className="hidden lg:block w-[400px] pt-8 pr-0 pl-12 overflow-y-auto bg-[var(--background)]">
-        <div className="sticky top-0">         
+        <div className="sticky top-0">
           {/* Profile preview card */}
-          <div
-            className="relative overflow-hidden border border-neutral-200 dark:border-neutral-700 rounded-xs"
-            style={{ backgroundColor: colors.background }}
-          >
+          <div className={previewCardClass} style={{ backgroundColor: colors.background }}>
             {absoluteSvgUrl && (
               <ThemePatternLayer
                 svgUrl={absoluteSvgUrl}
                 colorOverrides={profileThemeOverrides}
-                opacity={0.02}
+                opacity={THEME_PATTERN_OPACITY}
               />
             )}
-            <div className="relative z-10 p-6 pr-5 pl-5" style={{ fontFamily: previewFontFamily }}>
-              <div 
-                className="w-20 h-20 rounded-full mb-4 flex items-center justify-center"
-                style={{ backgroundColor: "rgb(130, 130, 130)" }}
-              >
-              </div>
-              <h1 
-                className="text-2xl font-bold mb-2"
-                style={{ color: profileText }}
-              >
+            <div
+              className="relative z-10 h-full p-4 flex flex-col justify-start"
+              style={{ fontFamily: previewFontFamily }}
+            >
+              <div
+                className="w-20 h-20 aspect-square rounded-full mb-2.5 shrink-0 transition-colors duration-150"
+                style={{ backgroundColor: PLACEHOLDER_GREY }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = colors.accent;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = PLACEHOLDER_GREY;
+                }}
+              />
+              <h1 className="text-[20px] font-bold mb-1 shrink-0" style={{ color: profileText }}>
                 Your Name
               </h1>
-              <p 
-                className="text-sm mb-4"
-                style={{ color: profileText }}
-              >
-                Title • Location • Contact
+              <p className="text-sm mb-1 shrink-0" style={{ color: profileText }}>
+                Title • Location •{" "}
+                <span
+                  className="rounded-xs px-1 py-0.5 transition-colors duration-150"
+                  style={{ color: profileText }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = colors.accent;
+                    e.currentTarget.style.color = accentText;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                    e.currentTarget.style.color = profileText;
+                  }}
+                >
+                  Contact
+                </span>
               </p>
-              <p 
-                className="text-sm leading-relaxed"
-                style={{ color: profileText }}
-              >
-                Customize bold, quirky visuals and text to match your exact vibe. Jump beyond basic design.
+              <p className="text-sm leading-snug line-clamp-2" style={{ color: profileText }}>
+                Your bio goes here
               </p>
             </div>
           </div>
 
-          {/* Portfolio preview card */}
+          {/* Portfolio preview card — layout-2 miniature */}
           <div
-            className="relative overflow-hidden mt-4 z-[5] border border-neutral-200 dark:border-neutral-700 rounded-xs"
+            className={`${previewPortfolioCardClass} mt-4`}
             style={{ backgroundColor: colors.text }}
           >
             {absoluteSvgUrl && (
               <ThemePatternLayer
                 svgUrl={absoluteSvgUrl}
                 colorOverrides={portfolioThemeOverrides}
-                opacity={0.02}
+                opacity={THEME_PATTERN_OPACITY}
               />
             )}
-            {/* Semi-transparent gradient overlay so pattern shows through */}
             <div
-              className="absolute inset-0 z-[5] pointer-events-none"
-              style={{
-                background: `linear-gradient(to right, ${colors.accent} 17.5%, ${colors.text} 17.5%)`,
-                opacity: .92,
-              }}
-            />
-            <div className="relative z-10 p-5 flex flex-col gap-4" style={{ fontFamily: previewFontFamily }}>
-              <div className="flex flex-row gap-2">
-                <div 
-                  className="w-38 h-20 z-10 mb-4 flex items-center justify-center"
-                  style={{ 
-                    backgroundColor: colors.accent,
-                    boxShadow: `0 0 0 5px ${colors.accent}`,
-                   }}
-                >
-                </div>
-                <div className="pl-2">
-                  <h1 
-                    className="text-2xl font-bold mb-2"
-                    style={{ color: portfolioText }}
-                  >
+              className="relative z-10 flex h-full min-h-0 pl-4 items-center gap-2"
+              style={{ fontFamily: previewFontFamily }}
+            >
+              <div
+                className="w-20 h-28 shrink-0 rounded-xs transition-colors duration-150"
+                style={{ backgroundColor: PLACEHOLDER_GREY }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = colors.accent;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = PLACEHOLDER_GREY;
+                }}
+              />
+              <div className="flex-1 min-w-0 h-28 flex flex-col justify-between py-0.5 pr-2">
+                <div className="min-w-0">
+                  <h1 className="text-[20px] font-bold leading-tight mb-2" style={{ color: portfolioText }}>
                     Your Portfolio
                   </h1>
-                  <p 
-                    className="text-sm mb-4"
-                    style={{ color: portfolioText }}
+                  <p
+                    className="text-sm leading-tight line-clamp-2 border-y-4 py-2"
+                    style={{ color: portfolioText, borderColor: colors.accent }}
                   >
-                    This is how your portfolio will look with these colors. 
+                    This is how your portfolio will look with these colors.
                   </p>
-                  <p 
-                    className="text-sm text-right"
-                    style={{ color: portfolioText }}
-                  >
-                    1 2 3 4 5 6 7 8 9 10 
-                  </p>          
+                </div>
+                <div className="flex flex-wrap justify-end gap-px shrink-0">
+                  {Array.from({ length: 10 }, (_, i) => i + 1).map((page) => (
+                    <span
+                      key={page}
+                      className="inline-flex items-center justify-center min-w-[1rem] rounded-xs px-0.5 text-[11px] leading-none transition-colors duration-150"
+                      style={{ color: portfolioText }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = colors.accent;
+                        e.currentTarget.style.color = accentText;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = "transparent";
+                        e.currentTarget.style.color = portfolioText;
+                      }}
+                    >
+                      {page}
+                    </span>
+                  ))}
                 </div>
               </div>
             </div>

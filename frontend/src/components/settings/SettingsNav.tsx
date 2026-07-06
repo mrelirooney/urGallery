@@ -1,19 +1,21 @@
 "use client";
 
 import type { SettingsSection } from "./settingsSections";
-import { SETTINGS_MENU_ITEMS } from "./settingsSections";
+
+type MenuItem = { id: SettingsSection; label: string };
 
 type Props = {
   activeSection: SettingsSection;
   onSectionChange: (section: SettingsSection) => void;
+  menuItems: MenuItem[];
 };
 
-export default function SettingsNav({ activeSection, onSectionChange }: Props) {
+export default function SettingsNav({ activeSection, onSectionChange, menuItems }: Props) {
   return (
     <div className="flex h-screen overflow-hidden bg-[var(--background)] text-[var(--foreground)]">
       <nav className="lg:w-[20%] xl:w-[5%] border-r border-neutral-200 dark:border-neutral-800 bg-[var(--background)] flex-1 overflow-y-auto">
         <ul className="py-4">
-          {SETTINGS_MENU_ITEMS.map((item) => (
+          {menuItems.map((item) => (
             <li key={item.id}>
               <button
                 onClick={() => onSectionChange(item.id)}

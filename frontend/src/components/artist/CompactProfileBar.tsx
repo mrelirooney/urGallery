@@ -24,7 +24,7 @@ export default function CompactProfileBar({
   const baseTextColor = portfolioBackground
     ? getTextColorForBackground(portfolioBackground)
     : profileText;
-  const textColor = isFrostedHovered ? "#faf7f2" : baseTextColor;
+  const textColor = isFrostedHovered ? profileText : baseTextColor;
   const bgForBorder = portfolioBackground ?? profileBackground;
   const borderOpacity = isLightColor(bgForBorder) ? 0.3 : 0.1;
 
