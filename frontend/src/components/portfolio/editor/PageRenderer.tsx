@@ -4,6 +4,8 @@ import React, { useRef } from "react";
 import { getTextColorForBackground } from "@/lib/colorUtils";
 import { LAYOUT_14_LIMITS, LAYOUT_15_LIMITS, UNIVERSAL_LAYOUT_LIMITS } from "@/lib/portfolio/layoutLimits";
 import {
+  LAYOUT_1_TITLE_FIELD_CLASS,
+  LAYOUT_1_DESCRIPTION_FIELD_CLASS,
   LAYOUT_2_OVERLAY_TEXTAREA_CLASS,
   LAYOUT_3_TEXT_COLUMN_CLASS,
   LAYOUT_3_TEXT_OVERLAY_CLASS,
@@ -118,17 +120,17 @@ export default function PageRenderer({
 
   // layout-1: Fixed frame – two equal panels, text left, image right (laptop)
   const portfolioBg = customColors?.text ?? "#11100e";
+  const accentHex = customColors?.accent || "#c96a4a";
   const headerStyle = {
     color: getTextColorForBackground(portfolioBg),
-    borderTop: "2px solid currentColor",
-    borderBottom: "2px solid currentColor",
-    paddingTop: "0.5rem",
-    paddingBottom: "0.5rem",
+    borderTop: `6px solid ${accentHex}`,
+    borderBottom: `6px solid ${accentHex}`,
+    borderRadius: 0,
   };
 
   const headerEl = (
     <textarea
-      className={`${PORTFOLIO_EDITOR_TITLE_TEXTAREA_CLASS} portfolio-header-massive text-center`}
+      className={`${PORTFOLIO_EDITOR_TITLE_TEXTAREA_CLASS} ${LAYOUT_1_TITLE_FIELD_CLASS} portfolio-header-massive text-center rounded-none`}
       style={headerStyle}
       value={title}
       maxLength={UNIVERSAL_LAYOUT_LIMITS.title}
@@ -140,11 +142,10 @@ export default function PageRenderer({
     />
   );
 
-  const accentHex = customColors?.accent || "#c96a4a";
   const accentTextColor = getTextColorForBackground(accentHex);
   const bodyContent = (
     <textarea
-      className={PORTFOLIO_EDITOR_DESCRIPTION_TEXTAREA_CLASS}
+      className={`${PORTFOLIO_EDITOR_DESCRIPTION_TEXTAREA_CLASS} ${LAYOUT_1_DESCRIPTION_FIELD_CLASS}`}
       style={{ color: accentTextColor }}
       value={description}
       maxLength={UNIVERSAL_LAYOUT_LIMITS.description}
@@ -243,7 +244,7 @@ export default function PageRenderer({
             <div className="absolute inset-0">{mediaContent}</div>
             <div className="absolute inset-0 z-10 flex items-end justify-between px-6 lg:px-8 xl:px-10 pb-6 lg:pb-8 pointer-events-none">
               <textarea
-                className={`${PORTFOLIO_EDITOR_TITLE_TEXTAREA_CLASS} ${LAYOUT_2_OVERLAY_TEXTAREA_CLASS} max-w-[45%] pointer-events-auto py-1`}
+                className={`${PORTFOLIO_EDITOR_TITLE_TEXTAREA_CLASS} ${LAYOUT_2_OVERLAY_TEXTAREA_CLASS} max-w-[45%] pointer-events-auto`}
                 style={{ ...overlayTextStyle, fontFamily: "inherit" }}
                 value={title}
                 maxLength={UNIVERSAL_LAYOUT_LIMITS.title}
@@ -449,16 +450,58 @@ export default function PageRenderer({
 
     return (
       <div className="w-screen relative left-1/2 -translate-x-1/2 h-full min-h-0">
-        <div className="w-full h-full" data-layout="layout-4">
-          {/* Mobile/tablet: media on top, then orange section */}
-          <div className="flex flex-col lg:hidden w-full min-h-[70vh]">
+        <div className="w-full h-full relative overflow-hidden" data-layout="layout-4">
+          {/* Phone: stacked media + accent */}
+          <div className="relative z-10 flex md:hidden flex-col w-full min-h-[70vh]">
             <div className="w-full aspect-video overflow-hidden relative shrink-0">
               {mediaContent}
             </div>
             <div className="flex-1 min-h-0">{orangePanel}</div>
           </div>
+          {/* Tablet: layout-6 pattern – full-bleed bg layer + image top / text in accent bottom */}
+          <div
+            className="absolute inset-0 z-0 pointer-events-none hidden md:block lg:hidden"
+            style={{
+              background: `linear-gradient(to bottom, transparent 0%, transparent 60%, ${accentHex} 60%, ${accentHex} 100%)`,
+            }}
+          />
+          <div className="relative z-10 hidden md:grid lg:hidden grid-rows-[3fr_2fr] h-full w-full min-h-[70vh]">
+            <div className="relative min-h-0 overflow-hidden">
+              {mediaContent}
+            </div>
+            <div
+              className="flex min-h-0 flex-col items-start justify-center px-8 lg:px-12 py-8 text-left"
+              style={{ color: textColor }}
+            >
+              <textarea
+                className={PORTFOLIO_EDITOR_TITLE_TEXTAREA_CLASS}
+                style={{ color: textColor, fontFamily: "inherit" }}
+                value={title}
+                maxLength={UNIVERSAL_LAYOUT_LIMITS.title}
+                onChange={(e) =>
+                  onChangeTitle?.(safeIndex, e.target.value.slice(0, UNIVERSAL_LAYOUT_LIMITS.title))
+                }
+                onKeyDown={confirmTitleTextOnEnter}
+                placeholder="Page title"
+              />
+              <textarea
+                className={`${PORTFOLIO_EDITOR_DETAILS_TEXTAREA_CLASS} mt-4`}
+                style={{ color: textColor, fontFamily: "inherit", opacity: 0.9 }}
+                value={description}
+                maxLength={UNIVERSAL_LAYOUT_LIMITS.description}
+                onChange={(e) =>
+                  onChangeDescription?.(
+                    safeIndex,
+                    e.target.value.slice(0, UNIVERSAL_LAYOUT_LIMITS.description),
+                  )
+                }
+                onKeyDown={confirmTitleTextOnEnter}
+                placeholder="Description"
+              />
+            </div>
+          </div>
           {/* Laptop: two columns side by side */}
-          <div className="hidden lg:grid lg:grid-cols-[2fr_3fr] lg:h-full lg:min-h-0 w-full">
+          <div className="hidden lg:grid lg:grid-cols-[2fr_3fr] lg:h-full lg:min-h-0 w-full relative z-10">
             {orangePanel}
             <div className="relative min-h-0 overflow-hidden bg-neutral-600">
               {mediaContent}
@@ -570,12 +613,12 @@ export default function PageRenderer({
 
     return (
       <div className="w-full h-full" data-layout="layout-5">
-        {/* Tablet/mobile: image on top, text below with U-frame */}
-        <div className="flex flex-col lg:hidden w-full min-h-[70vh]">
+        {/* Tablet: full-bleed image on top, text below with U-frame */}
+        <div className="flex flex-col lg:hidden w-screen relative left-1/2 -translate-x-1/2 min-h-[70vh]">
           <div className="w-full aspect-video overflow-hidden relative shrink-0">
             {layout5Media}
           </div>
-          <div className="flex-1 p-6">{textBlockU}</div>
+          <div className="flex-1 px-4 py-6">{textBlockU}</div>
         </div>
         {/* Laptop: two columns – left text with L-border, right media */}
         <div className="hidden lg:grid lg:grid-cols-2 lg:gap-0 lg:h-full lg:min-h-0 w-full">
@@ -716,8 +759,8 @@ export default function PageRenderer({
               background: `linear-gradient(to bottom, ${portfolioBg} 0%, ${portfolioBg} 50%, ${accentHex} 50%, ${accentHex} 100%)`,
             }}
           />
-          {/* Mobile: unchanged for now */}
-          <div className="relative z-10 flex flex-col lg:hidden w-full min-h-[70vh] px-[2vw] pointer-events-auto">
+          {/* Phone: stacked fallback */}
+          <div className="relative z-10 flex md:hidden flex-col w-full min-h-[70vh] px-[2vw] pointer-events-auto">
             <div className="w-full aspect-[9/16] max-h-[40vh] max-w-[200px] mx-auto overflow-hidden relative shrink-0">
               <div className="relative w-full h-full min-h-[200px]">{layout6Media}</div>
             </div>
@@ -726,6 +769,29 @@ export default function PageRenderer({
               <div className={`${LAYOUT_6_ACCENT_TEXT_GROUP_CLASS} mt-4`}>
                 {isEditor ? layout6DescriptionEditor : layout6DescriptionLive}
                 {isEditor ? layout6DetailsEditor : layout6DetailsLive}
+              </div>
+            </div>
+          </div>
+          {/* Tablet: 40% media (flush left) | 60% split text panels */}
+          <div className="hidden md:grid md:grid-cols-2 lg:hidden md:h-full md:min-h-[70vh] w-full relative z-10 pointer-events-auto">
+            <div className="relative min-h-0 h-full overflow-hidden">
+              {layout6Media}
+            </div>
+            <div className="flex flex-col min-h-0 h-full">
+              <div
+                className={`flex-1 min-h-0 flex flex-col justify-center px-6 ${isEditor ? "pt-10 pb-6" : "py-6"}`}
+                style={{ backgroundColor: portfolioBg }}
+              >
+                {layout6HeaderBorderWrap(isEditor ? layout6HeaderEditor : layout6HeaderLive)}
+              </div>
+              <div
+                className="flex-1 min-h-0 flex flex-col justify-center px-6 py-6"
+                style={{ backgroundColor: accentHex, color: accentTextColor }}
+              >
+                <div className={LAYOUT_6_ACCENT_TEXT_GROUP_CLASS}>
+                  {isEditor ? layout6DescriptionEditor : layout6DescriptionLive}
+                  {isEditor ? layout6DetailsEditor : layout6DetailsLive}
+                </div>
               </div>
             </div>
           </div>
@@ -806,11 +872,19 @@ export default function PageRenderer({
 
     return (
       <div className="w-full h-full flex items-center justify-center" data-layout="layout-8">
-        <div className="flex flex-col lg:hidden w-full min-h-[50vh] px-4 py-8">
+        {/* Phone: stacked fallback */}
+        <div className="flex md:hidden flex-col w-full min-h-[50vh] px-4 py-8">
           <div className="w-full flex-1 min-h-0 overflow-hidden">
             {layout8Content}
           </div>
         </div>
+        {/* Tablet: wide accent block, thin side gutters */}
+        <div className="hidden md:flex md:items-stretch md:justify-center lg:hidden w-screen relative left-1/2 -translate-x-1/2 md:h-full md:min-h-0 px-3">
+          <div className="w-full min-w-0 h-full overflow-hidden shrink-0">
+            {layout8Content}
+          </div>
+        </div>
+        {/* Laptop: centered accent block (66% width, full height) */}
         <div className="hidden lg:flex lg:items-stretch lg:justify-center lg:w-full lg:h-full lg:min-h-0">
           <div className="w-[66%] min-w-[280px] max-w-[900px] h-full overflow-hidden shrink-0">
             {layout8Content}
@@ -863,27 +937,21 @@ export default function PageRenderer({
     return (
       <div className="w-screen relative left-1/2 -translate-x-1/2 h-full min-h-0">
         <div className="w-full h-full relative overflow-hidden" data-layout="layout-9">
-          {/* Accent band (z-0): transparent top lets portfolio patterns show; solid accent bottom hides them */}
-          <div
-            className="absolute inset-0 z-0 pointer-events-none lg:hidden"
-            style={{
-              background: `linear-gradient(to bottom, transparent 0%, transparent 67%, ${accentHex} 67%, ${accentHex} 100%)`,
-            }}
-          />
+          {/* Accent band (z-0): laptop only – transparent top, solid accent bottom */}
           <div
             className="absolute inset-0 z-0 pointer-events-none hidden lg:block"
             style={{
               background: `linear-gradient(to bottom, transparent 0%, transparent 50%, ${accentHex} 50%, ${accentHex} 100%)`,
             }}
           />
-          {/* Content: 60/40 split on top (z-10) */}
-          <div className="relative z-10 flex flex-col lg:hidden w-full min-h-[70vh] px-[2vw]">
+          {/* Phone: stacked fallback */}
+          <div className="relative z-10 flex md:hidden flex-col w-full min-h-[70vh] px-[2vw]">
             <div className="w-full aspect-video overflow-hidden relative shrink-0">
               {layout9Media}
             </div>
             <div
               className="flex flex-col items-start justify-center px-8 py-14 flex-1 pointer-events-auto min-w-0"
-              style={{ color: accentTextColor }}
+              style={{ backgroundColor: accentHex, color: accentTextColor }}
             >
               <textarea
                 className={layout9TitleTextareaClass}
@@ -899,6 +967,44 @@ export default function PageRenderer({
               />
               <textarea
                 className={`${layout9DescriptionTextareaClass} mt-2`}
+                style={{ color: accentTextColor, fontFamily: "inherit" }}
+                value={description}
+                readOnly={!isEditor}
+                maxLength={UNIVERSAL_LAYOUT_LIMITS.description}
+                onChange={(e) =>
+                  onChangeDescription?.(
+                    safeIndex,
+                    e.target.value.slice(0, UNIVERSAL_LAYOUT_LIMITS.description),
+                  )
+                }
+                onKeyDown={confirmTitleTextOnEnter}
+                placeholder="Sub header"
+              />
+            </div>
+          </div>
+          {/* Tablet: smaller image + accent panel to page bottom */}
+          <div className="relative z-10 hidden md:flex md:flex-col lg:hidden w-full h-full min-h-0 pt-24">
+            <div className="w-[88%] mx-auto aspect-video max-h-[38vh] overflow-hidden relative shrink-0">
+              {layout9Media}
+            </div>
+            <div
+              className="flex flex-1 flex-col items-center justify-center px-8 py-8 min-h-0 min-w-0 pointer-events-auto"
+              style={{ backgroundColor: accentHex, color: accentTextColor }}
+            >
+              <textarea
+                className={`${layout9TitleTextareaClass} text-center`}
+                style={{ color: accentTextColor, fontFamily: "inherit" }}
+                value={title}
+                readOnly={!isEditor}
+                maxLength={UNIVERSAL_LAYOUT_LIMITS.title}
+                onChange={(e) =>
+                  onChangeTitle?.(safeIndex, e.target.value.slice(0, UNIVERSAL_LAYOUT_LIMITS.title))
+                }
+                onKeyDown={confirmTitleTextOnEnter}
+                placeholder="Page title"
+              />
+              <textarea
+                className={`${layout9DescriptionTextareaClass} mt-2 text-center`}
                 style={{ color: accentTextColor, fontFamily: "inherit" }}
                 value={description}
                 readOnly={!isEditor}
@@ -1040,7 +1146,8 @@ export default function PageRenderer({
     return (
       <div className="w-screen relative left-1/2 -translate-x-1/2 h-full min-h-0">
         <div className="w-full h-full relative overflow-hidden" data-layout="layout-11">
-          <div className="flex flex-col lg:hidden w-full min-h-[70vh]">
+          {/* Phone: stacked fallback */}
+          <div className="flex md:hidden flex-col w-full min-h-[70vh]">
             <div className="w-full aspect-video overflow-hidden relative shrink-0 z-0">
               {layout11Media}
             </div>
@@ -1077,14 +1184,63 @@ export default function PageRenderer({
                   value={details}
                   maxLength={UNIVERSAL_LAYOUT_LIMITS.details}
                   onChange={(e) =>
-            onChangeDetails?.(
-              safeIndex,
-              e.target.value.slice(0, UNIVERSAL_LAYOUT_LIMITS.details),
-            )
-          }
+                    onChangeDetails?.(
+                      safeIndex,
+                      e.target.value.slice(0, UNIVERSAL_LAYOUT_LIMITS.details),
+                    )
+                  }
                   placeholder="Details"
                 />
               </div>
+            </div>
+          </div>
+          {/* Tablet: full-width image + accent, vertically centered */}
+          <div className="hidden md:flex md:flex-col lg:hidden w-full h-full min-h-0 justify-center">
+            <div className="w-full aspect-video max-h-[45vh] overflow-hidden relative shrink-0 z-0">
+              {layout11Media}
+            </div>
+            <div
+              className="w-full shrink-0 relative z-10 flex min-h-[32vh] flex-col items-center justify-center px-8 py-14 text-center pointer-events-auto"
+              style={{
+                background: gradientBg,
+                color: accentTextColor,
+              }}
+            >
+              <textarea
+                className={`${PORTFOLIO_EDITOR_TITLE_TEXTAREA_CLASS} portfolio-header-big font-bold text-center outline-none focus:ring-2 focus:ring-white/50`}
+                style={{ color: accentTextColor, fontFamily: "inherit" }}
+                value={title}
+                maxLength={UNIVERSAL_LAYOUT_LIMITS.title}
+                onChange={(e) =>
+                  onChangeTitle?.(safeIndex, e.target.value.slice(0, UNIVERSAL_LAYOUT_LIMITS.title))
+                }
+                onKeyDown={confirmTitleTextOnEnter}
+                placeholder="Page title"
+              />
+              <textarea
+                className={`${PORTFOLIO_EDITOR_DESCRIPTION_TEXTAREA_CLASS} mt-1 text-center bg-transparent rounded-md py-2 outline-none focus:ring-2 focus:ring-white/50`}
+                style={{ color: accentTextColor, opacity: 0.95, fontFamily: "inherit" }}
+                value={description}
+                maxLength={UNIVERSAL_LAYOUT_LIMITS.description}
+                onChange={(e) =>
+                  onChangeDescription?.(safeIndex, e.target.value.slice(0, UNIVERSAL_LAYOUT_LIMITS.description))
+                }
+                onKeyDown={confirmTitleTextOnEnter}
+                placeholder="Sub header"
+              />
+              <textarea
+                className={`${PORTFOLIO_EDITOR_DETAILS_TEXTAREA_CLASS} mt-4 text-center`}
+                style={{ color: accentTextColor, opacity: 0.9, fontFamily: "inherit" }}
+                value={details}
+                maxLength={UNIVERSAL_LAYOUT_LIMITS.details}
+                onChange={(e) =>
+                  onChangeDetails?.(
+                    safeIndex,
+                    e.target.value.slice(0, UNIVERSAL_LAYOUT_LIMITS.details),
+                  )
+                }
+                placeholder="Details"
+              />
             </div>
           </div>
           <div className="hidden lg:grid lg:grid-cols-[2fr_1fr] lg:gap-0 lg:h-full lg:min-h-0 w-full">
@@ -1136,10 +1292,10 @@ export default function PageRenderer({
     return (
       <div className="w-screen relative left-1/2 -translate-x-1/2 h-full min-h-0">
         <div className="w-full h-full flex flex-col" data-layout="layout-13">
-          {/* Below lg: tablet stacked */}
-          <div className="flex flex-col lg:hidden w-full flex-1 min-h-[70vh]">
+          {/* Phone: stacked fallback */}
+          <div className="flex md:hidden flex-col w-full flex-1 min-h-[70vh]">
             <div className="h-[4px] w-full shrink-0" style={{ backgroundColor: accentHex13 }} />
-            <div className="flex flex-col items-center text-center py-6 px-8">
+            <div className="flex flex-col items-center text-center py-6 px-8 pointer-events-auto">
               <textarea
                 className={`${PORTFOLIO_EDITOR_TITLE_TEXTAREA_CLASS} portfolio-header-massive font-bold text-center outline-none focus:ring-2 focus:ring-white/50`}
                 style={{ color: textColor13, fontFamily: "inherit" }}
@@ -1150,7 +1306,7 @@ export default function PageRenderer({
                 }
                 onKeyDown={confirmTitleTextOnEnter}
                 placeholder="Page title"
-                />
+              />
               <textarea
                 className={`${PORTFOLIO_EDITOR_DESCRIPTION_TEXTAREA_CLASS} bg-transparent rounded-md py-2 mt-2 text-center outline-none focus:ring-2 focus:ring-white/50`}
                 style={{ color: textColor13, fontFamily: "inherit" }}
@@ -1161,25 +1317,72 @@ export default function PageRenderer({
                 }
                 onKeyDown={confirmTitleTextOnEnter}
                 placeholder="Sub header"
-                />
+              />
             </div>
             <div className="w-full aspect-video overflow-hidden relative shrink-0">
               {layout13Media}
             </div>
             <textarea
               className={`${PORTFOLIO_EDITOR_DETAILS_TEXTAREA_CLASS} mt-6 px-8`}
-              style={{ color: textColor13, opacity: 0.9 }}
+              style={{ color: textColor13, opacity: 0.9, fontFamily: "inherit" }}
               value={details}
               maxLength={UNIVERSAL_LAYOUT_LIMITS.details}
               onChange={(e) =>
-            onChangeDetails?.(
-              safeIndex,
-              e.target.value.slice(0, UNIVERSAL_LAYOUT_LIMITS.details),
-            )
-          }
+                onChangeDetails?.(
+                  safeIndex,
+                  e.target.value.slice(0, UNIVERSAL_LAYOUT_LIMITS.details),
+                )
+              }
               placeholder="Details"
             />
             <div className="h-[4px] w-full shrink-0 mt-6" style={{ backgroundColor: accentHex13 }} />
+          </div>
+          {/* Tablet: bordered content block, vertically centered */}
+          <div className="hidden md:flex md:flex-col lg:hidden w-full h-full min-h-0 justify-center">
+            <div className="w-full shrink-0 flex flex-col">
+              <div className="h-[12px] w-full shrink-0" style={{ backgroundColor: accentHex13 }} />
+              <div className="flex flex-col items-center text-center py-6 px-8 pointer-events-auto">
+                <textarea
+                  className={`${PORTFOLIO_EDITOR_TITLE_TEXTAREA_CLASS} portfolio-header-massive font-bold text-center outline-none focus:ring-2 focus:ring-white/50`}
+                  style={{ color: textColor13, fontFamily: "inherit" }}
+                  value={title}
+                  maxLength={UNIVERSAL_LAYOUT_LIMITS.title}
+                  onChange={(e) =>
+                    onChangeTitle?.(safeIndex, e.target.value.slice(0, UNIVERSAL_LAYOUT_LIMITS.title))
+                  }
+                  onKeyDown={confirmTitleTextOnEnter}
+                  placeholder="Page title"
+                />
+                <textarea
+                  className={`${PORTFOLIO_EDITOR_DESCRIPTION_TEXTAREA_CLASS} bg-transparent rounded-md py-2 mt-2 text-center outline-none focus:ring-2 focus:ring-white/50`}
+                  style={{ color: textColor13, fontFamily: "inherit" }}
+                  value={description}
+                  maxLength={UNIVERSAL_LAYOUT_LIMITS.description}
+                  onChange={(e) =>
+                    onChangeDescription?.(safeIndex, e.target.value.slice(0, UNIVERSAL_LAYOUT_LIMITS.description))
+                  }
+                  onKeyDown={confirmTitleTextOnEnter}
+                  placeholder="Sub header"
+                />
+              </div>
+              <div className="w-full aspect-video max-h-[45vh] overflow-hidden relative shrink-0">
+                {layout13Media}
+              </div>
+              <textarea
+                className={`${PORTFOLIO_EDITOR_DETAILS_TEXTAREA_CLASS} py-6 px-8 text-center`}
+                style={{ color: textColor13, opacity: 0.9, fontFamily: "inherit" }}
+                value={details}
+                maxLength={UNIVERSAL_LAYOUT_LIMITS.details}
+                onChange={(e) =>
+                  onChangeDetails?.(
+                    safeIndex,
+                    e.target.value.slice(0, UNIVERSAL_LAYOUT_LIMITS.details),
+                  )
+                }
+                placeholder="Details"
+              />
+              <div className="h-[8px] w-full shrink-0" style={{ backgroundColor: accentHex13 }} />
+            </div>
           </div>
           {/* Laptop: Row 1 = title + left accent; Row 2 = 60% image | 40% text + right accent (full bleed) */}
           <div className="hidden lg:flex lg:flex-col lg:flex-1 lg:min-h-0">
@@ -1253,8 +1456,8 @@ export default function PageRenderer({
     return (
       <div className="w-screen relative left-1/2 -translate-x-1/2 h-full min-h-0">
         <div className="w-full h-full flex flex-col" data-layout="layout-14">
-          {/* Below lg: stacked vertically */}
-          <div className="flex flex-col lg:hidden w-full flex-1 min-h-[70vh] gap-6 py-8 px-6">
+          {/* Below lg: stacked vertically; tablet centers content */}
+          <div className="flex flex-col lg:hidden w-full gap-6 py-8 px-6 min-h-[70vh] md:h-full md:min-h-0 md:justify-center">
             <div className={`p-6 border-2 rounded-xs pointer-events-auto ${LAYOUT_14_TEXT_CENTER_CLASS}`} style={{ borderColor: accentHex14, color: textColor14 }}>
               <textarea
                 className={layout14TitleTextareaClass}
@@ -1434,6 +1637,7 @@ export default function PageRenderer({
   // layout-15: Two equal columns, both accent background; below lg: single full-width block with two sections + divider
   if (layoutType === "layout-15") {
     const accentHex15 = customColors?.accent || "#c96a4a";
+    const portfolioBg15 = customColors?.text ?? "#faf7f2";
     const accentTextColor15 = getTextColorForBackground(accentHex15);
     const title2 = page.title2 ?? "";
     const description2 = page.description2 ?? "";
@@ -1442,8 +1646,8 @@ export default function PageRenderer({
     return (
       <div className="w-screen relative left-1/2 -translate-x-1/2 h-full min-h-0">
         <div className="w-full h-full flex flex-col" data-layout="layout-15">
-          {/* Below lg: single full-width block, two sections, divider */}
-          <div className="flex flex-col lg:hidden w-full flex-1 min-h-[70vh] py-8 px-6">
+          {/* Phone: inset block */}
+          <div className="flex md:hidden flex-col w-full flex-1 min-h-[70vh] py-8 px-6">
             <div className="w-full flex flex-col rounded-xs pointer-events-auto" style={{ backgroundColor: accentHex15, color: accentTextColor15 }}>
               <div className="p-8">
                 <textarea
@@ -1456,18 +1660,18 @@ export default function PageRenderer({
                   }
                   onKeyDown={confirmTitleTextOnEnter}
                   placeholder="Block 1 title"
-                  />
+                />
                 <textarea
                   className={`${PORTFOLIO_EDITOR_DESCRIPTION_TEXTAREA_CLASS} mt-2`}
-                  style={{ color: accentTextColor15, opacity: 0.9 }}
+                  style={{ color: accentTextColor15, opacity: 0.9, fontFamily: "inherit" }}
                   value={description}
                   maxLength={LAYOUT_15_LIMITS.description}
                   onChange={(e) =>
-            onChangeDescription?.(
-              safeIndex,
-              e.target.value.slice(0, LAYOUT_15_LIMITS.description),
-            )
-          }
+                    onChangeDescription?.(
+                      safeIndex,
+                      e.target.value.slice(0, LAYOUT_15_LIMITS.description),
+                    )
+                  }
                   placeholder="Block 1 description"
                 />
               </div>
@@ -1483,18 +1687,76 @@ export default function PageRenderer({
                   }
                   onKeyDown={confirmTitleTextOnEnter}
                   placeholder="Block 2 title"
-                  />
+                />
                 <textarea
                   className={`${PORTFOLIO_EDITOR_DESCRIPTION_TEXTAREA_CLASS} mt-2`}
-                  style={{ color: accentTextColor15, opacity: 0.95 }}
+                  style={{ color: accentTextColor15, opacity: 0.95, fontFamily: "inherit" }}
                   value={description2}
                   maxLength={LAYOUT_15_LIMITS.description}
                   onChange={(e) =>
-            onChangeDescription2?.(
-              safeIndex,
-              e.target.value.slice(0, LAYOUT_15_LIMITS.description),
-            )
-          }
+                    onChangeDescription2?.(
+                      safeIndex,
+                      e.target.value.slice(0, LAYOUT_15_LIMITS.description),
+                    )
+                  }
+                  placeholder="Block 2 description"
+                />
+              </div>
+            </div>
+          </div>
+          {/* Tablet: full-width accent block, vertically centered */}
+          <div className="hidden md:flex md:flex-col lg:hidden w-full h-full min-h-0 justify-center">
+            <div className="w-full shrink-0 flex flex-col pointer-events-auto" style={{ backgroundColor: accentHex15, color: accentTextColor15 }}>
+              <div className="flex flex-col items-center text-center p-8">
+                <textarea
+                  className={`${layout15TitleTextareaClass} text-center`}
+                  style={{ color: accentTextColor15, fontFamily: "inherit" }}
+                  value={title}
+                  maxLength={LAYOUT_15_LIMITS.title}
+                  onChange={(e) =>
+                    onChangeTitle?.(safeIndex, e.target.value.slice(0, LAYOUT_15_LIMITS.title))
+                  }
+                  onKeyDown={confirmTitleTextOnEnter}
+                  placeholder="Block 1 title"
+                />
+                <textarea
+                  className={`${PORTFOLIO_EDITOR_DESCRIPTION_TEXTAREA_CLASS} mt-2 text-center`}
+                  style={{ color: accentTextColor15, opacity: 0.9, fontFamily: "inherit" }}
+                  value={description}
+                  maxLength={LAYOUT_15_LIMITS.description}
+                  onChange={(e) =>
+                    onChangeDescription?.(
+                      safeIndex,
+                      e.target.value.slice(0, LAYOUT_15_LIMITS.description),
+                    )
+                  }
+                  placeholder="Block 1 description"
+                />
+              </div>
+              <div className="h-[8px] w-full shrink-0" style={{ backgroundColor: portfolioBg15 }} />
+              <div className="flex flex-col items-center text-center p-8">
+                <textarea
+                  className={`${layout15TitleTextareaClass} text-center`}
+                  style={{ color: accentTextColor15, fontFamily: "inherit" }}
+                  value={title2}
+                  maxLength={LAYOUT_15_LIMITS.title}
+                  onChange={(e) =>
+                    onChangeTitle2?.(safeIndex, e.target.value.slice(0, LAYOUT_15_LIMITS.title))
+                  }
+                  onKeyDown={confirmTitleTextOnEnter}
+                  placeholder="Block 2 title"
+                />
+                <textarea
+                  className={`${PORTFOLIO_EDITOR_DESCRIPTION_TEXTAREA_CLASS} mt-2 text-center`}
+                  style={{ color: accentTextColor15, opacity: 0.95, fontFamily: "inherit" }}
+                  value={description2}
+                  maxLength={LAYOUT_15_LIMITS.description}
+                  onChange={(e) =>
+                    onChangeDescription2?.(
+                      safeIndex,
+                      e.target.value.slice(0, LAYOUT_15_LIMITS.description),
+                    )
+                  }
                   placeholder="Block 2 description"
                 />
               </div>
@@ -1694,10 +1956,10 @@ export default function PageRenderer({
         <div className="w-full md:max-w-[50%] md:mx-auto aspect-[9/16] max-h-[50vh] overflow-hidden shrink-0">
           {mediaContent}
         </div>
-        <div className="px-4 py-6 text-center">
+        <div className="px-4 pt-6 pb-0 text-center">
           {headerEl}
         </div>
-        <div className="mx-4 mb-6 rounded-xs overflow-hidden shrink-0" style={{ backgroundColor: accentHex }}>
+        <div className="mx-4 mt-4 mb-6 rounded-xs overflow-hidden shrink-0 md:text-center" style={{ backgroundColor: accentHex }}>
           {bodyContent}
         </div>
       </div>
@@ -1707,7 +1969,7 @@ export default function PageRenderer({
         <div className="flex flex-col justify-center items-center px-8 lg:px-12 xl:px-16 overflow-hidden min-h-0">
           {headerEl}
           <div
-            className="w-full mt-4 rounded-xs overflow-hidden shrink-0"
+            className="w-full mt-10 rounded-xs overflow-hidden shrink-0"
             style={{ backgroundColor: accentHex }}
           >
             {bodyContent}

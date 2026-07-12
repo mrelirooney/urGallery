@@ -11,6 +11,7 @@ import PortfolioControls from "@/components/portfolio/PortfolioControls";
 import CommentsSection from "@/components/portfolio/CommentsSection";
 import { resolveLayout4Description } from "@/lib/portfolio/layoutLimits";
 import { useArtistScroll } from "@/components/artist/ArtistScrollContext";
+import { getPortfolioOverlayOpacity, useIsPhoneViewport } from "@/lib/artistScrollOverlay";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE ?? "";
@@ -97,6 +98,10 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
   const [controlsVisible, setControlsVisible] = useState(true);
   const artistScroll = useArtistScroll();
   const isPortfolioView = artistScroll?.isPortfolioView ?? false;
+  const isPhone = useIsPhoneViewport();
+  const phoneScrollOpacity = artistScroll
+    ? getPortfolioOverlayOpacity(artistScroll.scrollProgress, isPhone)
+    : 0;
   const [shareCopied, setShareCopied] = useState(false);
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -455,7 +460,7 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
 
   return (
       <section 
-      className="w-full flex-1 flex flex-col min-h-0"
+      className="w-full flex flex-col min-h-0 md:flex-1"
       style={{ 
         color: customColors?.background || '#faf7f2',
        }}
@@ -489,7 +494,7 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
       />
 
       <div
-        className={`flex-1 min-h-0 w-full relative z-10 flex flex-col ${isPrivateBlurred ? "select-none" : ""}`}
+        className={`min-h-0 w-full relative z-10 flex flex-col md:flex-1 ${isPrivateBlurred ? "select-none" : ""}`}
         onClick={
           isTablet && isPortfolioView
             ? () => setControlsVisible((v) => !v)
@@ -508,22 +513,39 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
             : undefined
         }
       >
-        <div className="flex-1 min-h-0 relative z-10 flex flex-col">
+        <div className="min-h-0 relative z-10 flex flex-col md:flex-1">
           {/* Layout frame: consistent height for all layouts; centering happens within each layout */}
           <div
-            className="flex-1 min-h-0 w-full transition-[filter] duration-[1500ms] ease-out"
+            className="flex min-h-0 w-full flex-col md:flex-1 transition-[filter] duration-[1500ms] ease-out"
             style={{
               filter: isPrivateBlurred ? `blur(${blurOpacity * 24}px)` : "none",
               pointerEvents: isPrivateBlurred ? "none" : "auto",
               userSelect: isPrivateBlurred ? "none" : "auto",
             }}
           >
-            <div className="h-full w-full min-h-0">
-              <PageRenderer
-                pages={pages}
-                currentPageIndex={currentPageIndex}
-                customColors={customColors}
-              />
+            <div className="flex min-h-0 w-full flex-1 flex-col">
+              {/* Phone: comment above page media/content */}
+              <div
+                className={`flex md:hidden items-center justify-end relative z-20 px-4 pb-1 transition-opacity duration-300 ${phoneScrollOpacity < 0.01 || isPrivateBlurred ? "pointer-events-none" : ""}`}
+                style={{ opacity: phoneScrollOpacity }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setCommentsOpen((v) => !v)}
+                  className={`rounded-xs p-2.5 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity ${commentsOpen ? "bg-[var(--artist-accent)] text-[var(--artist-accent-text)]" : "bg-transparent text-[var(--artist-portfolio-text)] hover:bg-[var(--artist-accent)] hover:text-[var(--artist-accent-text)]"}`}
+                  aria-label="Comments"
+                  aria-expanded={commentsOpen}
+                >
+                  <MessageCircle size={18} />
+                </button>
+              </div>
+              <div className="flex min-h-0 w-full flex-1 flex-col">
+                <PageRenderer
+                  pages={pages}
+                  currentPageIndex={currentPageIndex}
+                  customColors={customColors}
+                />
+              </div>
             </div>
           </div>
           {/* Overlay: sibling of blurred content so it stays sharp and clickable */}
@@ -628,19 +650,6 @@ export default function PortfolioWrapper({ slug, artistSlug, artistName, artistA
               </div>
             </div>
           )}
-        </div>
-
-        {/* Mobile: comment button only (pagination moved to PortfolioControls overlay bottom center) */}
-        <div className={`flex md:hidden items-center justify-start relative z-20 top-5 mb-6 transition-opacity duration-300 ${controlsVisible ? "opacity-100" : "opacity-0 pointer-events-none"} ${isPrivateBlurred ? "pointer-events-none" : ""}`}>
-          <button
-            type="button"
-            onClick={() => setCommentsOpen((v) => !v)}
-            className={`rounded-xs p-2.5 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity ${commentsOpen ? "bg-[var(--artist-accent)] text-[var(--artist-accent-text)]" : "bg-transparent text-[var(--artist-portfolio-text)] hover:bg-[var(--artist-accent)] hover:text-[var(--artist-accent-text)]"}`}
-            aria-label="Comments"
-            aria-expanded={commentsOpen}
-          >
-            <MessageCircle size={18} />
-          </button>
         </div>
 
         <CommentsSection

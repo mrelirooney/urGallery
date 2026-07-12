@@ -247,8 +247,6 @@ textarea.portfolio-page-details {
   width: fit-content;
   max-width: 100%;
   min-height: 0;
-  padding-top: 0;
-  padding-bottom: 0;
 }
 
 /* Layout-8: centered text fields (editor textareas override shared text-left) */
@@ -266,8 +264,6 @@ textarea.portfolio-page-details {
   width: 100%;
   max-width: 100%;
   min-height: 0;
-  padding-top: 0.5rem;
-  padding-bottom: 0;
 }
 
 /* Layout-14: centered text fields in all three columns (editor textareas override shared text-left) */
@@ -287,8 +283,6 @@ textarea.portfolio-page-details {
   max-width: 100%;
   min-height: 0;
   margin: 0;
-  padding-top: 0.5rem;
-  padding-bottom: 0;
 }
 
 [data-layout="layout-15"] textarea.layout-15-title-field,
@@ -297,8 +291,35 @@ textarea.portfolio-page-details {
   max-width: 100%;
   min-height: 0;
   margin: 0;
-  padding-top: 0.5rem;
-  padding-bottom: 0;
+}
+
+/* Layout-1: square accent header borders, tight spacing above description block */
+[data-layout="layout-1"] textarea.layout-1-title-field,
+[data-layout="layout-1"] h2.layout-1-title-field,
+[data-layout="layout-1"] input.layout-1-title-field {
+  width: 100%;
+  max-width: 100%;
+  min-height: 0;
+  margin: 0;
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+}
+
+[data-layout="layout-1"] textarea.layout-1-description-field {
+  padding: 0.75rem 1.25rem;
+  border-radius: 0;
+}
+
+/* Laptop+: unified page-title vertical padding across all layouts (layout-1 baseline) */
+@media (min-width: 768px) {
+  [data-layout] h2.portfolio-page-title,
+  [data-layout] h3.portfolio-page-title,
+  [data-layout] textarea.portfolio-page-title,
+  [data-layout] input.portfolio-page-title {
+    padding-top: 1.2rem !important;
+    padding-bottom: 1.2rem !important;
+  }
 }
 
 /* Portfolio page typography standard (layout-9 source of truth, all breakpoints) */
@@ -333,6 +354,22 @@ textarea.portfolio-page-details {
 /* Allow full-width breakout on mobile for portfolio image/text */
 @media (max-width: 639px) {
   #portfolio-shell { overflow-x: visible; }
+}
+
+/* Mobile portfolio view: room for fixed compact bar (top) + footer (bottom) */
+@media (max-width: 767px) {
+  :root {
+    --artist-compact-bar-height: 7rem;
+    --artist-footer-height: 3rem;
+  }
+
+  #portfolio-shell {
+    overflow-x: clip;
+  }
+
+  [data-viewport="phone"] .phone-page-media {
+    width: 100vw;
+  }
 }
 
 /* Unlock error shake animation */

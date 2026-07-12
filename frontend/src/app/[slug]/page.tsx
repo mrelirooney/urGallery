@@ -184,7 +184,6 @@ export default async function ArtistPage(
           <CompactProfileBar
             profileBackground={customColors.background}
             profileText={customColors.profileText}
-            portfolioBackground={customColors.text}
           >
         <div className="max-w-6xl lg:max-w-7xl xl:max-w-7xl 2xl:max-w-7xl mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-16 2xl:px-20 py-4 md:py-0 md:h-14 md:flex md:items-center lg:py-2 lg:h-auto lg:flex-col lg:min-h-0 lg:justify-start">
           {/* Phone: back arrow, avatar, hamburger, portfolio title */}
@@ -234,7 +233,7 @@ export default async function ArtistPage(
               color: customColors.portfolioText,
               fontFamily: "var(--artist-font, 'Raleway'), sans-serif",
             }}
-            className="relative overflow-hidden h-dvh pt-30 pb-0 flex flex-col"
+            className="relative overflow-hidden pt-[var(--artist-compact-bar-height,7rem)] pb-[var(--artist-footer-height,4rem)] md:h-dvh md:min-h-0 md:pt-28 md:pb-0 flex flex-col"
           >
             {profile?.theme?.svg_url ? (
               <ThemePatternLayer
@@ -242,7 +241,7 @@ export default async function ArtistPage(
                 colorOverrides={getThemePatternColorOverrides(customColors.text)}
               />
             ) : null}
-            <div className="flex-1 flex flex-col min-h-0 w-full max-w-6xl xl:max-w-7xl xl-lg:max-w-[1600px] 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-16 2xl:px-20 relative z-10">
+            <div className="flex flex-col min-h-0 w-full max-w-6xl xl:max-w-7xl xl-lg:max-w-[1600px] 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-16 2xl:px-20 relative z-10 md:flex-1">
           {portfolios.length > 0 ? (
             <PortfolioSelector
               artistSlug={profile.slug}

@@ -26,7 +26,11 @@ export default function MainWithPadding({
     /^\/[^/]+(\/[^/]+)*$/.test(pathname);
 
   const pt = hideNavbar ? "" : "pt-12 sm:pt-14";
-  const pb = hideFooter ? "" : "pb-14"; /* space for fixed footer on artist pages, standard footer elsewhere */
+  const pb = hideFooter
+    ? ""
+    : isArtistPage
+      ? "pb-0 md:pb-14"
+      : "pb-14";
 
   return (
     <main

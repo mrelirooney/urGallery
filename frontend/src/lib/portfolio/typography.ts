@@ -7,6 +7,10 @@ export const PORTFOLIO_PAGE_DESCRIPTION_CLASS = "portfolio-page-description";
 /** Portfolio details typography — small supplementary text (location, date, credits). */
 export const PORTFOLIO_PAGE_DETAILS_CLASS = "portfolio-page-details";
 
+/** Laptop+ page title vertical padding – shared header breathing room (layout-1 baseline). */
+export const PORTFOLIO_LAPTOP_HEADER_PADDING_TOP = "1.2rem";
+export const PORTFOLIO_LAPTOP_HEADER_PADDING_BOTTOM = "1.2rem";
+
 /** Editor title textarea – auto-height via field-sizing: content (see globals.css). */
 export const PORTFOLIO_EDITOR_TITLE_TEXTAREA_CLASS =
   "w-full min-w-0 portfolio-page-title bg-transparent rounded-md py-2 text-left outline-none focus:ring-2 focus:ring-white/50 resize-none overflow-hidden break-words";
@@ -18,6 +22,12 @@ export const PORTFOLIO_EDITOR_DESCRIPTION_TEXTAREA_CLASS =
 /** Editor details textarea – smaller type (see globals.css --portfolio-details). */
 export const PORTFOLIO_EDITOR_DETAILS_TEXTAREA_CLASS =
   "w-full min-w-0 portfolio-page-details bg-transparent rounded-md py-2 text-left outline-none focus:ring-2 focus:ring-white/50 resize-none overflow-hidden break-words whitespace-pre-line";
+
+/** Layout-1 title field – square accent borders, tight spacing above description block. */
+export const LAYOUT_1_TITLE_FIELD_CLASS = "layout-1-title-field";
+
+/** Layout-1 description field – internal padding matches live px-4 py-3. */
+export const LAYOUT_1_DESCRIPTION_FIELD_CLASS = "layout-1-description-field";
 
 /** Layout-2 desktop overlay textareas – bottom-anchored, grow upward, capped at 50% of image area. */
 export const LAYOUT_2_OVERLAY_TEXTAREA_CLASS =

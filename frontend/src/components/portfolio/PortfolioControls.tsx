@@ -3,6 +3,8 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { MoreVertical, Share2, Bookmark, MessageCircle, Lock, LockOpen } from "lucide-react";
 import { hexToRgba, getTextColorForBackground } from "@/lib/colorUtils";
+import { getPortfolioOverlayOpacity, useIsPhoneViewport } from "@/lib/artistScrollOverlay";
+import { useArtistScroll } from "@/components/artist/ArtistScrollContext";
 import PortfolioTitle from "./primitives/PortfolioTitle";
 import Pagination from "./primitives/Pagination";
 import EditPortfolioButton from "./EditPortfolioButton";
@@ -68,6 +70,11 @@ export default function PortfolioControls({
   const paginationIdleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isOverPagination, setIsOverPagination] = useState(false);
   const [paginationIdle, setPaginationIdle] = useState(false);
+  const artistScroll = useArtistScroll();
+  const isPhone = useIsPhoneViewport();
+  const phoneScrollOpacity = artistScroll
+    ? getPortfolioOverlayOpacity(artistScroll.scrollProgress, isPhone)
+    : 0;
   const textColor = customColors?.portfolioText ?? "var(--artist-portfolio-text, #faf7f2)";
   const portfolioBg = customColors?.text || "#11100e";
   const accent = customColors?.accent || "var(--artist-accent, #c96a4a)";
@@ -82,6 +89,10 @@ export default function PortfolioControls({
     border: "1px solid rgba(250, 247, 242, 0.1)",
     boxShadow: "0 2px 8px rgba(0, 0, 0, 0.12)",
   });
+
+  const phonePaginationGradient = `linear-gradient(to top, ${portfolioBg} 0%, ${hexToRgba(portfolioBg, 1)} 75%, transparent 100%)`;
+  const phonePaginationInteractive =
+    phoneScrollOpacity >= 0.01 && !isPrivateBlurred;
 
   const handleShare = () => {
     const origin = typeof window !== "undefined" ? window.location.origin : "";
@@ -141,15 +152,46 @@ export default function PortfolioControls({
   const chromeClass = `hidden md:flex items-center justify-between gap-4 relative z-0 transition-opacity duration-300 ${chromeVisible ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`;
 
   return (
-    <div
-      className={containerClass}
-      style={{
-        top: "4rem",
-        height: "calc(100vh - 4rem - 3.5rem)",
-        color: textColor,
-        backgroundColor: "transparent",
-      }}
-    >
+    <>
+      {/* Phone: pagination bar above footer, portfolio background fades up */}
+      <div
+        className="fixed left-0 right-0 z-[100] md:hidden transition-opacity duration-300"
+        style={{
+          bottom: "calc(var(--artist-footer-height, 3rem) + 0.25rem)",
+          color: textColor,
+          opacity: phoneScrollOpacity,
+          pointerEvents: phonePaginationInteractive ? "auto" : "none",
+        }}
+      >
+        <div
+          className={`w-full py-2 pt-4 transition-opacity duration-300 ${phonePaginationInteractive ? "" : "pointer-events-none"}`}
+          style={{
+            background: phonePaginationGradient,
+            opacity: paginationIdle ? 0.35 : 1,
+          }}
+          onMouseEnter={handlePaginationEnter}
+          onMouseLeave={handlePaginationLeave}
+          onMouseMove={handlePaginationMove}
+        >
+          <Pagination
+            totalPages={totalPages}
+            currentPage={currentPageIndex + 1}
+            onChangePage={(idx) => onPageChange(idx)}
+            customColors={customColors}
+          />
+        </div>
+      </div>
+
+      {/* Tablet/desktop: floating controls overlay */}
+      <div
+        className={`${containerClass} hidden md:flex`}
+        style={{
+          top: "4rem",
+          height: "calc(100vh - 4rem - 3.5rem)",
+          color: textColor,
+          backgroundColor: "transparent",
+        }}
+      >
       <div className={innerClass}>
       {/* Row 1: title + privacy (left) | share, comment, edit, save (right) – hidden on mobile */}
       <div className={chromeClass}>
@@ -345,5 +387,6 @@ export default function PortfolioControls({
       </div>
       </div>
     </div>
+    </>
   );
 }
