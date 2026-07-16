@@ -6,6 +6,7 @@ function isConstrainedRoute(pathname: string | null): boolean {
   if (!pathname) return true; // default to constrained when unknown
   return (
     pathname === "/" ||
+    pathname.startsWith("/search") ||
     pathname.startsWith("/login") ||
     pathname.startsWith("/signup") ||
     pathname.startsWith("/forgot-password") ||

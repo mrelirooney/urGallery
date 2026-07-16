@@ -18,6 +18,7 @@ export type User = {
   bio?: string;
   avatar_url?: string | null;
   banner_image_url?: string | null;
+  is_superuser?: boolean;
 };
 
 export function useAuth() {

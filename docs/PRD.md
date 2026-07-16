@@ -54,7 +54,7 @@
 
 ---
 
-## Comments — ✅ Implemented (laptop)
+## Comments — ✅ Implemented
 
 - **Scope:** Each portfolio can receive, store, and display comments. Available on all tiers (Free, Pro, Premium).
 - **Who can comment:** Any authenticated user who has access to the portfolio (public = any logged-in user; private = users who have unlocked it).
@@ -308,7 +308,7 @@
 ## Portfolio Pages
 
 - **Page** / **DraftPage**:
-  - Text fields: `title`, `description`, `description_body`, `title_2`, `description_2`, `title_3`, `description_3`. Layouts use subsets of these.
+  - Text fields: `title` (Header), `description` (Description), `details` (Details — small supplementary text: location, date, credits), `title_2`, `description_2`, `title_3`, `description_3`. Layouts use subsets of these.
   - `order`, `layout` (enum; see Layout System).
   - `media_image`, `media_shape` (1:1, 9:16, 16:9, 4:5, 5:4), `media_image_2`, `media_shape_2`.
 - Pages ordered by `order`; `pages_count` auto-updated via signals.
@@ -319,7 +319,30 @@
 
 - **Layout** = structure + accent treatment. Each layout option the user sees = one unique backend value.
 - **Layout access by tier:** Free gets 24 layouts (fixed set). Pro and Premium get all layouts, including new ones as they're added.
-- **Naming:** Backend uses `layout-1` through `layout-15`; UI labels match (e.g. "layout-1", "layout-2").
+- **Naming:** Backend uses `layout-1` through `layout-15`. The layout picker shows human labels with global numbering (e.g. `Layout 01` = `layout-1`, `Layout 08` = `layout-8`).
+
+### Layout categories (picker UI)
+
+Layouts are grouped in the editor **Layouts** panel:
+
+| Category | Layouts | Notes |
+|----------|---------|-------|
+| **Media and Text** | `layout-1`, `2`, `3`, `4`, `5`, `6`, `9`, `11`, `13` | Default expanded category when current page layout is in this group |
+| **Text Only** | `layout-8`, `14`, `15` | No primary media slot |
+| **Media Only** | — | Placeholder: “Layouts Coming soon” (no selectable layouts yet) |
+
+Excluded from picker: `layout-7`, `layout-10` (backend only); `layout-12` (implemented but hidden, WIP).
+
+### Layout picker (editor UI)
+
+- **Trigger:** “Layouts” button in the editor toolbar (`EditorTopBar`).
+- **Panel:** Right slide-in drawer (same interaction pattern as Comments / Portfolio menu), not a centered modal. Close via backdrop click or Escape.
+- **Panel chrome:** Background is off-black (`#11100e`) when the artist profile background is dark, off-white (`#faf7f2`) when profile background is light. Menu text uses contrasting off-white/off-black. Right-aligned title, categories, and options with extra right padding (`pr-8`).
+- **Selection states:** Unselected options at 70% text opacity; hovered or current layout at 100% opacity. Hover row background = accent at 10% opacity; **current** layout row = accent at 20% opacity.
+- **Hover preview:** Live preview of the current page content in the hovered layout, scaled to fit the area left of the panel (1280×720 virtual canvas + CSS `transform: scale`). Preview uses **portfolio section background color** (Color #2 / `text_color`), matching live portfolio and editor canvas—not profile background. Soft glow + thin border behind preview (off-white glow on dark overlay, off-black on light overlay; border at ~35% opacity, glow layers at low opacity).
+- **Click:** Applies layout to the current page (PATCH draft page), closes panel.
+- **Registry:** `layoutRegistry.ts` is the source of truth for categories, labels, and picker-visible layouts.
+- **V1 soft launch:** Portfolio editing is desktop-first; layout picker preview is hidden below `sm` breakpoint.
 
 ### Layout types (backend `layout` field)
 
@@ -398,7 +421,8 @@ Refer to the mockups in urGallery/frontend/public/mockups for visuals of how the
 - **Delete page**: DELETE same URL.
 - **Reorder**: PATCH `/api/portfolios/<portfolio_slug>/editor/reorder/` with `page_ids` array.
 - **Publish**: POST `/api/portfolios/<portfolio_slug>/editor/publish/`.
-- Editor UI: portfolio toolbar (title + actions), horizontal page thumbnails, drag-and-drop reorder (dnd-kit), layout picker, shape picker, privacy modal (includes share/copy-link), image upload per slot.
+- Editor UI: portfolio toolbar (title + actions), horizontal page thumbnails, drag-and-drop reorder (dnd-kit), **layout picker panel** (categorized, hover preview—see Layout System), shape picker, privacy modal (includes share/copy-link), image upload per slot.
+- **Desktop-first (V1 soft launch):** Portfolio editor and layout picker target laptop/desktop; mobile/tablet editing deferred.
 - **Undo / Redo:** Undo and redo buttons in the editor toolbar. Track edit history (page content, layout, media, reorder, add/delete page) and allow stepping back/forward. Disable Undo when at oldest state, Redo when at newest. Keyboard shortcuts: Ctrl+Z (undo), Ctrl+Shift+Z or Ctrl+Y (redo).
 
 ### Free tier: Try-before-you-buy (editor & profile)
@@ -430,7 +454,35 @@ Refer to the mockups in urGallery/frontend/public/mockups for visuals of how the
 - **Private portfolios:** Blurred content + password prompt until visitor enters correct password. Access remembered via token/cookie.
 - **Owner controls on live view:** Edit button, privacy toggle (public/private), and Share button in the portfolio toolbar, next to each other; visible only to owner.
 - **Resume link:** If profile has `resume_file`, show "Resume" link (e.g. near contact buttons). Click opens modal with PDF viewer.
-- Components: `ArtistHeader`, `PortfolioSelector`, `PortfolioWrapper`, `PageRenderer`, `Pagination`, `Comments` (or similar), `ThemePatternLayer`, `ColorThemeSetter`, `GoogleFontsLoader`.
+- Components: `ArtistHeader`, `PortfolioSelector`, `PortfolioWrapper`, `PageRenderer`, `PhonePageLayout`, `Pagination`, `PortfolioControls`, `Comments` (or similar), `ThemePatternLayer`, `ColorThemeSetter`, `GoogleFontsLoader`.
+
+### Mobile live view (phone, `< md`) — ✅ Implemented (polish ongoing)
+
+- **Dedicated phone layout:** Live portfolio pages use `PhonePageLayout` below the `md` breakpoint instead of scaling tablet/desktop layouts. All picker layouts share one phone template: full-width hero media (when the layout has media), then stacked title / description / details.
+- **Typography on phone:** Unified `portfolio-page-title` for headers; `portfolio-page-description` and `portfolio-page-details` for body copy. Tablet+ uses the hierarchy classes below.
+- **Pagination:** Fixed dot strip above the footer; appears after scroll (via `artistScrollOverlay`). No background strip — dots float over portfolio content. Spacing: `bottom: calc(var(--artist-footer-height) + 1.5rem)`; `--artist-footer-height: 4rem` on mobile.
+- **Chrome:** Compact profile bar (back, avatar, portfolio title, hamburger) and site footer remain fixed. Owner privacy/share controls in `PortfolioControls` are **tablet/desktop only** (`hidden md:flex`); phone share/privacy TBD.
+- **Content spacing:** Phone page content uses bottom padding (`pb-16`) so text clears pagination + footer.
+
+### Tablet+ typography hierarchy — 🔄 In progress
+
+Seven text slots per page: `title`, `title_2`, `title_3`, `description`, `description_2`, `description_3`, `details`. CSS classes in `globals.css`:
+
+| Class | Role | Weight | Size |
+|-------|------|--------|------|
+| `portfolio-header-massive` | Primary headline | 900 | `clamp(2.25rem, 5vw, 4.5rem)` |
+| `portfolio-header-big` | Secondary headline | 900 | `clamp(1.875rem, 4vw, 3rem)` |
+| `portfolio-header-sub` | Sub-header / accent label | 600 | `clamp(1.25rem, 2.5vw, 1.5rem)` |
+| `portfolio-description` / `portfolio-page-description` | Body copy | 100 | `1rem` |
+| `portfolio-page-details` | Small supplementary text | 300 | `0.8rem` |
+| `portfolio-page-title` | **Phone only** unified header | — | `clamp(2.1875rem, 5vw, 5rem)` |
+
+**Layout-specific tablet+ remaps (live + editor):**
+- **Layout-03:** Orange accent bar uses `title_2` as sub-header (`portfolio-header-sub`); phone unchanged.
+- **Layout-06:** Accent panel — `title_2` → sub-header; `description` → description styling; `details` hidden on tablet+ (still on phone).
+- **Layout-14 / Layout-15:** Headers use `portfolio-header-big` without `portfolio-page-title` override so big-header sizing applies.
+
+**Still to do:** Roll typography hierarchy across remaining layouts; scope `portfolio-page-title` to phone-only everywhere; layout-01 pilot; phone owner share/privacy controls.
 
 ---
 
@@ -445,9 +497,9 @@ Refer to the mockups in urGallery/frontend/public/mockups for visuals of how the
 | **Comment** | portfolio, user (author), body, created_at |
 | **SavedArtist** | user (saver), profile (saved), created_at |
 | **SavedPortfolio** | user (saver), portfolio (saved), created_at |
-| **Page** | portfolio, title, description, description_body, order, layout, media_image, media_shape, media_image_2, media_shape_2, title_2, description_2, title_3, description_3 |
+| **Page** | portfolio, title, description, details, order, layout, media_image, media_shape, media_image_2, media_shape_2, title_2, description_2, title_3, description_3 |
 | **DraftPortfolio** | user, slug, title, privacy, has_unpublished_changes |
-| **DraftPage** | draft_portfolio, title, description, description_body, order, layout, media_image, media_shape, media_image_2, media_shape_2, title_2, description_2, title_3, description_3 |
+| **DraftPage** | draft_portfolio, title, description, details, order, layout, media_image, media_shape, media_image_2, media_shape_2, title_2, description_2, title_3, description_3 |
 | **Theme** | key, name, version, is_active, svg_file, preview_image, css_vars_json |
 | **Media** | title, description, cover_image, file, external_url, owner |
 | **PageMedia** | page, media, order (M2M-style) |
@@ -589,28 +641,40 @@ Refer to the mockups in urGallery/frontend/public/mockups for visuals of how the
 
 ### Pushing to GitHub
 
-From the project root:
+From the project root (PowerShell on Windows — run commands one at a time, or use `;` between them):
 
-```bash
-git status                    # Check what changed
-git add .                     # Stage all changes (or git add <file> for specific files)
-git commit -m "Your message"  # Commit with a descriptive message
-git push origin main          # Push to GitHub (use 'master' if that's your default branch)
+```powershell
+git status                              # See what changed
+git add frontend/src                    # Stage code (avoid committing backend/media uploads)
+git commit -m "Your descriptive message"
+git push origin dev/MrER                # Your current branch (use main/master when merging to prod)
 ```
 
-**New branch** (e.g. for Factory to review):
-```bash
+**Stage everything except local media uploads:**
+```powershell
+git add .
+git reset backend/media/                # Unstage draft upload files if present
+git commit -m "Your message"
+git push origin dev/MrER
+```
+
+**New branch** (e.g. for a PR before merge to main):
+```powershell
 git checkout -b feature/your-branch-name
 git add .
 git commit -m "Description of changes"
 git push -u origin feature/your-branch-name
 ```
 
-First-time setup: `git remote add origin https://github.com/YOUR_ORG/urGallery.git` (if not already configured).
+**First-time remote:** `git remote add origin https://github.com/YOUR_ORG/urGallery.git` (if not already configured).
+
+**Before production:** Run Docker UAT ([UAT_DOCKER_CHECKLIST.md](./UAT_DOCKER_CHECKLIST.md)), then merge `dev/MrER` → `main` (or your deploy branch) and push. See [DEPLOYMENT.md](./DEPLOYMENT.md) for build and env setup.
 
 ---
 
 ## MVP Implementation Status
+
+> **Last updated:** July 2026 — pre-production push. Active branch: `dev/MrER`.
 
 | Feature | Status |
 |---------|--------|
@@ -619,12 +683,17 @@ First-time setup: `git remote add origin https://github.com/YOUR_ORG/urGallery.g
 | **Resume upload & display** | ✅ |
 | Multiple portfolios per user | ✅ |
 | Portfolio editor (draft-based, publish) | ✅ |
+| Layout picker panel (categories, hover preview, scaled preview) | ✅ |
+| **Original layouts — laptop/tablet live view** | ✅ (layouts 1–6, 8–9, 11, 13–15) |
+| **Original layouts — tablet+ typography hierarchy** | 🔄 (layouts 3, 6, 14, 15 done; others pending) |
+| **Mobile live portfolio view (`PhonePageLayout`)** | ✅ (polish ongoing) |
+| **Mobile pagination (scroll-gated dots, no bg strip)** | ✅ |
 | Privacy levels (public, private with password) | ✅ |
 | Artist search on homepage (incl. hashtag-weighted relevance) | ✅ |
 | Public artist landing page (theme, colors, fonts) | ✅ |
 | Settings (profile, **Discoverability** (contact links, hashtags), resume, customization, Security, help) | ✅ |
 | Search result hover styling (background Color 3, text Color 2) | ✅ |
-| Comments on portfolios | ✅ (laptop) |
+| Comments on portfolios | ✅ |
 | Category section (browse by title/location) | ⬜ |
 | Explorer page (recommended portfolios by job title/niche) | ⬜ |
 | Admin analytics (site-wide metrics for admin users) | ⬜ |
@@ -632,10 +701,11 @@ First-time setup: `git remote add origin https://github.com/YOUR_ORG/urGallery.g
 | Subscription tiers (Stripe billing) | ⬜ |
 | **Hashtags** (Settings management + search integration) | ✅ |
 | Tier-based limits (portfolios, pages, storage) | ⬜ |
+| Phone owner share/privacy controls on live view | ⬜ |
 
 **Remaining MVP features: 5** — Category section, Explorer page, Subscription/billing, Tier limits, Admin analytics.
 
-The portfolio layouts still need refining too.
+**Pre-launch polish in progress:** Typography pass on remaining layouts; phone share/privacy; Docker UAT and production deploy (see [DEPLOYMENT.md](./DEPLOYMENT.md), [UAT_DOCKER_CHECKLIST.md](./UAT_DOCKER_CHECKLIST.md)).
 
 ---
 

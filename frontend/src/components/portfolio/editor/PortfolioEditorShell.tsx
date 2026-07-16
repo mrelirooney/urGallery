@@ -9,14 +9,14 @@ import PageRenderer, {
   MediaShapeType,
   PortfolioPageData,
 } from "./PageRenderer";
-import LayoutPickerModal from "./LayoutPickerModal";
+import LayoutPickerPanel from "./LayoutPickerPanel";
+import ThemedAlertModal from "@/components/ui/ThemedAlertModal";
 import PrivacyModal from "./PrivacyModal";
 import useHistory from "@/hooks/useHistory";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
-import { getTextColorForBackground } from "@/lib/colorUtils";
+import { resolveLayout4Description } from "@/lib/portfolio/layoutLimits";
 import { resizeImageForUpload } from "@/lib/imageUtils";
-import { X } from "lucide-react";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE ?? process.env.NEXT_PUBLIC_API_URL ?? "";
@@ -31,7 +31,7 @@ interface EditorPageApi {
   id: number;
   title: string;
   description: string;
-  description_body?: string;
+  details?: string;
   order: number;
   layout: LayoutType;
   media_image: string | null;
@@ -62,12 +62,16 @@ function mapApiPagesToEditor(
         ? apiPage.media_image_2
         : `${API_BASE}${apiPage.media_image_2}`
       : (current?.mediaSrc2 ?? null);
+    const layout = (apiPage.layout || "layout-1") as LayoutType;
     return {
       id: apiPage.id,
-      layoutType: (apiPage.layout || "layout-1") as LayoutType,
+      layoutType: layout,
       title: apiPage.title,
-      description: apiPage.description,
-      descriptionBody: apiPage.description_body ?? "",
+      description:
+        layout === "layout-4"
+          ? resolveLayout4Description(apiPage.description, apiPage.details)
+          : apiPage.description,
+      details: layout === "layout-4" ? "" : (apiPage.details ?? ""),
       mediaSrc,
       mediaShape: (apiPage.media_shape || "1:1") as MediaShapeType,
       mediaSrc2,
@@ -105,7 +109,7 @@ const createEmptyPage = (): PortfolioPageData => ({
   layoutType: "layout-1",
   title: "",
   description: "",
-  descriptionBody: "",
+  details: "",
   mediaSrc: null,
   mediaShape: "1:1",
   mediaSrc2: null,
@@ -195,14 +199,7 @@ export default function PortfolioEditorShell({
     savePortfolio(undefined, { silent: true }).catch(() => {});
   }, [portfolioSlug, pages]);
 
-  // Lock scroll when modals are open
-  useEffect(() => {
-    if (isDraftSavedModalOpen || isBackWarningModalOpen || isPublishSuccessModalOpen) {
-      const prev = document.body.style.overflow;
-      document.body.style.overflow = "hidden";
-      return () => { document.body.style.overflow = prev; };
-    }
-  }, [isDraftSavedModalOpen, isBackWarningModalOpen, isPublishSuccessModalOpen]);
+  // Scroll lock handled by ThemedAlertModal (alerts/privacy) and LayoutPickerPanel
 
   // Force layout display when user selects a new layout (bypasses any state sync delay)
   const [layoutOverride, setLayoutOverride] = useState<LayoutType | null>(null);
@@ -381,8 +378,11 @@ export default function PortfolioEditorShell({
         id: data.id,
         layoutType: data.layout,
         title: data.title,
-        description: data.description,
-        descriptionBody: data.description_body ?? "",
+        description:
+          data.layout === "layout-4"
+            ? resolveLayout4Description(data.description, data.details)
+            : data.description,
+        details: data.layout === "layout-4" ? "" : (data.details ?? ""),
         mediaSrc: data.media_image,
         mediaShape2: (data.media_shape ?? "1:1") as MediaShapeType,
         mediaSrc2: data.media_image_2,
@@ -505,7 +505,8 @@ export default function PortfolioEditorShell({
         id: page.id,
         title: page.title,
         description: page.description,
-        description_body: page.descriptionBody ?? "",
+        details:
+          page.layoutType === "layout-4" ? "" : (page.details ?? ""),
         layout: page.layoutType,
         media_shape: page.mediaShape2,
         media_shape_2: page.mediaShape2_2,
@@ -666,11 +667,11 @@ export default function PortfolioEditorShell({
     updatePage(pageIndex, (page) => ({ ...page, description: newDescription }));
   };
 
-  const handleChangePageDescriptionBody = (
+  const handleChangePageDetails = (
     pageIndex: number,
-    newDescriptionBody: string,
+    newDetails: string,
   ) => {
-    updatePage(pageIndex, (page) => ({ ...page, descriptionBody: newDescriptionBody }));
+    updatePage(pageIndex, (page) => ({ ...page, details: newDetails }));
   };
 
   const handleChangeMediaShape = (
@@ -915,7 +916,7 @@ export default function PortfolioEditorShell({
 
       {/* Canvas area */}
       <section
-        className="h-[calc(100dvh-8rem)] justify-center items-center min-w-0 shadow-lg flex flex-col -mt-14 relative overflow-hidden"
+        className="h-[calc(100dvh-6.5rem)] justify-center items-center min-w-0 shadow-lg flex flex-col -mt-0 relative overflow-hidden"
         style={{
           backgroundColor: "var(--artist-background, #11100e)",
           color: "var(--artist-text, #faf7f2)",
@@ -944,7 +945,7 @@ export default function PortfolioEditorShell({
               layoutOverride={layoutOverride}
               onChangeTitle={handleChangePageTitle}
               onChangeDescription={handleChangePageDescription}
-              onChangeDescriptionBody={handleChangePageDescriptionBody}
+              onChangeDetails={handleChangePageDetails}
               onChangeImage={handleChangeImage}
               onChangeTitle2={handleChangeTitle2}
               onChangeDescription2={handleChangeDescription2}
@@ -961,13 +962,16 @@ export default function PortfolioEditorShell({
       {/* Modals */}
       {currentPage && (
         <>
-          <LayoutPickerModal
+          <LayoutPickerPanel
             isOpen={isLayoutModalOpen}
             onClose={handleCloseLayout}
             currentLayout={layoutOverride ?? currentPage.layoutType}
             onSelectLayout={(layout) =>
               handleChangeLayout(currentPageIndex, layout)
             }
+            customColors={customColors}
+            pages={pages}
+            currentPageIndex={currentPageIndex}
           />
 
           <PrivacyModal
@@ -986,132 +990,56 @@ export default function PortfolioEditorShell({
             customColors={customColors}
           />
 
-          {isBackWarningModalOpen && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
-              <div
-                className="w-full max-w-sm mx-4 rounded-xs p-6 shadow-xl relative"
-                style={{
-                  backgroundColor: customColors?.background ?? "#faf7f2",
-                  color: getTextColorForBackground(customColors?.background ?? "#faf7f2"),
-                  border: "1px solid rgba(255, 253, 250, 0.3)",
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={() => setIsBackWarningModalOpen(false)}
-                  className="absolute top-3 right-3 p-1 rounded opacity-70 hover:opacity-100 transition-opacity z-10"
-                  style={{ color: "inherit" }}
-                  aria-label="Close"
-                >
-                  <X size={20} />
-                </button>
-                <h3 className="text-lg font-medium mb-2 text-center">Unsaved changes</h3>
-                <p className="text-sm opacity-80 mb-6 text-center">
-                  Continue without saving?
-                </p>
-                <div className="flex gap-3 justify-center">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsBackWarningModalOpen(false);
-                      goToProfile();
-                    }}
-                    className="px-4 py-2 rounded-xs font-medium text-sm transition-colors"
-                    style={{
-                      backgroundColor: customColors?.text ?? "#11100e",
-                      color: getTextColorForBackground(customColors?.text ?? "#11100e"),
-                    }}
-                  >
-                    Discard
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleSaveAndGo}
-                    className="px-4 py-2 rounded-xs font-medium text-sm transition-colors"
-                    style={{
-                      backgroundColor: customColors?.accent ?? "#c96a4a",
-                      color: getTextColorForBackground(customColors?.accent ?? "#c96a4a"),
-                    }}
-                  >
-                    Save & go
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+          <ThemedAlertModal
+            isOpen={isBackWarningModalOpen}
+            onClose={() => setIsBackWarningModalOpen(false)}
+            customColors={customColors}
+            title="Unsaved changes"
+            secondary={{
+              label: "Discard",
+              onClick: () => {
+                setIsBackWarningModalOpen(false);
+                goToProfile();
+              },
+            }}
+            primary={{
+              label: "Save & go",
+              onClick: handleSaveAndGo,
+            }}
+          >
+            Continue without saving?
+          </ThemedAlertModal>
 
-          {isDraftSavedModalOpen && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
-              <div
-                className="w-full max-w-sm mx-4 rounded-xs p-6 shadow-xl"
-                style={{
-                  backgroundColor: customColors?.background ?? "#faf7f2",
-                  color: getTextColorForBackground(customColors?.background ?? "#faf7f2"),
-                  border: "1px solid rgba(255, 253, 250, 0.3)",
-                }}
-              >
-                <h3 className="text-lg font-medium mb-2 text-center">Draft saved</h3>
-                <p className="text-sm opacity-80 mb-6 text-center">
-                  Keep editing or return to your profile?
-                </p>
-                <div className="flex gap-3 justify-center">
-                  <button
-                    type="button"
-                    onClick={() => setIsDraftSavedModalOpen(false)}
-                    className="px-4 py-2 rounded-xs font-medium text-sm transition-colors"
-                    style={{
-                      backgroundColor: customColors?.text ?? "#11100e",
-                      color: getTextColorForBackground(customColors?.text ?? "#11100e"),
-                    }}
-                  >
-                    Keep editing
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => router.push(`/${artistSlug}`)}
-                    className="px-4 py-2 rounded-xs font-medium text-sm transition-colors"
-                    style={{
-                      backgroundColor: customColors?.accent ?? "#c96a4a",
-                      color: getTextColorForBackground(customColors?.accent ?? "#c96a4a"),
-                    }}
-                  >
-                    Back to profile
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+          <ThemedAlertModal
+            isOpen={isDraftSavedModalOpen}
+            onClose={() => setIsDraftSavedModalOpen(false)}
+            customColors={customColors}
+            title="Draft saved"
+            secondary={{
+              label: "Keep editing",
+              onClick: () => setIsDraftSavedModalOpen(false),
+            }}
+            primary={{
+              label: "Back to profile",
+              onClick: () => router.push(`/${artistSlug}`),
+            }}
+          >
+            Keep editing or return to your profile?
+          </ThemedAlertModal>
 
-          {isPublishSuccessModalOpen && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
-              <div
-                className="w-full max-w-sm mx-4 rounded-xs p-6 shadow-xl"
-                style={{
-                  backgroundColor: customColors?.background ?? "#faf7f2",
-                  color: getTextColorForBackground(customColors?.background ?? "#faf7f2"),
-                  border: "1px solid rgba(255, 253, 250, 0.3)",
-                }}
-              >
-                <h3 className="text-lg font-medium mb-6 text-center">Portfolio Published</h3>
-                <div className="flex justify-center">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsPublishSuccessModalOpen(false);
-                      router.push(`/${artistSlug}`);
-                    }}
-                    className="px-4 py-2 rounded-xs font-medium text-sm transition-colors"
-                    style={{
-                      backgroundColor: customColors?.accent ?? "#c96a4a",
-                      color: getTextColorForBackground(customColors?.accent ?? "#c96a4a"),
-                    }}
-                  >
-                    Go back to profile
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+          <ThemedAlertModal
+            isOpen={isPublishSuccessModalOpen}
+            onClose={() => setIsPublishSuccessModalOpen(false)}
+            customColors={customColors}
+            title="Portfolio Published"
+            primary={{
+              label: "Go back to profile",
+              onClick: () => {
+                setIsPublishSuccessModalOpen(false);
+                router.push(`/${artistSlug}`);
+              },
+            }}
+          />
         </>
       )}
     </div>

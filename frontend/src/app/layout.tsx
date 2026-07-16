@@ -22,7 +22,7 @@ const geistMono = Geist_Mono({
 const raleway = Raleway({
   variable: "--font-raleway",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800", "900"],
 });
 
 export const metadata: Metadata = {
@@ -32,11 +32,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={raleway.variable}>
-      <body
-        className="min-h-dvh flex flex-col text-neutral-900"
-        style={{ background: "var(--body-background, var(--background))" }}
-      >
+    <html lang="en" className={raleway.variable} suppressHydrationWarning>
+      <body className="min-h-dvh flex flex-col text-neutral-900" suppressHydrationWarning>
         <ColorThemeGuard />
         <FrostedGlassHoverProvider>
           <ArtistScrollProvider>

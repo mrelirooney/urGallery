@@ -9,6 +9,9 @@ export type SearchResult = {
   avatar_url?: string;
   title?: string | null;
   location?: string | null;
+  portfolio_slug?: string | null;
+  portfolio_title?: string | null;
+  preview_image_url?: string | null;
 };
 
 

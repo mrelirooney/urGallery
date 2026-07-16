@@ -183,8 +183,8 @@ class Page(models.Model):
     title_3 = models.CharField(max_length=255, blank=True)
     description_3 = models.TextField(blank=True)
 
-    # Body/paragraph text for layout-4 (sub header = description, body = description_body)
-    description_body = models.TextField(blank=True)
+    # Small supplementary text (location, date, credits, etc.)
+    details = models.TextField(blank=True)
 
     class Meta:
         ordering = ["order", "id"]
@@ -362,7 +362,7 @@ class DraftPage(models.Model):
     title_3 = models.CharField(max_length=255, blank=True)
     description_3 = models.TextField(blank=True)
 
-    description_body = models.TextField(blank=True)
+    details = models.TextField(blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

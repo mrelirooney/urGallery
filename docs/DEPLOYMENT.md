@@ -2,6 +2,8 @@
 
 > **Factory.ai:** DevOps may use Factory.ai for CI/CD, automated deployments, and agent-driven updates. See [PRD.md](./PRD.md#deployment--devops-factoryai) for GitHub push instructions and Factory context.
 
+> **Status (July 2026):** MVP core is feature-complete for soft launch; remaining work is Category/Explorer/billing/tier limits/admin analytics plus pre-deploy UAT. See [PRD.md — MVP Implementation Status](./PRD.md#mvp-implementation-status).
+
 ## Quick Build (EC2)
 
 **Current EC2 URLs** (API :8000, Site :3000):

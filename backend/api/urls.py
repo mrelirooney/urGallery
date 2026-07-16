@@ -11,6 +11,7 @@ from accounts.views import (
     ForgotPasswordView,
     ResetPasswordView,
 )
+from api.admin_views import AdminAnalyticsView
 from api.views import (
     MyProfileView,
     ThemeListView,
@@ -61,5 +62,8 @@ urlpatterns = [
 
     # ── HELP (authenticated) ─────────────────────────────────────────
     path("help/", help_form_view, name="help-form"),
+
+    # ── ADMIN (superuser only) ───────────────────────────────────────
+    path("admin/analytics/", AdminAnalyticsView.as_view(), name="admin-analytics"),
 ]
 

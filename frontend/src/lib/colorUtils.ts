@@ -5,7 +5,10 @@
 
 const TEXT_ON_LIGHT = "#11100e";
 const TEXT_ON_DARK = "#faf7f2";
-const LUMINANCE_THRESHOLD = 0.45;
+/** When contrast ratios are this close, use saturation/lightness heuristics */
+const CONTRAST_TIE_THRESHOLD = 0.75;
+const PASTEL_SATURATION_MAX = 0.35;
+const PASTEL_LIGHTNESS_MIN = 0.52;
 
 /**
  * Parse hex color to RGB components (0-255).
@@ -33,7 +36,7 @@ export function hexToRgb(hex: string): { r: number; g: number; b: number } | nul
  */
 export function getLuminance(hex: string): number {
   const rgb = hexToRgb(hex);
-  if (!rgb) return 0.5; // fallback to "dark" for invalid hex
+  if (!rgb) return 0.5;
   const { r, g, b } = rgb;
   const [rs, gs, bs] = [r, g, b].map((c) => {
     const s = c / 255;
@@ -43,19 +46,85 @@ export function getLuminance(hex: string): number {
 }
 
 /**
- * Returns true if the color is considered "light" (high luminance).
+ * WCAG contrast ratio between two colors (1–21).
  */
-export function isLightColor(hex: string): boolean {
-  return getLuminance(hex) > LUMINANCE_THRESHOLD;
+export function getContrastRatio(hex1: string, hex2: string): number {
+  const l1 = getLuminance(hex1);
+  const l2 = getLuminance(hex2);
+  const lighter = Math.max(l1, l2);
+  const darker = Math.min(l1, l2);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+/**
+ * HSL lightness (0–1).
+ */
+export function getHslLightness(hex: string): number {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return 0.5;
+  const rn = rgb.r / 255;
+  const gn = rgb.g / 255;
+  const bn = rgb.b / 255;
+  const max = Math.max(rn, gn, bn);
+  const min = Math.min(rn, gn, bn);
+  return (max + min) / 2;
+}
+
+/**
+ * HSL saturation (0–1).
+ */
+export function getHslSaturation(hex: string): number {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return 0;
+  const rn = rgb.r / 255;
+  const gn = rgb.g / 255;
+  const bn = rgb.b / 255;
+  const max = Math.max(rn, gn, bn);
+  const min = Math.min(rn, gn, bn);
+  const l = (max + min) / 2;
+  if (max === min) return 0;
+  const d = max - min;
+  return l > 0.5 ? d / (2 - max - min) : d / (max + min);
+}
+
+function resolveContrastTie(bgHex: string, contrastOnDark: number, contrastOnLight: number): string {
+  const sat = getHslSaturation(bgHex);
+  const hslL = getHslLightness(bgHex);
+  const lum = getLuminance(bgHex);
+
+  // Muted pastels (lavender, cream) → off-black text
+  if (sat < PASTEL_SATURATION_MAX && hslL > PASTEL_LIGHTNESS_MIN) {
+    return TEXT_ON_LIGHT;
+  }
+  // Saturated mid-tones (vivid blue, purple, red) → off-white text
+  if (sat >= PASTEL_SATURATION_MAX && lum < 0.45) {
+    return TEXT_ON_DARK;
+  }
+
+  return contrastOnDark >= contrastOnLight ? TEXT_ON_LIGHT : TEXT_ON_DARK;
 }
 
 /**
  * Returns the contrasting text color for a background.
- * Light background → off-black (#11100e)
- * Dark background → off-white (#faf7f2)
+ * Picks off-black or off-white by WCAG contrast ratio, with saturation-aware
+ * tie-breaking for the small set of ambiguous mid-tone colors.
  */
 export function getTextColorForBackground(bgHex: string): string {
-  return isLightColor(bgHex) ? TEXT_ON_LIGHT : TEXT_ON_DARK;
+  const contrastOnDark = getContrastRatio(bgHex, TEXT_ON_LIGHT);
+  const contrastOnLight = getContrastRatio(bgHex, TEXT_ON_DARK);
+
+  if (Math.abs(contrastOnDark - contrastOnLight) < CONTRAST_TIE_THRESHOLD) {
+    return resolveContrastTie(bgHex, contrastOnDark, contrastOnLight);
+  }
+
+  return contrastOnDark >= contrastOnLight ? TEXT_ON_LIGHT : TEXT_ON_DARK;
+}
+
+/**
+ * Returns true if the background should use off-black text (light surface).
+ */
+export function isLightColor(hex: string): boolean {
+  return getTextColorForBackground(hex) === TEXT_ON_LIGHT;
 }
 
 /**
@@ -93,7 +162,7 @@ export function getSurfaceColor(bgHex: string): string {
     else if (max === gn) h = ((bn - rn) / d + 2) / 6;
     else h = ((rn - gn) / d + 4) / 6;
   }
-  const shift = 0.07; // ~7% lightness shift
+  const shift = 0.07;
   const newL = isLightColor(bgHex) ? Math.max(0, l - shift) : Math.min(1, l + shift);
   const hue2rgb = (p: number, q: number, t: number) => {
     if (t < 0) t += 1;

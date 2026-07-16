@@ -11,6 +11,7 @@ import type {
   MediaShapeType,
   LayoutType,
 } from "@/components/portfolio/editor/PageRenderer";
+import { resolveLayout4Description } from "@/lib/portfolio/layoutLimits";
 import { useParams } from "next/navigation";
 
 const DEFAULT_COLORS = {
@@ -40,7 +41,7 @@ type EditorPortfolioApi = {
     id: number;
     title: string;
     description: string;
-    description_body?: string;
+    details?: string;
     order: number;
     layout: LayoutType;
     media_image: string | null;
@@ -173,12 +174,17 @@ export default function EditPortfolioPage() {
   const pages: PortfolioPageData[] = apiPortfolio.pages
     .slice()
     .sort((a, b) => a.order - b.order)
-    .map((page) => ({
+    .map((page) => {
+      const layout = (page.layout || "layout-1") as LayoutType;
+      return {
       id: page.id,
-      layoutType: (page.layout || "layout-1") as LayoutType,
+      layoutType: layout,
       title: page.title,
-      description: page.description,
-      descriptionBody: page.description_body ?? "",
+      description:
+        layout === "layout-4"
+          ? resolveLayout4Description(page.description, page.details)
+          : page.description,
+      details: layout === "layout-4" ? "" : (page.details ?? ""),
       mediaSrc: page.media_image
         ? page.media_image.startsWith("http")
           ? page.media_image
@@ -195,7 +201,8 @@ export default function EditPortfolioPage() {
       description2: page.description_2 || "",
       title3: page.title_3 || "",
       description3: page.description_3 || "",
-    }));
+      };
+    });
 
   // Editor only needs public/private; backend keeps draft/private
   const initialPrivacy: "public" | "private" =

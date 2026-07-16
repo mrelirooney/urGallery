@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Container from "./Container";
 import { hexToRgba, getTextColorForBackground, isLightColor } from "@/lib/colorUtils";
+import { getPortfolioOverlayOpacity, useIsPhoneViewport } from "@/lib/artistScrollOverlay";
 import { useFrostedGlassHover } from "@/components/layout/FrostedGlassHoverContext";
 import { useArtistScroll } from "@/components/artist/ArtistScrollContext";
 
@@ -58,50 +59,60 @@ export default function Footer() {
     return () => observer.disconnect();
   }, [pathname]);
 
-  const hideFooterBorder =
+  const isConstrainedLayout =
     pathname === "/" ||
+    pathname?.startsWith("/search") ||
     pathname?.startsWith("/login") ||
-    pathname?.startsWith("/signup");
-  const isArtistPage = pathname &&
-    pathname !== '/' &&
-    !pathname.startsWith('/login') &&
-    !pathname.startsWith('/signup') &&
-    !pathname.startsWith('/settings') &&
-    !pathname.startsWith('/sandbox') &&
-    /^\/[^/]+(\/[^/]+)*$/.test(pathname);
+    pathname?.startsWith("/signup") ||
+    pathname?.startsWith("/forgot-password") ||
+    pathname?.startsWith("/reset-password") ||
+    pathname?.startsWith("/settings") ||
+    pathname?.startsWith("/saves") ||
+    pathname?.startsWith("/sandbox") ||
+    pathname?.startsWith("/svg-layout-test") ||
+    pathname === "/about" ||
+    pathname === "/terms" ||
+    pathname === "/privacy" ||
+    pathname === "/help";
+  const hideFooterBorder =
+    isConstrainedLayout;
+  const isArtistPage = Boolean(
+    pathname &&
+      !isConstrainedLayout &&
+      /^\/[^/]+(\/[^/]+)*$/.test(pathname),
+  );
 
   const frostedCtx = useFrostedGlassHover();
   const artistScroll = useArtistScroll();
+  const isPhone = useIsPhoneViewport();
   const isFrostedHovered = frostedCtx?.isHovered ?? false;
   const isEditorPage = pathname?.includes("/edit");
 
-  // On artist pages: footer hidden until 50% scroll, then fades in like compact profile bar
   const footerOpacity =
     isArtistPage && artistScroll
-      ? artistScroll.scrollProgress > 0.5
-        ? (artistScroll.scrollProgress - 0.5) / 0.5
-        : 0
+      ? getPortfolioOverlayOpacity(artistScroll.scrollProgress, isPhone)
       : 1;
   const footerPointerEvents = isArtistPage && artistScroll && footerOpacity < 0.01 ? "none" : "auto";
+  const isPortfolioView = artistScroll?.isPortfolioView ?? false;
   const frostedOpacity =
     isEditorPage && customColors
       ? 1
-      : isArtistPage && customColors && frostedCtx
-        ? (isFrostedHovered ? .99 : 0.05)
+      : isArtistPage && customColors
+        ? isPortfolioView
+          ? isFrostedHovered
+            ? 0.99
+            : 1
+          : 0.05
         : 0.05;
 
   const footerBg = customColors?.background || "var(--background)";
-  const portfolioBg = customColors?.portfolioBg || customColors?.text;
-  const baseTextColor = portfolioBg ? getTextColorForBackground(portfolioBg) : "#6b7280";
-  const footerText =
-    isEditorPage && customColors
-      ? getTextColorForBackground(footerBg)
-      : isArtistPage && customColors
-        ? (isFrostedHovered ? "#faf7f2" : baseTextColor)
-        : (customColors?.text || "#6b7280");
+  const footerText = customColors?.text || "#6b7280";
   const footerAccent = customColors?.accent || "#c96a4a";
-  const bgForBorder = portfolioBg ?? customColors?.background ?? "#faf7f2";
-  const borderOpacity = isLightColor(bgForBorder) ? 0.3 : 0.1;
+  const footerAccentText = getTextColorForBackground(footerAccent);
+  const profileBgForBorder =
+    customColors?.background ??
+    (typeof footerBg === "string" && !footerBg.startsWith("var(") ? footerBg : "#faf7f2");
+  const borderOpacity = isLightColor(profileBgForBorder) ? 0.15 : 0.2;
 
   const containerClass = isArtistPage
     ? "h-auto md:h-14 flex flex-col md:flex-row items-center justify-space-between md:justify-between text-xs max-w-6xl lg:max-w-7xl xl:max-w-7xl 2xl:max-w-7xl mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-16 2xl:px-20 py-3 md:py-0 gap-3 sm:gap-4 md:gap-0 opacity-70"
@@ -109,7 +120,7 @@ export default function Footer() {
 
   const footerClassName =
     isArtistPage && customColors
-      ? "artist-page-footer fixed bottom-0 left-0 right-0 z-[50] backdrop-blur-md transition-all duration-300 shadow-[0_-4px_12px_rgba(0,0,0,0.15)]"
+      ? `artist-page-footer fixed bottom-0 left-0 right-0 z-[50] transition-all duration-300 ${isPortfolioView ? "shadow-[0_-4px_12px_rgba(0,0,0,0.12)]" : "backdrop-blur-md shadow-[0_-4px_12px_rgba(0,0,0,0.15)]"}`
       : hideFooterBorder
         ? ""
         : "border-t-2 border-[#faf7f2]";
@@ -123,9 +134,9 @@ export default function Footer() {
       className={footerClassName}
       style={{
         backgroundColor: isArtistPage && customColors ? hexToRgba(footerBg, frostedOpacity) : footerBg,
-        ...(isArtistPage && customColors && {
+        ...(isArtistPage && customColors && isPortfolioView && {
           borderTopWidth: 1,
-          borderTopColor: hexToRgba("#faf7f2", borderOpacity),
+          borderTopColor: hexToRgba(footerText, borderOpacity),
         }),
         ...(isArtistPage && artistScroll && {
           opacity: footerOpacity,
@@ -163,7 +174,7 @@ export default function Footer() {
             className="rounded-sm px-2 py-0.5 text-xs leading-none inline-block transition-colors duration-200"
             style={{
               backgroundColor: footerAccent,
-              color: footerText,
+              color: footerAccentText,
               opacity: 0.9,
             }}
           >

@@ -28,6 +28,7 @@
   --portfolio-header-big: clamp(1.875rem, 4vw, 3rem);
   --portfolio-header-sub: clamp(1.25rem, 2.5vw, 1.5rem);
   --portfolio-description: 1rem;
+  --portfolio-details: .8rem;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -87,7 +88,7 @@ body {
 }
 
 body {
-  background: var(--background);
+  background: var(--body-background, var(--background));
   color: var(--foreground);
   font-family: var(--font-raleway), "Raleway", sans-serif;
   letter-spacing: 0.02em;
@@ -110,12 +111,12 @@ button {
 /* Portfolio content typography – uses vars from :root, can be overridden by ColorThemeSetter */
 .portfolio-header-massive {
   font-size: var(--portfolio-header-massive);
-  font-weight: 700;
+  font-weight: 900;
   line-height: 1.1;
 }
 .portfolio-header-big {
   font-size: var(--portfolio-header-big);
-  font-weight: 700;
+  font-weight: 900;
   line-height: 1.2;
 }
 .portfolio-header-sub {
@@ -125,7 +126,244 @@ button {
 }
 .portfolio-description {
   font-size: var(--portfolio-description);
+  font-weight: 100;
   line-height: 1.5;
+}
+
+/* Layout-9: shared text box width (editor + live preview) */
+[data-layout="layout-9"] .layout-9-text-block {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+[data-layout="layout-9"] h2.portfolio-page-title {
+  margin: 0;
+}
+
+textarea.portfolio-page-title,
+textarea.portfolio-page-description,
+textarea.portfolio-description,
+textarea.portfolio-page-details {
+  font-family: inherit;
+  field-sizing: content;
+  overflow: hidden;
+}
+
+textarea.portfolio-page-title {
+  min-height: 2.85em;
+}
+
+textarea.portfolio-page-description,
+textarea.portfolio-description {
+  min-height: 1.375em;
+}
+
+textarea.portfolio-page-details {
+  min-height: 1.4em;
+}
+
+/* Layout-2 overlay: bottom-anchored, grow upward, cap at 50% of image area */
+[data-layout="layout-2"] .layout-2-overlay-text {
+  align-self: flex-end;
+  max-height: 50%;
+  overflow: hidden;
+}
+
+/* Layout-3: shared width for title + description column */
+[data-layout="layout-3"] .layout-3-text-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+[data-layout="layout-3"] .layout-3-text-column {
+  width: 80%;
+  max-width: 80%;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+[data-layout="layout-3"] h2.portfolio-page-title {
+  margin: 0;
+}
+
+/* Layout-3: center-align title + description (overrides shared textarea text-left) */
+[data-layout="layout-3"] .layout-3-text-column .portfolio-page-title,
+[data-layout="layout-3"] .layout-3-text-column textarea.portfolio-page-title {
+  width: 100%;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+  min-height: 0;
+  line-height: 1.1;
+}
+
+[data-layout="layout-3"] .layout-3-text-column .portfolio-header-sub,
+[data-layout="layout-3"] .layout-3-text-column textarea.layout-3-sub-header-field {
+  text-align: center;
+  margin: 0;
+  padding: 0;
+  min-height: 0;
+  line-height: 1.3;
+  field-sizing: content;
+}
+
+/* Layout-6: right-aligned text; header accent bottom border on shrink-wrapped wrapper */
+[data-layout="layout-6"] .layout-6-text-right,
+[data-layout="layout-6"] textarea.layout-6-text-right {
+  text-align: right;
+}
+
+[data-layout="layout-6"] .layout-6-header-border h2,
+[data-layout="layout-6"] .layout-6-header-border textarea {
+  width: fit-content;
+  max-width: 100%;
+}
+
+[data-layout="layout-6"] textarea.layout-6-header-field {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  min-height: 0;
+  line-height: 1.2;
+}
+
+/* Live/preview: match editor textarea padding between accent panel text slots */
+[data-layout="layout-6"] .layout-6-accent-text-group > p,
+[data-layout="layout-6"] .layout-6-accent-text-group > h3,
+[data-layout="layout-6"] .layout-6-accent-text-group > textarea {
+  width: 100%;
+  max-width: 100%;
+}
+
+[data-layout="layout-6"] .layout-6-accent-text-group > p,
+[data-layout="layout-6"] .layout-6-accent-text-group > h3 {
+  margin: 0;
+}
+
+[data-layout="layout-6"] .layout-6-accent-text-group > p + p,
+[data-layout="layout-6"] .layout-6-accent-text-group > h3 + p,
+[data-layout="layout-6"] .layout-6-accent-text-group > textarea + textarea {
+  margin-top: 1rem;
+}
+
+[data-layout="layout-6"] .layout-6-accent-text-group textarea.layout-6-sub-header-field {
+  min-height: 0;
+  field-sizing: content;
+}
+
+/* Layout-13: left accent bar hugs title text (editor textarea overrides) */
+[data-layout="layout-13"] .layout-13-header-accent {
+  width: fit-content;
+  max-width: 100%;
+}
+
+[data-layout="layout-13"] textarea.layout-13-header-field {
+  width: fit-content;
+  max-width: 100%;
+  min-height: 0;
+}
+
+/* Layout-8: centered text fields (editor textareas override shared text-left) */
+[data-layout="layout-8"] .layout-8-text-center,
+[data-layout="layout-8"] textarea.layout-8-text-center {
+  text-align: center;
+}
+
+[data-layout="layout-8"] .layout-8-text-center {
+  width: 100%;
+  max-width: 100%;
+}
+
+[data-layout="layout-8"] textarea.layout-8-title-field {
+  width: 100%;
+  max-width: 100%;
+  min-height: 0;
+}
+
+/* Layout-14: centered text fields in all three columns (editor textareas override shared text-left) */
+[data-layout="layout-14"] .layout-14-text-center,
+[data-layout="layout-14"] textarea.layout-14-text-center {
+  text-align: center;
+}
+
+[data-layout="layout-14"] .layout-14-text-center {
+  width: 100%;
+  max-width: 100%;
+}
+
+[data-layout="layout-14"] textarea.layout-14-title-field,
+[data-layout="layout-14"] h3.layout-14-title-field {
+  width: 100%;
+  max-width: 100%;
+  min-height: 0;
+  margin: 0;
+  field-sizing: content;
+}
+
+[data-layout="layout-15"] textarea.layout-15-title-field,
+[data-layout="layout-15"] h3.layout-15-title-field {
+  width: 100%;
+  max-width: 100%;
+  min-height: 0;
+  margin: 0;
+  field-sizing: content;
+}
+
+/* Layout-1: square accent header borders, tight spacing above description block */
+[data-layout="layout-1"] textarea.layout-1-title-field,
+[data-layout="layout-1"] h2.layout-1-title-field,
+[data-layout="layout-1"] input.layout-1-title-field {
+  width: 100%;
+  max-width: 100%;
+  min-height: 0;
+  margin: 0;
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+}
+
+[data-layout="layout-1"] textarea.layout-1-description-field {
+  padding: 0.75rem 1.25rem;
+  border-radius: 0;
+}
+
+/* Laptop+: unified page-title vertical padding across all layouts (layout-1 baseline) */
+@media (min-width: 768px) {
+  [data-layout] h2.portfolio-page-title,
+  [data-layout] h3.portfolio-page-title,
+  [data-layout] textarea.portfolio-page-title,
+  [data-layout] input.portfolio-page-title {
+    padding-top: 1.2rem !important;
+    padding-bottom: 1.2rem !important;
+  }
+}
+
+/* Portfolio page typography standard (layout-9 source of truth, all breakpoints) */
+.portfolio-page-title {
+  font-family: inherit;
+  font-size: clamp(2.1875rem, 5vw, 5rem);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+.portfolio-page-description {
+  font-size: var(--portfolio-description);
+  font-weight: 300;
+  line-height: 1.375;
+  letter-spacing: normal;
+}
+
+.portfolio-page-details {
+  font-size: var(--portfolio-details);
+  font-weight: 300;
+  line-height: 1.4;
+  letter-spacing: normal;
 }
 
 /* Portfolio media drop shadow – off-black on light bg, off-white on dark bg */
@@ -136,6 +374,22 @@ button {
 /* Allow full-width breakout on mobile for portfolio image/text */
 @media (max-width: 639px) {
   #portfolio-shell { overflow-x: visible; }
+}
+
+/* Mobile portfolio view: room for fixed compact bar (top) + footer (bottom) */
+@media (max-width: 767px) {
+  :root {
+    --artist-compact-bar-height: 7rem;
+    --artist-footer-height: 4rem;
+  }
+
+  #portfolio-shell {
+    overflow-x: clip;
+  }
+
+  [data-viewport="phone"] .phone-page-media {
+    width: 100vw;
+  }
 }
 
 /* Unlock error shake animation */

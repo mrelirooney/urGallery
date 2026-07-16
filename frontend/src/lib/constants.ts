@@ -22,6 +22,9 @@ export const THEME_PATTERN_PRESERVE_ASPECT: "xMidYMid slice" | "xMidYMid meet" |
 /** Default font when none selected (matches logo) */
 export const DEFAULT_FONT_FAMILY = "Raleway";
 
+/** Weights requested from Google Fonts for artist profile/portfolio typography */
+export const GOOGLE_FONT_WEIGHTS = "400;500;600;700;800;900";
+
 /** 16 Google Fonts for profile/portfolio customization (alphabetical by name) */
 export const GOOGLE_FONTS = [
   { id: "bebas-neue", name: "Bebas Neue", family: "Bebas Neue" },

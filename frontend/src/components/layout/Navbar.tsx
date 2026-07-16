@@ -66,6 +66,7 @@ export default function Navbar() {
   
   const isConstrainedLayout =
     pathname === "/" ||
+    pathname?.startsWith("/search") ||
     pathname?.startsWith("/login") ||
     pathname?.startsWith("/signup") ||
     pathname?.startsWith("/forgot-password") ||
@@ -78,15 +79,12 @@ export default function Navbar() {
     pathname === "/terms" ||
     pathname === "/privacy" ||
     pathname === "/help";
-  // Check if we're on any artist page (profile, portfolio, or portfolio/edit)
-  const isArtistPage = pathname && 
-  pathname !== '/' &&
-  !pathname.startsWith('/login') &&
-  !pathname.startsWith('/signup') &&
-  !pathname.startsWith('/settings') &&
-  !pathname.startsWith('/saves') &&
-  !pathname.startsWith('/sandbox') &&
-  /^\/[^\/]+(\/[^\/]+)*$/.test(pathname);
+  // Artist profile, portfolio, or portfolio/edit — not app routes like /search or /about
+  const isArtistPage = Boolean(
+    pathname &&
+      !isConstrainedLayout &&
+      /^\/[^/]+(\/[^/]+)*$/.test(pathname),
+  );
   const isSavesPage = pathname === "/saves";
   const hideNavbar =
   pathname?.startsWith("/portfolio-test") ||      // dev editor route
@@ -354,7 +352,7 @@ export default function Navbar() {
                       </li>
                       <li>
                         <Link
-                          href="/saves"
+                          href="/settings?section=saves"
                           className="block px-3 py-2 hover:bg-gray-50"
                           role="menuitem"
                           onClick={() => setMenuOpen(false)}
@@ -434,7 +432,7 @@ export default function Navbar() {
                       </li>
                       <li>
                         <Link
-                          href="/saves"
+                          href="/settings?section=saves"
                           className="block px-3 py-2 hover:bg-gray-50"
                           role="menuitem"
                           onClick={() => setMenuOpen(false)}
@@ -470,15 +468,17 @@ export default function Navbar() {
         ) : (
           // --- Logged-out view ---
           <nav className="flex items-center gap-3 sm:gap-4 text-body-sm md:pr-4">
-            {/* Mobile only: Search icon - opens full-screen search overlay */}
-            <button
-              onClick={() => setMobileSearchOpen(true)}
-              className="md:hidden rounded-md p-2 transition hover:opacity-80"
-              style={{ color: isArtistPage ? (customColors?.text || '#11100e') : 'var(--foreground)' }}
-              aria-label="Search"
-            >
-              <Search size={24} />
-            </button>
+            {/* Mobile only: overlay search — artist pages hide inline SearchInput below md; home etc. use SearchInput’s own icon */}
+            {isArtistPage && (
+              <button
+                onClick={() => setMobileSearchOpen(true)}
+                className="md:hidden rounded-md p-2 transition hover:opacity-80"
+                style={{ color: customColors?.text || "#11100e" }}
+                aria-label="Search"
+              >
+                <Search size={24} />
+              </button>
+            )}
             {/* Mobile only: Hamburger on right (only on artist profile pages) */}
             {isArtistPage && (
               <button

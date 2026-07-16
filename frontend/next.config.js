@@ -85,6 +85,9 @@ const nextConfig = {
       { source: "/api/themes/:path*", destination: `${backendBase}/api/themes/:path*` },
       { source: "/api/portfolios/:path*", destination: `${backendBase}/api/portfolios/:path*/` },
       { source: "/api/help/:path*", destination: `${backendBase}/api/help/:path*` },
+      { source: "/api/admin/analytics", destination: `${backendBase}/api/admin/analytics/` },
+      { source: "/api/admin/analytics/", destination: `${backendBase}/api/admin/analytics/` },
+      { source: "/api/admin/:path*", destination: `${backendBase}/api/admin/:path*/` },
       { source: "/media/:path*", destination: `${backendBase}/media/:path*` },
     ];
   },

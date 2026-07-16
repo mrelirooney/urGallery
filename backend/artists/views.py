@@ -222,7 +222,7 @@ class PortfolioCommentListCreateView(generics.ListCreateAPIView):
     def get_queryset(self):
         portfolio = self._get_portfolio()
         return Comment.objects.filter(portfolio=portfolio).select_related(
-            "author__profile", "author__profile__default_avatar"
+            "author__profile", "author__profile__default_avatar", "portfolio"
         )
 
     def perform_create(self, serializer):
@@ -238,10 +238,14 @@ class PortfolioCommentDeleteView(generics.DestroyAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
-        comment = get_object_or_404(Comment, pk=self.kwargs["pk"])
+        comment = get_object_or_404(
+            Comment.objects.select_related("portfolio__user", "author"),
+            pk=self.kwargs["pk"],
+        )
         user = self.request.user
-        if user != comment.author:
+        portfolio_owner = comment.portfolio.user
+        if user != comment.author and user != portfolio_owner:
             from rest_framework.exceptions import PermissionDenied
-            raise PermissionDenied("Only the author can delete their comment.")
+            raise PermissionDenied("Only the author or portfolio owner can delete this comment.")
         return comment
 

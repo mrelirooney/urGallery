@@ -3,6 +3,9 @@
 import React from 'react'
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { hexToRgba, getTextColorForBackground } from "@/lib/colorUtils";
+import { SURFACE_OFF_BLACK } from "@/lib/systemSurfaceTheme";
+
+const NUMBER_HOVER_COLOR = hexToRgba(SURFACE_OFF_BLACK, 0.75);
 
 type PaginationProps = {
   totalPages: number;
@@ -36,8 +39,27 @@ export default function Pagination({ totalPages, currentPage, onChangePage, cust
 
   return (
     <>
-      {/* Mobile/Tablet: Ellipses (centered) */}
-      <div className="flex justify-center items-center gap-2 lg:hidden md:pt-4">
+      {/* Phone: ellipses (centered) */}
+      <div className="flex justify-center items-center gap-2 md:hidden">
+        {Array.from({ length: totalPages }).map((_, idx) => (
+          <button
+            key={idx}
+            onClick={() => onChangePage(idx)}
+            className={`w-2 h-2 rounded-full transition-all ${
+              idx === currentIndex ? "w-2 h-2" : ""
+            }`}
+            style={{
+              backgroundColor: idx === currentIndex 
+                ? accent
+                : (customColors?.portfolioText ?? customColors?.text ?? "#11100e"),
+            }}
+            aria-label={`Go to page ${idx + 1}`}
+          />
+        ))}
+      </div>
+
+      {/* Tablet: ellipses (centered) */}
+      <div className="hidden md:flex lg:hidden justify-center items-center gap-2 pt-4">
         {Array.from({ length: totalPages }).map((_, idx) => (
           <button
             key={idx}
@@ -73,7 +95,7 @@ export default function Pagination({ totalPages, currentPage, onChangePage, cust
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = isActive ? accent : frostedBgHover;
-                  e.currentTarget.style.color = isActive ? accentText : fg;
+                  e.currentTarget.style.color = NUMBER_HOVER_COLOR;
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = isActive ? accent : frostedBgDefault;
@@ -81,7 +103,7 @@ export default function Pagination({ totalPages, currentPage, onChangePage, cust
                 }}
                 onFocus={(e) => {
                   e.currentTarget.style.backgroundColor = isActive ? accent : frostedBgHover;
-                  e.currentTarget.style.color = isActive ? accentText : fg;
+                  e.currentTarget.style.color = NUMBER_HOVER_COLOR;
                 }}
                 onBlur={(e) => {
                   e.currentTarget.style.backgroundColor = isActive ? accent : frostedBgDefault;
