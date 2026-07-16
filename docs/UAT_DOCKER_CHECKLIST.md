@@ -68,6 +68,14 @@
 - [ ] No missing JS chunks (/_next/static/*)
 - [ ] Images load (especially Next \<Image /> domains)
 
+### MOBILE PORTFOLIO (Live view, viewport \< 768px)
+- [ ] Artist page loads; compact bar + footer visible
+- [ ] Portfolio content uses phone layout (media + stacked text)
+- [ ] Pagination dots appear after scrolling; no background strip mismatch
+- [ ] Dots sit above footer with comfortable spacing
+- [ ] Swipe/tap pagination changes pages; URL updates
+- [ ] Comments panel opens (if testing comments on mobile)
+
 ### ERROR CHECK (Quick)
 - [ ] Open browser console -> no repeated errors
 - [ ] Backend logs -> no repeated 500s

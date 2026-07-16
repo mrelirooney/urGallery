@@ -126,7 +126,7 @@ export default function PhonePageLayout({ page, customColors }: PhonePageLayoutP
         </div>
       )}
 
-      <div className="flex flex-col px-4 pt-6 pb-10">
+      <div className="flex flex-col px-4 pt-6 pb-16">
         {contentBlocks.map((block, index) => (
           <ContentBlockSection
             key={index}

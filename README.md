@@ -26,11 +26,13 @@ docker compose up
 
 | Doc | Description |
 |-----|-------------|
-| [docs/PRD.md](docs/PRD.md) | Product requirements, features, data models, API endpoints |
+| [docs/PRD.md](docs/PRD.md) | Product requirements, features, data models, API endpoints, **MVP status** |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Tech stack, frontend, backend, database, storage, auth |
 | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Production deployment, env vars, Docker build |
 | [docs/UAT_DOCKER_CHECKLIST.md](docs/UAT_DOCKER_CHECKLIST.md) | UAT and smoke test checklist |
 | [docs/CUSTOM_COLORS_IMPLEMENTATION.md](docs/CUSTOM_COLORS_IMPLEMENTATION.md) | Custom colors implementation guide |
+
+**Current focus (July 2026):** Pre-production — mobile live portfolio polish, tablet+ typography on original layouts, then Docker UAT and deploy. See [docs/PRD.md#mvp-implementation-status](docs/PRD.md#mvp-implementation-status).
 
 ## Stack
 

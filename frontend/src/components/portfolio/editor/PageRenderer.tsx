@@ -11,6 +11,7 @@ import {
   LAYOUT_3_TEXT_OVERLAY_CLASS,
   LAYOUT_6_ACCENT_TEXT_GROUP_CLASS,
   LAYOUT_6_HEADER_BORDER_CLASS,
+  LAYOUT_6_HEADER_FIELD_CLASS,
   LAYOUT_6_TEXT_RIGHT_CLASS,
   LAYOUT_8_ACCENT_BAR_CLASS,
   LAYOUT_8_TEXT_CENTER_CLASS,
@@ -322,7 +323,7 @@ export default function PageRenderer({
         <div className="absolute bottom-4 left-4 w-3 h-3 z-10" style={{ backgroundColor: accentColor }} aria-hidden />
         <div className="absolute bottom-4 right-4 w-3 h-3 z-10" style={{ backgroundColor: accentColor }} aria-hidden />
 
-        {/* Centered text overlay: editable title + description (orange bar), z-10 */}
+        {/* Centered text overlay: editable title + sub-header in orange bar, z-10 */}
         <div className={`absolute inset-0 z-10 pointer-events-none ${LAYOUT_3_TEXT_OVERLAY_CLASS}`}>
           <div className={`${LAYOUT_3_TEXT_COLUMN_CLASS} text-center pointer-events-auto`}>
             {isEditor ? (
@@ -343,18 +344,18 @@ export default function PageRenderer({
                   style={{ backgroundColor: accentColor }}
                 >
                   <textarea
-                    className={`${PORTFOLIO_EDITOR_DESCRIPTION_TEXTAREA_CLASS} text-center w-full`}
+                    className="layout-3-sub-header-field w-full min-w-0 portfolio-header-sub bg-transparent rounded-md py-2 text-center outline-none focus:ring-2 focus:ring-white/50 resize-none overflow-hidden break-words whitespace-pre-wrap"
                     style={{ color: accentTextColor, fontFamily: "inherit" }}
-                    value={description}
-                    maxLength={UNIVERSAL_LAYOUT_LIMITS.description}
+                    value={page.title2 ?? ""}
+                    maxLength={UNIVERSAL_LAYOUT_LIMITS.title}
                     onChange={(e) =>
-                      onChangeDescription?.(
+                      onChangeTitle2?.(
                         safeIndex,
-                        e.target.value.slice(0, UNIVERSAL_LAYOUT_LIMITS.description),
+                        e.target.value.slice(0, UNIVERSAL_LAYOUT_LIMITS.title),
                       )
                     }
                     onKeyDown={confirmTitleTextOnEnter}
-                    placeholder="Description"
+                    placeholder="Sub-header"
                   />
                 </div>
               </>
@@ -363,16 +364,14 @@ export default function PageRenderer({
                 <h2 className="portfolio-header-massive font-bold portfolio-page-title w-full text-center" style={overlayTextStyle}>
                   {title}
                 </h2>
-                {description.trim() && (
-                  <div
-                    className="px-6 py-2 rounded-xs w-full"
-                    style={{ backgroundColor: accentColor, color: accentTextColor }}
-                  >
-                    <p className="whitespace-pre-line portfolio-description portfolio-page-description text-center">
-                      {description}
-                    </p>
-                  </div>
-                )}
+                <div
+                  className="px-6 py-2 rounded-xs w-full"
+                  style={{ backgroundColor: accentColor, color: accentTextColor }}
+                >
+                  <h3 className="portfolio-header-sub w-full text-center whitespace-pre-wrap break-words">
+                    {page.title2?.trim() ? page.title2 : "\u00A0"}
+                  </h3>
+                </div>
               </>
             )}
           </div>
@@ -633,7 +632,7 @@ export default function PageRenderer({
     );
   }
 
-  // layout-6: 40/60 split – left full-height media, right 50/50 panels (header top, description + details bottom)
+  // layout-6: 40/60 split – left full-height media, right 50/50 panels (header top, sub-header + description bottom on tablet+)
   if (layoutType === "layout-6") {
     const accentHex = customColors?.accent || "#c96a4a";
     const portfolioBg = customColors?.text ?? "#faf7f2";
@@ -642,7 +641,7 @@ export default function PageRenderer({
     const layout6HeaderStyle = { color: headerTextColor };
     const layout6HeaderBorderStyle = {
       borderBottom: `4px solid ${accentHex}`,
-      paddingBottom: "0.5rem",
+      paddingBottom: "0.15rem",
     };
 
     const layout6HeaderBorderWrap = (child: React.ReactNode) => (
@@ -682,7 +681,7 @@ export default function PageRenderer({
 
     const layout6HeaderEditor = (
       <textarea
-        className={`${PORTFOLIO_EDITOR_TITLE_TEXTAREA_CLASS} ${LAYOUT_6_TEXT_RIGHT_CLASS} portfolio-header-big font-bold`}
+        className={`${PORTFOLIO_EDITOR_TITLE_TEXTAREA_CLASS} ${LAYOUT_6_TEXT_RIGHT_CLASS} ${LAYOUT_6_HEADER_FIELD_CLASS} portfolio-header-big font-bold`}
         style={{ ...layout6HeaderStyle, fontFamily: "inherit" }}
         value={title}
         maxLength={UNIVERSAL_LAYOUT_LIMITS.title}
@@ -701,6 +700,29 @@ export default function PageRenderer({
       >
         {title || "\u00A0"}
       </h2>
+    );
+
+    const layout6SubHeaderEditor = (
+      <textarea
+        className={`layout-6-sub-header-field w-full min-w-0 portfolio-header-sub ${LAYOUT_6_TEXT_RIGHT_CLASS} bg-transparent rounded-md py-2 outline-none focus:ring-2 focus:ring-white/50 resize-none overflow-hidden break-words whitespace-pre-wrap`}
+        style={{ color: accentTextColor, fontFamily: "inherit" }}
+        value={page.title2 ?? ""}
+        maxLength={UNIVERSAL_LAYOUT_LIMITS.title}
+        onChange={(e) =>
+          onChangeTitle2?.(
+            safeIndex,
+            e.target.value.slice(0, UNIVERSAL_LAYOUT_LIMITS.title),
+          )
+        }
+        onKeyDown={confirmTitleTextOnEnter}
+        placeholder="Sub-header"
+      />
+    );
+
+    const layout6SubHeaderLive = (
+      <h3 className={`portfolio-header-sub ${LAYOUT_6_TEXT_RIGHT_CLASS} w-full whitespace-pre-wrap break-words`}>
+        {page.title2?.trim() ? page.title2 : "\u00A0"}
+      </h3>
     );
 
     const layout6DescriptionEditor = (
@@ -749,6 +771,20 @@ export default function PageRenderer({
       </p>
     );
 
+    const layout6AccentPanelPhone = (
+      <div className={LAYOUT_6_ACCENT_TEXT_GROUP_CLASS}>
+        {isEditor ? layout6DescriptionEditor : layout6DescriptionLive}
+        {isEditor ? layout6DetailsEditor : layout6DetailsLive}
+      </div>
+    );
+
+    const layout6AccentPanelTabletDesktop = (
+      <div className={LAYOUT_6_ACCENT_TEXT_GROUP_CLASS}>
+        {isEditor ? layout6SubHeaderEditor : layout6SubHeaderLive}
+        {isEditor ? layout6DescriptionEditor : layout6DescriptionLive}
+      </div>
+    );
+
     return (
       <div className="w-screen relative left-1/2 -translate-x-1/2 h-full min-h-0">
         <div className="w-full h-full relative overflow-hidden" data-layout="layout-6">
@@ -766,10 +802,7 @@ export default function PageRenderer({
             </div>
             <div className="flex-1 px-4 py-6 text-right">
               {layout6HeaderBorderWrap(isEditor ? layout6HeaderEditor : layout6HeaderLive)}
-              <div className={`${LAYOUT_6_ACCENT_TEXT_GROUP_CLASS} mt-4`}>
-                {isEditor ? layout6DescriptionEditor : layout6DescriptionLive}
-                {isEditor ? layout6DetailsEditor : layout6DetailsLive}
-              </div>
+              <div className="mt-4">{layout6AccentPanelPhone}</div>
             </div>
           </div>
           {/* Tablet: 40% media (flush left) | 60% split text panels */}
@@ -788,10 +821,7 @@ export default function PageRenderer({
                 className="flex-1 min-h-0 flex flex-col justify-center px-6 py-6"
                 style={{ backgroundColor: accentHex, color: accentTextColor }}
               >
-                <div className={LAYOUT_6_ACCENT_TEXT_GROUP_CLASS}>
-                  {isEditor ? layout6DescriptionEditor : layout6DescriptionLive}
-                  {isEditor ? layout6DetailsEditor : layout6DetailsLive}
-                </div>
+                {layout6AccentPanelTabletDesktop}
               </div>
             </div>
           </div>
@@ -811,10 +841,7 @@ export default function PageRenderer({
                 className="flex-1 min-h-0 flex flex-col justify-center px-8 xl:px-12 py-8"
                 style={{ backgroundColor: accentHex, color: accentTextColor }}
               >
-                <div className={LAYOUT_6_ACCENT_TEXT_GROUP_CLASS}>
-                  {isEditor ? layout6DescriptionEditor : layout6DescriptionLive}
-                  {isEditor ? layout6DetailsEditor : layout6DetailsLive}
-                </div>
+                {layout6AccentPanelTabletDesktop}
               </div>
             </div>
           </div>
@@ -1450,7 +1477,7 @@ export default function PageRenderer({
     const description2 = page.description2 ?? "";
     const title3 = page.title3 ?? "";
     const description3 = page.description3 ?? "";
-    const layout14TitleTextareaClass = `${PORTFOLIO_EDITOR_TITLE_TEXTAREA_CLASS} ${LAYOUT_14_TEXT_CENTER_CLASS} ${LAYOUT_14_TITLE_FIELD_CLASS} portfolio-header-big font-bold outline-none focus:ring-2 focus:ring-white/50`;
+    const layout14TitleTextareaClass = `w-full min-w-0 ${LAYOUT_14_TEXT_CENTER_CLASS} ${LAYOUT_14_TITLE_FIELD_CLASS} portfolio-header-big font-bold bg-transparent rounded-md py-2 outline-none focus:ring-2 focus:ring-white/50 resize-none overflow-hidden break-words`;
     const layout14DescriptionTextareaClass = `${PORTFOLIO_EDITOR_DESCRIPTION_TEXTAREA_CLASS} ${LAYOUT_14_TEXT_CENTER_CLASS}`;
 
     return (
@@ -1641,7 +1668,7 @@ export default function PageRenderer({
     const accentTextColor15 = getTextColorForBackground(accentHex15);
     const title2 = page.title2 ?? "";
     const description2 = page.description2 ?? "";
-    const layout15TitleTextareaClass = `${PORTFOLIO_EDITOR_TITLE_TEXTAREA_CLASS} ${LAYOUT_15_TITLE_FIELD_CLASS} portfolio-header-big font-bold outline-none focus:ring-2 focus:ring-white/50`;
+    const layout15TitleTextareaClass = `w-full min-w-0 ${LAYOUT_15_TITLE_FIELD_CLASS} portfolio-header-big font-bold bg-transparent rounded-md py-2 outline-none focus:ring-2 focus:ring-white/50 resize-none overflow-hidden break-words`;
 
     return (
       <div className="w-screen relative left-1/2 -translate-x-1/2 h-full min-h-0">

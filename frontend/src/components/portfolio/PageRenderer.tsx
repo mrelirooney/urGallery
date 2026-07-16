@@ -136,8 +136,9 @@ export default function PageRenderer({
     );
   }
 
-  // layout-3: Full-bleed media, centered text + orange bar overlay, four corner accents (laptop)
+  // layout-3: Full-bleed media, centered text + orange bar sub-header, four corner accents (tablet+)
   if (layoutType === "layout-3") {
+    const subHeader = page.title2?.trim() ? page.title2 : "\u00A0";
     const accentHex = customColors?.accent || "#c96a4a";
     const accentColor = accentHex;
     const accentTextColor = getTextColorForBackground(accentHex);
@@ -174,16 +175,14 @@ export default function PageRenderer({
             <h2 className="portfolio-header-massive font-bold portfolio-page-title w-full text-center" style={overlayTextStyle}>
               {title}
             </h2>
-            {description.trim() && (
-              <div
-                className="px-6 py-2 rounded-xs w-full"
-                style={{ backgroundColor: accentColor, color: accentTextColor }}
-              >
-                <p className="whitespace-pre-line portfolio-description portfolio-page-description text-center">
-                  {description}
-                </p>
-              </div>
-            )}
+            <div
+              className="px-6 py-2 rounded-xs w-full"
+              style={{ backgroundColor: accentColor, color: accentTextColor }}
+            >
+              <h3 className="portfolio-header-sub w-full text-center whitespace-pre-wrap break-words">
+                {subHeader}
+              </h3>
+            </div>
           </div>
         </div>
         </div>
@@ -311,8 +310,9 @@ export default function PageRenderer({
     );
   }
 
-  // layout-6: 40/60 split – left full-height media, right 50/50 panels (header top, description + details bottom)
+  // layout-6: 40/60 split – left full-height media, right 50/50 panels (header top, sub-header + description bottom on tablet+)
   if (layoutType === "layout-6") {
+    const subHeader = page.title2?.trim() ? page.title2 : "\u00A0";
     const accentHex = customColors?.accent || "#c96a4a";
     const portfolioBg = customColors?.text ?? "#faf7f2";
     const headerTextColor = getTextColorForBackground(portfolioBg);
@@ -366,11 +366,11 @@ export default function PageRenderer({
                 style={{ backgroundColor: accentHex, color: accentTextColor }}
               >
                 <div className={LAYOUT_6_ACCENT_TEXT_GROUP_CLASS}>
+                  <h3 className={`portfolio-header-sub ${LAYOUT_6_TEXT_RIGHT_CLASS} whitespace-pre-wrap break-words`}>
+                    {subHeader}
+                  </h3>
                   <p className={`whitespace-pre-line ${PORTFOLIO_PAGE_DESCRIPTION_CLASS} ${LAYOUT_6_TEXT_RIGHT_CLASS}`}>
                     {description || "\u00A0"}
-                  </p>
-                  <p className={`whitespace-pre-line ${PORTFOLIO_PAGE_DETAILS_CLASS} ${LAYOUT_6_TEXT_RIGHT_CLASS} opacity-90`}>
-                    {details || "\u00A0"}
                   </p>
                 </div>
               </div>
@@ -399,11 +399,11 @@ export default function PageRenderer({
                 style={{ backgroundColor: accentHex, color: accentTextColor }}
               >
                 <div className={LAYOUT_6_ACCENT_TEXT_GROUP_CLASS}>
+                  <h3 className={`portfolio-header-sub ${LAYOUT_6_TEXT_RIGHT_CLASS} whitespace-pre-wrap break-words`}>
+                    {subHeader}
+                  </h3>
                   <p className={`whitespace-pre-line ${PORTFOLIO_PAGE_DESCRIPTION_CLASS} ${LAYOUT_6_TEXT_RIGHT_CLASS}`}>
                     {description || "\u00A0"}
-                  </p>
-                  <p className={`whitespace-pre-line ${PORTFOLIO_PAGE_DETAILS_CLASS} ${LAYOUT_6_TEXT_RIGHT_CLASS} opacity-90`}>
-                    {details || "\u00A0"}
                   </p>
                 </div>
               </div>
@@ -678,15 +678,15 @@ export default function PageRenderer({
           {/* Below lg: stacked vertically */}
           <div className="hidden md:flex md:flex-col lg:hidden w-full h-full min-h-0 justify-center gap-6 py-8 px-6">
             <div className={`p-6 border-2 rounded-xs ${LAYOUT_14_TEXT_CENTER_CLASS}`} style={{ borderColor: accentHex, color: textColor }}>
-              <h3 className={`portfolio-header-big font-bold portfolio-page-title ${LAYOUT_14_TEXT_CENTER_CLASS} ${LAYOUT_14_TITLE_FIELD_CLASS}`}>{title || "\u00A0"}</h3>
+              <h3 className={`portfolio-header-big font-bold ${LAYOUT_14_TEXT_CENTER_CLASS} ${LAYOUT_14_TITLE_FIELD_CLASS}`}>{title || "\u00A0"}</h3>
               <p className={`whitespace-pre-line portfolio-description portfolio-page-description mt-2 opacity-90 ${LAYOUT_14_TEXT_CENTER_CLASS}`}>{description || "\u00A0"}</p>
             </div>
             <div className={`p-6 rounded-xs ${LAYOUT_14_TEXT_CENTER_CLASS}`} style={{ backgroundColor: accentHex, color: accentTextColor }}>
-              <h3 className={`portfolio-header-big font-bold portfolio-page-title ${LAYOUT_14_TEXT_CENTER_CLASS} ${LAYOUT_14_TITLE_FIELD_CLASS}`}>{title2 || "\u00A0"}</h3>
+              <h3 className={`portfolio-header-big font-bold ${LAYOUT_14_TEXT_CENTER_CLASS} ${LAYOUT_14_TITLE_FIELD_CLASS}`}>{title2 || "\u00A0"}</h3>
               <p className={`whitespace-pre-line portfolio-description portfolio-page-description mt-2 opacity-95 ${LAYOUT_14_TEXT_CENTER_CLASS}`}>{description2 || "\u00A0"}</p>
             </div>
             <div className={`p-6 border-2 rounded-xs ${LAYOUT_14_TEXT_CENTER_CLASS}`} style={{ borderColor: accentHex, color: textColor }}>
-              <h3 className={`portfolio-header-big font-bold portfolio-page-title ${LAYOUT_14_TEXT_CENTER_CLASS} ${LAYOUT_14_TITLE_FIELD_CLASS}`}>{title3 || "\u00A0"}</h3>
+              <h3 className={`portfolio-header-big font-bold ${LAYOUT_14_TEXT_CENTER_CLASS} ${LAYOUT_14_TITLE_FIELD_CLASS}`}>{title3 || "\u00A0"}</h3>
               <p className={`whitespace-pre-line portfolio-description portfolio-page-description mt-2 opacity-90 ${LAYOUT_14_TEXT_CENTER_CLASS}`}>{description3 || "\u00A0"}</p>
             </div>
           </div>
@@ -695,7 +695,7 @@ export default function PageRenderer({
           <div className="hidden lg:flex lg:flex-1 lg:min-h-0 lg:items-start lg:justify-center">
             <div className="grid grid-cols-3 gap-0 max-h-[50%] w-full mt-[5%]">
               <div className={`flex flex-col justify-center p-3 xl:p-8 overflow-y-auto ${LAYOUT_14_TEXT_CENTER_CLASS}`} style={{ color: textColor }}>
-                <h3 className={`portfolio-header-big font-bold portfolio-page-title ${LAYOUT_14_TEXT_CENTER_CLASS} ${LAYOUT_14_TITLE_FIELD_CLASS}`}>{title || "\u00A0"}</h3>
+                <h3 className={`portfolio-header-big font-bold ${LAYOUT_14_TEXT_CENTER_CLASS} ${LAYOUT_14_TITLE_FIELD_CLASS}`}>{title || "\u00A0"}</h3>
                 <div
                   className={`flex flex-col justify-center p-8 overflow-y-auto border-2 rounded-xs ${LAYOUT_14_TEXT_CENTER_CLASS}`}
                   style={{ borderColor: accentHex, color: textColor }}
@@ -704,7 +704,7 @@ export default function PageRenderer({
                 </div>
               </div>
             <div className={`flex flex-col justify-center p-3 xl:p-8 overflow-y-auto ${LAYOUT_14_TEXT_CENTER_CLASS}`} style={{ color: textColor }}>
-              <h3 className={`portfolio-header-big font-bold portfolio-page-title ${LAYOUT_14_TEXT_CENTER_CLASS} ${LAYOUT_14_TITLE_FIELD_CLASS}`}>{title2 || "\u00A0"}</h3>
+              <h3 className={`portfolio-header-big font-bold ${LAYOUT_14_TEXT_CENTER_CLASS} ${LAYOUT_14_TITLE_FIELD_CLASS}`}>{title2 || "\u00A0"}</h3>
               <div
                 className={`flex flex-col justify-center p-8 overflow-y-auto border-2 rounded-xs ${LAYOUT_14_TEXT_CENTER_CLASS}`}
                 style={{ backgroundColor: accentHex, color: accentTextColor, borderColor: accentHex, }}
@@ -713,7 +713,7 @@ export default function PageRenderer({
               </div>
             </div>
               <div className={`flex flex-col justify-center p-3 xl:p-8 overflow-y-auto ${LAYOUT_14_TEXT_CENTER_CLASS}`} style={{ color: textColor }}>
-              <h3 className={`portfolio-header-big font-bold portfolio-page-title ${LAYOUT_14_TEXT_CENTER_CLASS} ${LAYOUT_14_TITLE_FIELD_CLASS}`}>{title3 || "\u00A0"}</h3>
+              <h3 className={`portfolio-header-big font-bold ${LAYOUT_14_TEXT_CENTER_CLASS} ${LAYOUT_14_TITLE_FIELD_CLASS}`}>{title3 || "\u00A0"}</h3>
                 <div
                   className={`flex flex-col justify-center p-8 overflow-y-auto border-2 rounded-xs ${LAYOUT_14_TEXT_CENTER_CLASS}`}
                   style={{ borderColor: accentHex, color: textColor }}
@@ -743,12 +743,12 @@ export default function PageRenderer({
           <div className="hidden md:flex md:flex-col lg:hidden w-full h-full min-h-0 justify-center">
             <div className="w-full shrink-0 flex flex-col" style={{ backgroundColor: accentHex, color: accentTextColor }}>
               <div className="flex flex-col items-center text-center p-8">
-                <h3 className={`portfolio-header-big font-bold portfolio-page-title text-center w-full ${LAYOUT_15_TITLE_FIELD_CLASS}`}>{title || "\u00A0"}</h3>
+                <h3 className={`portfolio-header-big font-bold text-center w-full ${LAYOUT_15_TITLE_FIELD_CLASS}`}>{title || "\u00A0"}</h3>
                 <p className="whitespace-pre-line portfolio-description portfolio-page-description mt-2 opacity-90 text-center w-full">{description || "\u00A0"}</p>
               </div>
               <div className="h-[8px] w-full shrink-0" style={{ backgroundColor: portfolioBg }} />
               <div className="flex flex-col items-center text-center p-8">
-                <h3 className={`portfolio-header-big font-bold portfolio-page-title text-center w-full ${LAYOUT_15_TITLE_FIELD_CLASS}`}>{title2 || "\u00A0"}</h3>
+                <h3 className={`portfolio-header-big font-bold text-center w-full ${LAYOUT_15_TITLE_FIELD_CLASS}`}>{title2 || "\u00A0"}</h3>
                 <p className="whitespace-pre-line portfolio-description portfolio-page-description mt-2 opacity-95 text-center w-full">{description2 || "\u00A0"}</p>
               </div>
             </div>
@@ -760,14 +760,14 @@ export default function PageRenderer({
                 className="flex flex-col justify-center p-8 overflow-y-auto rounded-xs"
                 style={{ backgroundColor: accentHex, color: accentTextColor }}
               >
-                <h3 className={`portfolio-header-big font-bold portfolio-page-title ${LAYOUT_15_TITLE_FIELD_CLASS}`}>{title || "\u00A0"}</h3>
+                <h3 className={`portfolio-header-big font-bold ${LAYOUT_15_TITLE_FIELD_CLASS}`}>{title || "\u00A0"}</h3>
                 <p className="whitespace-pre-line portfolio-description portfolio-page-description mt-2 opacity-90">{description || "\u00A0"}</p>
               </div>
             </div>
             <div className="flex flex-col justify-center p-3 xl:p-8 overflow-y-auto">
               <div className="flex flex-col justify-center p-8 overflow-y-auto rounded-xs" style={{ backgroundColor: accentHex, color: accentTextColor }}
               >
-                <h3 className={`portfolio-header-big font-bold portfolio-page-title ${LAYOUT_15_TITLE_FIELD_CLASS}`}>{title2 || "\u00A0"}</h3>
+                <h3 className={`portfolio-header-big font-bold ${LAYOUT_15_TITLE_FIELD_CLASS}`}>{title2 || "\u00A0"}</h3>
                 <p className="whitespace-pre-line portfolio-description portfolio-page-description mt-2 opacity-95">{description2 || "\u00A0"}</p>
               </div>
             </div>

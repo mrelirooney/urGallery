@@ -45,6 +45,9 @@ export const LAYOUT_6_TEXT_RIGHT_CLASS = "layout-6-text-right text-right";
 /** Layout-6 header wrapper – shrink-wraps to text so accent border matches content width. */
 export const LAYOUT_6_HEADER_BORDER_CLASS = "layout-6-header-border w-fit max-w-full";
 
+/** Layout-6 header textarea – no shared min-height/padding so underline sits tight below text. */
+export const LAYOUT_6_HEADER_FIELD_CLASS = "layout-6-header-field";
+
 /** Layout-6 accent panel – description + details grouped, full-width, right-aligned text. */
 export const LAYOUT_6_ACCENT_TEXT_GROUP_CLASS = "layout-6-accent-text-group w-full flex flex-col items-stretch gap-2";
 

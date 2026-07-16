@@ -90,7 +90,6 @@ export default function PortfolioControls({
     boxShadow: "0 2px 8px rgba(0, 0, 0, 0.12)",
   });
 
-  const phonePaginationGradient = `linear-gradient(to top, ${portfolioBg} 0%, ${hexToRgba(portfolioBg, 1)} 75%, transparent 100%)`;
   const phonePaginationInteractive =
     phoneScrollOpacity >= 0.01 && !isPrivateBlurred;
 
@@ -153,20 +152,19 @@ export default function PortfolioControls({
 
   return (
     <>
-      {/* Phone: pagination bar above footer, portfolio background fades up */}
+      {/* Phone: pagination dots above footer, no background strip */}
       <div
         className="fixed left-0 right-0 z-[100] md:hidden transition-opacity duration-300"
         style={{
-          bottom: "calc(var(--artist-footer-height, 3rem) + 0.25rem)",
+          bottom: "calc(var(--artist-footer-height, 3rem) + 1.5rem)",
           color: textColor,
           opacity: phoneScrollOpacity,
           pointerEvents: phonePaginationInteractive ? "auto" : "none",
         }}
       >
         <div
-          className={`w-full py-2 pt-4 transition-opacity duration-300 ${phonePaginationInteractive ? "" : "pointer-events-none"}`}
+          className={`w-full py-2 transition-opacity duration-300 ${phonePaginationInteractive ? "" : "pointer-events-none"}`}
           style={{
-            background: phonePaginationGradient,
             opacity: paginationIdle ? 0.35 : 1,
           }}
           onMouseEnter={handlePaginationEnter}

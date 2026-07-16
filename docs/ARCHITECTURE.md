@@ -49,6 +49,27 @@ Route: `/{artist_slug}/{portfolio_slug}/edit`. Shell: `PortfolioEditorShell.tsx`
 
 **Color tokens (artist pages):** Profile = Color #1 (`background_color` → `--artist-profile-bg`). Portfolio section = Color #2 (`text_color` → `--artist-portfolio-bg`, `--artist-background`). Accent = Color #3 (`accent_color`). Set by `ColorThemeSetter`; cleared on non-artist routes by `ColorThemeGuard`. Artist layout injects `--body-background` gradient via inline script before paint; root `layout.tsx` uses `suppressHydrationWarning` on `<html>`/`<body>` and `globals.css` sets `body { background: var(--body-background, var(--background)) }`.
 
+### Public portfolio view (live)
+
+Route: `/{artist_slug}?portfolio=<slug>#portfolio-shell`. Shell: `PortfolioWrapper.tsx` → `PageRenderer.tsx`.
+
+| Component | Purpose |
+|-----------|---------|
+| `PageRenderer.tsx` | Renders page by `layout` enum; **splits at `md`**: phone vs tablet/desktop |
+| `PhonePageLayout.tsx` | Unified mobile template (`< md`): full-width media + stacked text blocks |
+| `PortfolioControls.tsx` | Fixed overlay: pagination (phone), privacy/share/edit (tablet+), scroll-gated opacity |
+| `Pagination.tsx` | Dot strip (phone) / frosted controls (tablet+) |
+| `lib/artistScrollOverlay.ts` | Scroll progress → overlay opacity for phone pagination |
+| `lib/portfolio/typography.ts` | Shared class constants for live + editor text fields |
+
+**Breakpoint split:** Below `md`, live pages always use `PhonePageLayout` regardless of layout enum. At `md+`, each layout has its own structure in `PageRenderer.tsx`.
+
+**Typography (`globals.css`):** CSS variables `--portfolio-header-massive`, `--portfolio-header-big`, `--portfolio-header-sub`, `--portfolio-description`, `--portfolio-details`. Classes `portfolio-header-massive|big|sub`, `portfolio-description`, `portfolio-page-title` (phone). Tablet+ layouts map text slots to hierarchy classes per layout (see PRD Public Portfolio Pages).
+
+**Mobile layout vars:** `--artist-compact-bar-height: 7rem`, `--artist-footer-height: 4rem` (max-width 767px). Phone pagination sits at `bottom: calc(var(--artist-footer-height) + 1.5rem)` with no background strip.
+
+---
+
 ### API Integration Rules
 
 - `NEXT_PUBLIC_API_BASE` — backend base URL (e.g. `http://localhost:8000`)
