@@ -1,2 +1,4 @@
 *.pyc
 backend/staticfiles/
+backend/.venv/
+.venv/
